@@ -2601,7 +2601,13 @@
 
     const W = doc.internal.pageSize.getWidth();
     const H = doc.internal.pageSize.getHeight();
-    const M = 48;
+    const M = 52;
+
+    // jsPDF defaults to WinAnsi, which lacks Unicode minus, check, math-x.
+    // Stick to ASCII-safe glyphs in body text.
+    const HYPHEN = '-';
+    const TIMES  = '×'; // U+00D7, in WinAnsi (multiplication sign) — renders correctly
+    const DOT    = '·'; // U+00B7, middle dot — also in WinAnsi
 
     const COL = {
       lime:     [196, 232, 74],
@@ -2612,95 +2618,204 @@
       text3:    [130, 130, 138],
       text4:    [176, 176, 182],
       line:     [232, 232, 226],
+      lineSoft: [240, 240, 235],
+      surface:  [255, 255, 255],
       surface2: [247, 247, 243],
+      surface3: [237, 237, 232],
       green:    [21, 128, 61],
-      amber:    [180, 83, 9]
+      greenSoft:[230, 245, 236],
+      amber:    [180, 83, 9],
+      amberSoft:[253, 243, 224],
+      blue:     [30, 78, 178],
+      blueSoft: [231, 238, 251]
     };
 
-    // ── Header ──────────────────────────────────────────────
-    doc.setFillColor(...COL.lime);
-    doc.rect(M, 56, 4, 28, 'F');
+    // ── Helpers ─────────────────────────────────────────────
+    const setFG = (c) => doc.setTextColor(c[0], c[1], c[2]);
+    const setBG = (c) => doc.setFillColor(c[0], c[1], c[2]);
+    const setStroke = (c) => doc.setDrawColor(c[0], c[1], c[2]);
 
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8);
-    doc.setTextColor(...COL.text3);
-    doc.text('ACE  ·  COMMISSION STATEMENT', M + 14, 66);
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(22);
-    doc.setTextColor(...COL.text);
-    doc.text(monthName, M + 14, 86);
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
-    doc.setTextColor(...COL.text3);
-    doc.text('Gabriel Dalton', W - M, 66, { align: 'right' });
-    doc.text(`Generated ${today}`, W - M, 80, { align: 'right' });
-    doc.text('accessibilitychecker.org', W - M, 94, { align: 'right' });
-
-    let y = 116;
-
-    // ── Hero summary box ────────────────────────────────────
-    const boxH = 92;
-    doc.setDrawColor(...COL.line);
-    doc.setFillColor(...COL.surface2);
-    doc.roundedRect(M, y, W - 2 * M, boxH, 8, 8, 'FD');
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8);
-    doc.setTextColor(...COL.text3);
-    doc.text('TOTAL COMMISSION', M + 18, y + 22);
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(30);
-    doc.setTextColor(...COL.text);
-    doc.text(`$${fmtExact(c.totalCommission)}`, M + 18, y + 58);
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8);
-    doc.setTextColor(...COL.text3);
-    doc.text(
-      `${c.platformDeals.length} platform · ${c.managedDeals.length} managed · ${c.monthDeals.length} total deals`,
-      M + 18, y + 76
-    );
-
-    // Right side metrics
-    const rightX = W - M - 200;
-    doc.setFontSize(8);
-    doc.setTextColor(...COL.text3);
-    doc.text('ELIGIBLE MRR', rightX, y + 22);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(14);
-    doc.setTextColor(...COL.text);
-    doc.text(`$${fmt(c.eligibleMRR)}`, rightX, y + 40);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
-    doc.setTextColor(...COL.text3);
-    doc.text(`of $${fmt(TARGET)} target`, rightX + 60, y + 40);
-
-    doc.setFontSize(8);
-    doc.setTextColor(...COL.text3);
-    doc.text('STATUS', rightX, y + 60);
-    if (c.eligibleMRR >= TARGET) {
+    function pill(x, y, text, fg, bg, opts = {}) {
+      const fontSize = opts.fontSize || 8;
       doc.setFont('helvetica', 'bold');
-      doc.setTextColor(...COL.green);
-      doc.setFontSize(11);
-      doc.text(`✓ Target hit · $${fmt(c.overage)} above`, rightX, y + 76);
-    } else {
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(...COL.amber);
-      doc.setFontSize(11);
-      doc.text(`$${fmt(TARGET - c.eligibleMRR)} below target`, rightX, y + 76);
+      doc.setFontSize(fontSize);
+      const padX = opts.padX || 8;
+      const h = opts.h || (fontSize + 6);
+      const w = doc.getTextWidth(text) + padX * 2;
+      setBG(bg);
+      doc.roundedRect(x, y, w, h, h / 2, h / 2, 'F');
+      setFG(fg);
+      doc.text(text, x + w / 2, y + h - (h - fontSize) / 2 - 1.5, { align: 'center' });
+      return w;
     }
 
-    y += boxH + 28;
+    function progressBar(x, y, w, h, pct, fillColor) {
+      setBG(COL.surface3);
+      doc.roundedRect(x, y, w, h, h / 2, h / 2, 'F');
+      const filled = Math.max(0, Math.min(1, pct)) * w;
+      if (filled > 0) {
+        setBG(fillColor);
+        doc.roundedRect(x, y, Math.max(filled, h), h, h / 2, h / 2, 'F');
+      }
+    }
+
+    function sectionHeader(yPos, label) {
+      // Lime square accent + small-caps label + thin line
+      setBG(COL.lime);
+      doc.rect(M, yPos - 6, 6, 6, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8);
+      setFG(COL.text2);
+      doc.text(label.toUpperCase(), M + 12, yPos);
+      // line continues to right margin
+      const labelW = doc.getTextWidth(label.toUpperCase()) + 18;
+      setStroke(COL.line);
+      doc.setLineWidth(0.5);
+      doc.line(M + labelW, yPos - 2, W - M, yPos - 2);
+      return yPos + 12;
+    }
+
+    // ── Header band ─────────────────────────────────────────
+    setBG(COL.lime);
+    doc.rect(M, 50, 5, 36, 'F');
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7.5);
+    setFG(COL.text3);
+    doc.text(`ACE  ${DOT}  COMMISSION STATEMENT`, M + 14, 60);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(24);
+    setFG(COL.text);
+    doc.text(monthName, M + 14, 84);
+
+    // Right side meta
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9.5);
+    setFG(COL.text);
+    doc.text('Gabriel Dalton', W - M, 60, { align: 'right' });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    setFG(COL.text3);
+    doc.text(`Generated ${today}`, W - M, 74, { align: 'right' });
+    doc.text('accessibilitychecker.org', W - M, 86, { align: 'right' });
+
+    // Divider under header
+    setStroke(COL.line);
+    doc.setLineWidth(0.6);
+    doc.line(M, 102, W - M, 102);
+
+    let y = 124;
+
+    // ── Hero card ───────────────────────────────────────────
+    const heroH = 130;
+    setStroke(COL.line);
+    setBG(COL.surface);
+    doc.roundedRect(M, y, W - 2 * M, heroH, 10, 10, 'FD');
+
+    // Subtle lime tint corner (top-right, like the web hero)
+    setBG(COL.limeSoft);
+    doc.roundedRect(W - M - 220, y + 1, 219, 50, 10, 10, 'F');
+    setBG(COL.surface);
+    doc.rect(W - M - 220, y + 30, 220, 22, 'F'); // mask the bottom of tint
+
+    // Internal divider between left and right halves
+    const splitX = M + (W - 2 * M) * 0.5;
+    setStroke(COL.lineSoft);
+    doc.setLineWidth(0.5);
+    doc.line(splitX, y + 20, splitX, y + heroH - 20);
+
+    // LEFT: Total commission
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7.5);
+    setFG(COL.text3);
+    doc.text('TOTAL COMMISSION', M + 22, y + 26);
+
+    const totalDollars = Math.floor(c.totalCommission);
+    const totalCents = Math.round((c.totalCommission - totalDollars) * 100);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(13);
+    setFG(COL.text3);
+    doc.text('$', M + 22, y + 70);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(34);
+    setFG(COL.text);
+    const dollarsStr = fmt(totalDollars);
+    doc.text(dollarsStr, M + 32, y + 70);
+    const dollarsW = doc.getTextWidth(dollarsStr);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(13);
+    setFG(COL.text3);
+    doc.text(`.${String(totalCents).padStart(2, '0')}`, M + 34 + dollarsW, y + 70);
+
+    // Chips below total
+    let chipX = M + 22;
+    const chipY = y + 92;
+    chipX += pill(chipX, chipY, `$${fmt(c.platformCommission)} platform`, COL.text2, COL.surface2, { fontSize: 7.5, padX: 8, h: 16 }) + 6;
+    chipX += pill(chipX, chipY, `$${fmt(c.managedCommission)} managed`, COL.text2, COL.surface2, { fontSize: 7.5, padX: 8, h: 16 }) + 6;
+    chipX += pill(chipX, chipY, `${c.monthDeals.length} deals`, COL.text2, COL.surface2, { fontSize: 7.5, padX: 8, h: 16 });
+
+    // RIGHT: Eligible MRR + progress bar + status pill
+    const rX = splitX + 22;
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7.5);
+    setFG(COL.text3);
+    doc.text('ELIGIBLE MRR', rX, y + 26);
+
+    // Status pill (top-right)
+    const targetHit = c.eligibleMRR >= TARGET;
+    const pillText = targetHit ? 'TARGET HIT' : 'BELOW TARGET';
+    const pillFG = targetHit ? COL.green : COL.amber;
+    const pillBG = targetHit ? COL.greenSoft : COL.amberSoft;
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7);
+    const pillW = doc.getTextWidth(pillText) + 16;
+    pill(W - M - 22 - pillW, y + 18, pillText, pillFG, pillBG, { fontSize: 7, padX: 8, h: 14 });
+
+    // Eligible MRR amount
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(22);
+    setFG(COL.text);
+    doc.text(`$${fmt(c.eligibleMRR)}`, rX, y + 56);
+    const elgW = doc.getTextWidth(`$${fmt(c.eligibleMRR)}`);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    setFG(COL.text3);
+    doc.text(`of $${fmt(TARGET)}`, rX + elgW + 8, y + 56);
+
+    // Progress bar
+    const barX = rX;
+    const barW = (W - M) - rX - 22;
+    const pct = Math.min(1, c.eligibleMRR / TARGET);
+    progressBar(barX, y + 70, barW, 6, pct, targetHit ? COL.green : COL.lime);
+
+    // Below-bar caption
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    setFG(COL.text3);
+    const captionText = targetHit
+      ? `${Math.round(pct * 100)}% of target  ${DOT}  $${fmt(c.overage)} above line`
+      : `${Math.round(pct * 100)}% of target  ${DOT}  $${fmt(TARGET - c.eligibleMRR)} more to unlock`;
+    doc.text(captionText, rX, y + 92);
+
+    // Bottom-row mini-stats on right side
+    const miniY = y + 110;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    setFG(COL.text3);
+    doc.text('FIRST-YEAR PIPELINE', rX, miniY);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    setFG(COL.text);
+    doc.text(`$${fmt(c.eligibleMRR * 12)}`, rX + doc.getTextWidth('FIRST-YEAR PIPELINE') + 10, miniY);
+
+    y += heroH + 26;
 
     // ── Deals table ─────────────────────────────────────────
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
-    doc.setTextColor(...COL.text3);
-    doc.text('DEALS THIS MONTH', M, y);
-    y += 6;
+    y = sectionHeader(y, 'Deals This Month');
+    y += 4;
 
     const sorted = [...c.monthDeals].sort((a, b) => a.date.localeCompare(b.date));
     const tableBody = sorted.map(d => {
@@ -2708,7 +2823,7 @@
       const arr = mrr * 12;
       const comm = c.dealCommissions[d.id] || 0;
       const status = isManaged(d.plan)
-        ? 'Managed (flat)'
+        ? 'Managed'
         : (isExcluded(d.plan) ? 'Excluded' : 'Eligible');
       return [
         formatDate(d.date),
@@ -2717,12 +2832,12 @@
         `$${fmt(mrr)}`,
         `$${fmt(arr)}`,
         status,
-        `$${fmtExact(comm)}`
+        comm > 0 ? `$${fmtExact(comm)}` : '$0.00'
       ];
     });
 
     doc.autoTable({
-      startY: y + 6,
+      startY: y,
       margin: { left: M, right: M },
       head: [['Date', 'Client', 'Plan', 'MRR', 'ARR', 'Status', 'Commission']],
       body: tableBody,
@@ -2730,9 +2845,9 @@
       styles: {
         font: 'helvetica',
         fontSize: 9,
-        cellPadding: { top: 8, right: 10, bottom: 8, left: 10 },
+        cellPadding: { top: 9, right: 10, bottom: 9, left: 10 },
         lineColor: COL.line,
-        lineWidth: 0.5,
+        lineWidth: 0,
         textColor: COL.text2,
         valign: 'middle'
       },
@@ -2740,24 +2855,62 @@
         fillColor: COL.surface2,
         textColor: COL.text3,
         fontStyle: 'bold',
-        fontSize: 8,
-        cellPadding: { top: 8, right: 10, bottom: 8, left: 10 },
+        fontSize: 7.5,
+        cellPadding: { top: 9, right: 10, bottom: 9, left: 10 },
         lineColor: COL.line,
-        lineWidth: 0.5
+        lineWidth: 0
+      },
+      alternateRowStyles: {
+        fillColor: [251, 251, 248]
       },
       columnStyles: {
-        0: { cellWidth: 56 },
-        3: { halign: 'right', cellWidth: 50 },
-        4: { halign: 'right', cellWidth: 56, textColor: COL.text3 },
-        5: { cellWidth: 70, fontSize: 8 },
-        6: { halign: 'right', cellWidth: 70, fontStyle: 'bold', textColor: COL.text }
+        0: { cellWidth: 56,  textColor: COL.text3 },
+        1: { fontStyle: 'bold', textColor: COL.text },
+        2: { textColor: COL.text2, fontSize: 8.5 },
+        3: { halign: 'right', cellWidth: 56, fontStyle: 'bold', textColor: COL.text },
+        4: { halign: 'right', cellWidth: 60, textColor: COL.text3, fontSize: 8.5 },
+        5: { cellWidth: 66, fontSize: 8, fontStyle: 'bold' },
+        6: { halign: 'right', cellWidth: 80, fontStyle: 'bold' }
       },
       didParseCell: (data) => {
-        if (data.section === 'body' && data.column.index === 5) {
-          const v = data.cell.raw;
-          if (v === 'Eligible')        data.cell.styles.textColor = COL.green;
-          else if (v === 'Excluded')   data.cell.styles.textColor = COL.text4;
-          else if (v && v.toString().startsWith('Managed')) data.cell.styles.textColor = COL.limeDeep;
+        if (data.section === 'body') {
+          // Status column color
+          if (data.column.index === 5) {
+            const v = data.cell.raw;
+            if (v === 'Eligible') data.cell.styles.textColor = COL.green;
+            else if (v === 'Excluded') data.cell.styles.textColor = COL.text4;
+            else if (v === 'Managed') data.cell.styles.textColor = COL.limeDeep;
+          }
+          // Commission color: green if earned, gray if zero
+          if (data.column.index === 6) {
+            const v = (data.cell.raw || '').toString();
+            if (v === '$0.00') data.cell.styles.textColor = COL.text4;
+            else data.cell.styles.textColor = COL.green;
+          }
+        }
+      },
+      didDrawCell: (data) => {
+        // Bottom border on each body row, very subtle
+        if (data.section === 'body' && data.column.index === 0) {
+          setStroke(COL.lineSoft);
+          doc.setLineWidth(0.4);
+          doc.line(
+            data.cell.x,
+            data.cell.y + data.cell.height,
+            W - M,
+            data.cell.y + data.cell.height
+          );
+        }
+        // Bold separator under header
+        if (data.section === 'head' && data.column.index === 0) {
+          setStroke(COL.line);
+          doc.setLineWidth(0.6);
+          doc.line(
+            data.cell.x,
+            data.cell.y + data.cell.height,
+            W - M,
+            data.cell.y + data.cell.height
+          );
         }
       }
     });
@@ -2765,88 +2918,135 @@
     y = doc.lastAutoTable.finalY + 28;
 
     // Page-break check before calculation block
-    const calcMinHeight = 200;
-    if (y + calcMinHeight > H - 60) {
+    const calcMinHeight = 220;
+    if (y + calcMinHeight > H - 70) {
       doc.addPage();
-      y = M;
+      y = M + 24;
     }
 
     // ── Calculation breakdown ───────────────────────────────
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
-    doc.setTextColor(...COL.text3);
-    doc.text('CALCULATION', M, y);
-    y += 14;
+    y = sectionHeader(y, 'Calculation');
+    y += 4;
 
+    // Subtle panel background for the calc block
+    const calcStartY = y;
     const lines = [];
     if (c.platformDeals.length > 0 || c.managedDeals.length > 0) {
-      if (c.platformMRR > 0) lines.push([`Platform MRR (${c.platformDeals.length} deal${c.platformDeals.length !== 1 ? 's' : ''})`, `$${fmt(c.platformMRR)}`]);
-      if (c.managedMRR > 0)  lines.push([`Managed MRR (${c.managedDeals.length} deal${c.managedDeals.length !== 1 ? 's' : ''}, counts toward target)`, `$${fmt(c.managedMRR)}`]);
-      lines.push([`Eligible MRR`, `$${fmt(c.eligibleMRR)}`, true]);
-      lines.push([`Target threshold`, `−$${fmt(TARGET)}`]);
-      lines.push([`Above target`, `$${fmt(c.overage)}`, true]);
+      if (c.platformMRR > 0) lines.push([`Platform MRR (${c.platformDeals.length} deal${c.platformDeals.length !== 1 ? 's' : ''})`, `$${fmt(c.platformMRR)}`, 'normal']);
+      if (c.managedMRR > 0)  lines.push([`Managed MRR (${c.managedDeals.length} deal${c.managedDeals.length !== 1 ? 's' : ''}, counts toward target)`, `$${fmt(c.managedMRR)}`, 'normal']);
+      lines.push([`Eligible MRR`, `$${fmt(c.eligibleMRR)}`, 'subtotal']);
+      lines.push([`Target threshold`, `${HYPHEN}$${fmt(TARGET)}`, 'normal']);
+      lines.push([`Above target`, `$${fmt(c.overage)}`, 'subtotal', c.overage > 0 ? COL.green : null]);
     }
     if (c.platformCommission > 0) {
       const targetToFill = Math.max(0, TARGET - c.managedMRR);
       const platAbove = Math.max(0, c.platformMRR - targetToFill);
-      lines.push([null]);
-      lines.push([`Platform MRR above line`, `$${fmt(platAbove)}`]);
-      lines.push([`× 12 months (first-year value)`, `$${fmt(platAbove * 12)}`]);
-      lines.push([`× 10% commission`, `$${fmtExact(c.platformCommission)}`, true]);
+      lines.push(['__divider__']);
+      lines.push([`Platform MRR above line`, `$${fmt(platAbove)}`, 'calc']);
+      lines.push([`${TIMES} 12 months (first-year value)`, `$${fmt(platAbove * 12)}`, 'calc']);
+      lines.push([`${TIMES} 10% commission`, `$${fmtExact(c.platformCommission)}`, 'subtotal', COL.green]);
     }
     if (c.managedDeals.length > 0) {
-      lines.push([null]);
-      lines.push([`${c.managedDeals.length} Managed deal${c.managedDeals.length !== 1 ? 's' : ''} × $300 flat`, `$${fmtExact(c.managedCommission)}`, true]);
+      lines.push(['__divider__']);
+      lines.push([`${c.managedDeals.length} Managed deal${c.managedDeals.length !== 1 ? 's' : ''} ${TIMES} $300 flat`, `$${fmtExact(c.managedCommission)}`, 'subtotal', COL.green]);
     }
 
-    doc.setFontSize(10);
+    // Estimate panel height
+    let panelH = 16; // top padding
     lines.forEach(row => {
-      if (row[0] === null) { y += 4; return; }
-      const [label, val, isSubtotal] = row;
-      if (isSubtotal) {
-        doc.setDrawColor(...COL.line);
+      if (row[0] === '__divider__') panelH += 8;
+      else panelH += 17;
+    });
+    panelH += 12; // bottom padding
+
+    setBG(COL.surface2);
+    setStroke(COL.line);
+    doc.setLineWidth(0.5);
+    doc.roundedRect(M, calcStartY, W - 2 * M, panelH, 8, 8, 'FD');
+
+    // Render lines
+    let cy = calcStartY + 18;
+    lines.forEach(row => {
+      if (row[0] === '__divider__') { cy += 6; return; }
+      const [label, val, kind, customColor] = row;
+
+      if (kind === 'subtotal') {
+        // Draw dashed separator above subtotal row
+        setStroke(COL.line);
+        doc.setLineWidth(0.5);
         doc.setLineDashPattern([2, 2], 0);
-        doc.line(M, y - 8, W - M, y - 8);
+        doc.line(M + 16, cy - 9, W - M - 16, cy - 9);
         doc.setLineDashPattern([], 0);
         doc.setFont('helvetica', 'bold');
-        doc.setTextColor(...COL.text);
+        doc.setFontSize(10);
+        setFG(customColor || COL.text);
+      } else if (kind === 'calc') {
+        doc.setFont('helvetica', 'italic');
+        doc.setFontSize(9.5);
+        setFG(COL.text3);
       } else {
         doc.setFont('helvetica', 'normal');
-        doc.setTextColor(...COL.text2);
+        doc.setFontSize(10);
+        setFG(COL.text2);
       }
-      doc.text(label, M, y);
-      doc.text(val, W - M, y, { align: 'right' });
-      y += 16;
+
+      doc.text(label, M + 18, cy);
+      doc.text(val, W - M - 18, cy, { align: 'right' });
+      cy += 17;
     });
 
-    // ── Total bar ──────────────────────────────────────────
-    y += 12;
-    if (y + 56 > H - 60) { doc.addPage(); y = M; }
+    y = calcStartY + panelH + 26;
 
-    doc.setFillColor(...COL.limeSoft);
-    doc.setDrawColor(...COL.lime);
-    doc.roundedRect(M, y, W - 2 * M, 52, 8, 8, 'FD');
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
-    doc.setTextColor(...COL.limeDeep);
-    doc.text('TOTAL COMMISSION EARNED', M + 18, y + 22);
+    // ── Total bar (the big lime takeaway) ──────────────────
+    if (y + 64 > H - 70) { doc.addPage(); y = M + 24; }
+
+    const totalBarH = 64;
+    setStroke(COL.lime);
+    doc.setLineWidth(1);
+    setBG(COL.limeSoft);
+    doc.roundedRect(M, y, W - 2 * M, totalBarH, 10, 10, 'FD');
+
+    // Lime accent bar on the left
+    setBG(COL.lime);
+    doc.rect(M + 6, y + 14, 4, totalBarH - 28, 'F');
+
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(22);
-    doc.setTextColor(...COL.text);
-    doc.text(`$${fmtExact(c.totalCommission)}`, W - M - 18, y + 34, { align: 'right' });
+    doc.setFontSize(8);
+    setFG(COL.limeDeep);
+    doc.text('TOTAL COMMISSION EARNED', M + 22, y + 24);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    setFG(COL.limeDeep);
+    doc.text(monthName, M + 22, y + 42);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(28);
+    setFG(COL.text);
+    doc.text(`$${fmtExact(c.totalCommission)}`, W - M - 22, y + 42, { align: 'right' });
 
     // ── Page footer on every page ──────────────────────────
     const pageCount = doc.internal.getNumberOfPages();
     for (let p = 1; p <= pageCount; p++) {
       doc.setPage(p);
+
+      // thin top divider for footer
+      setStroke(COL.lineSoft);
+      doc.setLineWidth(0.4);
+      doc.line(M, H - 40, W - M, H - 40);
+
+      // Lime dot on the left of footer
+      setBG(COL.lime);
+      doc.circle(M + 3, H - 28, 2, 'F');
+
       doc.setFont('helvetica', 'normal');
-      doc.setFontSize(8);
-      doc.setTextColor(...COL.text4);
+      doc.setFontSize(7.5);
+      setFG(COL.text4);
       doc.text(
-        `ACE Commission Statement  ·  ${monthName}  ·  Generated ${today}`,
-        M, H - 28
+        `ACE Commission Statement  ${DOT}  ${monthName}  ${DOT}  Generated ${today}`,
+        M + 10, H - 26
       );
-      doc.text(`${p} / ${pageCount}`, W - M, H - 28, { align: 'right' });
+      doc.text(`Page ${p} of ${pageCount}`, W - M, H - 26, { align: 'right' });
     }
 
     doc.save(`ACE-Commission-${currentMonth}.pdf`);
