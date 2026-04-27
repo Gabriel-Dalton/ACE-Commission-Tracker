@@ -6,30 +6,40 @@
 <title>ACE Commission Tracker — Gabriel Dalton</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0c0c0d;
-    --bg-1: #131316;
-    --bg-2: #1a1a1e;
-    --bg-3: #232328;
-    --line: #26262d;
-    --line-2: #34343c;
-    --text: #f2f2f5;
-    --text-2: #a8a8b3;
-    --text-3: #6b6b76;
-    --text-4: #45454e;
-    --accent: #d4ff5e;
-    --accent-soft: rgba(212, 255, 94, 0.08);
-    --accent-line: rgba(212, 255, 94, 0.18);
-    --green: #4ade80;
-    --green-soft: rgba(74, 222, 128, 0.1);
-    --amber: #f59e0b;
-    --red: #ef4444;
-    --blue: #60a5fa;
-    --blue-soft: rgba(96, 165, 250, 0.12);
+    --bg: #fafaf7;
+    --bg-tint: #f4f4ef;
+    --surface: #ffffff;
+    --surface-2: #f7f7f3;
+    --surface-3: #ededea;
+    --line: #e8e8e2;
+    --line-2: #d6d6cf;
+    --line-3: #c1c1b9;
+    --text: #15151a;
+    --text-2: #4a4a52;
+    --text-3: #82828a;
+    --text-4: #b0b0b6;
+    --accent: #c4e84a;
+    --accent-strong: #6b8a14;
+    --accent-fg: #1a2200;
+    --accent-soft: #eef9c9;
+    --accent-line: #d3e878;
+    --green: #15803d;
+    --green-soft: #e6f5ec;
+    --amber: #b45309;
+    --amber-soft: #fdf3e0;
+    --red: #b91c1c;
+    --blue: #1e4eb2;
+    --blue-soft: #e7eefb;
+    --shadow-sm: 0 1px 2px rgba(20, 20, 20, 0.04);
+    --shadow: 0 1px 3px rgba(20, 20, 20, 0.05), 0 1px 2px rgba(20, 20, 20, 0.03);
+    --shadow-md: 0 4px 12px rgba(20, 20, 20, 0.06), 0 1px 3px rgba(20, 20, 20, 0.04);
+    --shadow-lg: 0 12px 28px rgba(20, 20, 20, 0.10), 0 4px 8px rgba(20, 20, 20, 0.04);
     --radius: 8px;
     --radius-lg: 12px;
+    --radius-xl: 16px;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -37,141 +47,630 @@
   html, body {
     background: var(--bg);
     color: var(--text);
-    font-family: 'Inter', sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
     line-height: 1.5;
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   body {
     background:
-      radial-gradient(1200px 600px at 80% -10%, rgba(212, 255, 94, 0.04), transparent 60%),
-      radial-gradient(800px 400px at 0% 100%, rgba(96, 165, 250, 0.03), transparent 60%),
+      radial-gradient(1200px 600px at 90% -20%, rgba(196, 232, 74, 0.10), transparent 55%),
+      radial-gradient(900px 500px at -10% 110%, rgba(30, 78, 178, 0.04), transparent 60%),
       var(--bg);
-    padding: 28px 24px 60px;
+    padding: 32px 28px 80px;
   }
 
-  .container { max-width: 1320px; margin: 0 auto; }
+  .container { max-width: 1280px; margin: 0 auto; }
+
+  button { font-family: inherit; }
 
   /* HEADER */
   .header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    padding-bottom: 28px;
-    margin-bottom: 28px;
-    border-bottom: 1px solid var(--line);
-    gap: 20px;
+    align-items: center;
+    margin-bottom: 32px;
+    gap: 24px;
     flex-wrap: wrap;
   }
 
-  .brand { display: flex; flex-direction: column; gap: 6px; }
+  .brand { display: flex; flex-direction: column; gap: 4px; }
 
   .brand-mark {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 9px;
     font-family: 'JetBrains Mono', monospace;
     font-size: 11px;
     color: var(--text-3);
     text-transform: uppercase;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.16em;
+    margin-bottom: 4px;
   }
 
   .brand-mark .dot {
-    width: 6px; height: 6px;
+    width: 7px; height: 7px;
     border-radius: 50%;
     background: var(--accent);
-    box-shadow: 0 0 12px rgba(212, 255, 94, 0.5);
+    box-shadow: 0 0 0 3px rgba(196, 232, 74, 0.25);
   }
 
   .brand h1 {
     font-family: 'Fraunces', serif;
     font-weight: 400;
-    font-size: 38px;
+    font-size: 36px;
     letter-spacing: -0.025em;
-    line-height: 1.1;
+    line-height: 1.05;
+    color: var(--text);
   }
 
-  .brand h1 em { font-style: italic; color: var(--text-2); font-weight: 300; }
+  .brand h1 em {
+    font-style: italic;
+    color: var(--text-2);
+    font-weight: 300;
+  }
 
   .brand .meta {
     color: var(--text-3);
     font-size: 13px;
     font-family: 'JetBrains Mono', monospace;
-    margin-top: 2px;
+    margin-top: 6px;
   }
 
-  .header-meta {
-    text-align: right;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-  }
-
-  .header-meta .label {
-    color: var(--text-4);
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-  }
-
-  .header-meta .value { color: var(--text-2); font-size: 12px; }
-
-  /* TOOLBAR */
-  .toolbar {
+  .header-actions {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 24px;
-    padding: 14px 16px;
-    background: var(--bg-1);
+    gap: 8px;
+  }
+
+  /* MONTH STEPPER */
+  .month-stepper {
+    display: inline-flex;
+    align-items: stretch;
+    background: var(--surface);
     border: 1px solid var(--line);
     border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .month-stepper button {
+    background: transparent;
+    border: none;
+    color: var(--text-2);
+    width: 36px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.12s, color 0.12s;
+  }
+
+  .month-stepper button:hover { background: var(--surface-2); color: var(--text); }
+  .month-stepper button:disabled { color: var(--text-4); cursor: not-allowed; background: transparent; }
+
+  .month-stepper .month-display {
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    border-left: 1px solid var(--line);
+    border-right: 1px solid var(--line);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+    min-width: 130px;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    user-select: none;
+  }
+
+  .month-stepper .month-display:hover { background: var(--surface-2); }
+  .month-stepper .month-display input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+  }
+
+  /* ICON BUTTON (header) */
+  .icon-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    color: var(--text-2);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.12s, color 0.12s, border-color 0.12s;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+  }
+
+  .icon-btn:hover { background: var(--surface-2); color: var(--text); border-color: var(--line-2); }
+
+  /* POPOVER */
+  .popover-wrap { position: relative; }
+
+  .popover {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    min-width: 280px;
+    max-width: 420px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 16px;
+    z-index: 200;
+    opacity: 0;
+    transform: translateY(-4px);
+    pointer-events: none;
+    transition: opacity 0.15s, transform 0.15s;
+  }
+
+  .popover.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+  .popover-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .popover-row {
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    gap: 12px;
+    padding: 8px 0;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  .popover-row + .popover-row { border-top: 1px dashed var(--line); }
+
+  .popover-row .key {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    padding-top: 2px;
+  }
+
+  .popover-row .val { color: var(--text-2); }
+  .popover-row .val strong { color: var(--text); font-weight: 600; }
+  .popover-row .val.warn { color: var(--amber); }
+
+  .popover-setting {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 0;
+  }
+
+  .popover-setting + .popover-setting { border-top: 1px solid var(--line); }
+
+  .popover-setting .label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .popover-setting .desc {
+    font-size: 12px;
+    color: var(--text-3);
+    line-height: 1.5;
+  }
+
+  /* HERO BAND */
+  .hero {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-xl);
+    padding: 28px 32px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 280px; height: 100%;
+    background: radial-gradient(circle at 100% 0%, var(--accent-soft), transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 32px;
+    align-items: center;
+    position: relative;
+  }
+
+  .hero-main { display: flex; flex-direction: column; gap: 14px; }
+
+  .hero-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .hero-amount {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-size: 64px;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .hero-amount .currency {
+    font-size: 28px;
+    color: var(--text-3);
+    font-weight: 300;
+  }
+
+  .hero-amount .cents {
+    font-size: 28px;
+    color: var(--text-3);
+    font-weight: 300;
+  }
+
+  .hero-summary {
+    font-size: 13px;
+    color: var(--text-2);
+    font-family: 'JetBrains Mono', monospace;
+    display: flex;
+    gap: 16px;
     flex-wrap: wrap;
   }
 
-  .toolbar-group { display: flex; align-items: center; gap: 10px; }
-
-  .toolbar-group + .toolbar-group {
-    border-left: 1px solid var(--line);
-    padding-left: 12px;
+  .hero-summary .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-size: 11px;
+    color: var(--text-2);
   }
 
-  .toolbar-label {
+  .hero-summary .chip strong { color: var(--text); font-weight: 600; }
+
+  /* HERO PROGRESS */
+  .hero-progress { display: flex; flex-direction: column; gap: 14px; }
+
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
+
+  .progress-header .title {
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
-    color: var(--text-4);
+    color: var(--text-3);
     text-transform: uppercase;
-    letter-spacing: 0.15em;
-    white-space: nowrap;
+    letter-spacing: 0.16em;
   }
 
+  .progress-header .target-status {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: var(--surface-2);
+    color: var(--text-3);
+    border: 1px solid var(--line);
+  }
+
+  .progress-header .target-status.hit {
+    background: var(--green-soft);
+    color: var(--green);
+    border-color: rgba(21, 128, 61, 0.2);
+  }
+
+  .progress-numbers {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    font-family: 'Fraunces', serif;
+    font-size: 26px;
+    font-weight: 400;
+    color: var(--text);
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .progress-numbers .of {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--text-3);
+    font-weight: 400;
+  }
+
+  .progress-track {
+    position: relative;
+    height: 8px;
+    background: var(--surface-3);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), #a8d124);
+    border-radius: 999px;
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 12px rgba(196, 232, 74, 0.5);
+  }
+
+  .progress-fill.complete {
+    background: linear-gradient(90deg, #22c55e, var(--green));
+    box-shadow: 0 0 12px rgba(34, 197, 94, 0.4);
+  }
+
+  .progress-meta {
+    font-size: 12px;
+    color: var(--text-3);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* SECONDARY STATS */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+    box-shadow: var(--shadow-sm);
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .stat:hover { border-color: var(--line-2); box-shadow: var(--shadow); }
+
+  .stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .stat-value {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: 28px;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stat-value .currency {
+    font-size: 16px;
+    color: var(--text-3);
+    font-weight: 300;
+    margin-right: 1px;
+  }
+
+  .stat-meta {
+    margin-top: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-3);
+  }
+
+  /* SECTION */
+  .section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 28px 0 14px;
+    gap: 16px;
+  }
+
+  .section-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-2);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-title .num { color: var(--text-4); font-weight: 400; }
+
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+    margin-left: 4px;
+    min-width: 40px;
+  }
+
+  /* ADD DEAL CARD */
+  .add-deal {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1.6fr 0.85fr 1.3fr 1fr 0.9fr 1.1fr;
+    gap: 12px;
+  }
+
+  .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+
+  .field-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+  }
+
+  .input {
+    background: var(--surface);
+    border: 1px solid var(--line-2);
+    color: var(--text);
+    padding: 9px 12px;
+    border-radius: var(--radius);
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+    width: 100%;
+  }
+
+  .input::placeholder { color: var(--text-4); }
+  .input:hover { border-color: var(--line-3); }
+  .input:focus {
+    outline: none;
+    border-color: var(--accent-line);
+    box-shadow: 0 0 0 3px rgba(196, 232, 74, 0.18);
+    background: var(--surface);
+  }
+
+  .input::-webkit-calendar-picker-indicator {
+    filter: invert(0.4);
+    cursor: pointer;
+  }
+
+  .input-currency { position: relative; }
+  .input-currency::before {
+    content: '$';
+    position: absolute;
+    left: 11px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-3);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .input-currency .input { padding-left: 22px; }
+
+  .form-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+  }
+
+  .form-hint {
+    font-size: 11px;
+    color: var(--text-3);
+    font-family: 'JetBrains Mono', monospace;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .kbd {
+    display: inline-flex;
+    align-items: center;
+    padding: 1px 6px;
+    background: var(--surface-2);
+    border: 1px solid var(--line-2);
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-2);
+    line-height: 1.4;
+  }
+
+  .form-error {
+    color: var(--red);
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    display: none;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .form-error.visible { display: inline-flex; }
+
+  .form-actions { display: flex; gap: 10px; align-items: center; }
+
   /* CUSTOM DROPDOWN */
-  .dd { position: relative; display: inline-block; }
+  .dd { position: relative; display: inline-block; width: 100%; }
 
   .dd-trigger {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 10px;
-    background: var(--bg-2);
-    border: 1px solid var(--line);
+    background: var(--surface);
+    border: 1px solid var(--line-2);
     color: var(--text);
     padding: 8px 12px;
     border-radius: var(--radius);
     font-family: 'Inter', sans-serif;
     font-size: 13px;
     cursor: pointer;
-    min-width: 180px;
-    transition: border-color 0.15s, background 0.15s;
+    transition: border-color 0.15s, box-shadow 0.15s;
     user-select: none;
     width: 100%;
+    text-align: left;
   }
 
-  .dd-trigger:hover { border-color: var(--line-2); background: var(--bg-3); }
-  .dd-trigger.open { border-color: var(--accent-line); background: var(--bg-3); }
+  .dd-trigger:hover { border-color: var(--line-3); }
+  .dd-trigger.open {
+    border-color: var(--accent-line);
+    box-shadow: 0 0 0 3px rgba(196, 232, 74, 0.18);
+  }
 
   .dd-trigger .chev {
     width: 12px; height: 12px; flex-shrink: 0;
@@ -196,10 +695,10 @@
     top: calc(100% + 6px);
     left: 0;
     min-width: 100%;
-    background: var(--bg-2);
-    border: 1px solid var(--line-2);
+    background: var(--surface);
+    border: 1px solid var(--line);
     border-radius: var(--radius);
-    box-shadow: 0 12px 32px rgba(0,0,0,0.4), 0 4px 12px rgba(0,0,0,0.3);
+    box-shadow: var(--shadow-lg);
     padding: 6px;
     z-index: 100;
     max-height: 360px;
@@ -236,215 +735,14 @@
     transition: background 0.1s, color 0.1s;
   }
 
-  .dd-option:hover { background: var(--bg-3); color: var(--text); }
-  .dd-option.selected { background: var(--accent-soft); color: var(--accent); }
+  .dd-option:hover { background: var(--surface-2); color: var(--text); }
+  .dd-option.selected { background: var(--accent-soft); color: var(--accent-strong); font-weight: 500; }
   .dd-option .meta {
     font-family: 'JetBrains Mono', monospace;
     font-size: 11px;
     color: var(--text-4);
   }
-  .dd-option.selected .meta { color: var(--accent); opacity: 0.7; }
-
-  /* STATS */
-  .stats {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 14px;
-    margin-bottom: 28px;
-  }
-
-  .stat {
-    background: var(--bg-1);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-lg);
-    padding: 18px 20px;
-    position: relative;
-    overflow: hidden;
-    transition: border-color 0.2s;
-  }
-
-  .stat:hover { border-color: var(--line-2); }
-
-  .stat.featured {
-    background: linear-gradient(135deg, var(--accent-soft), transparent 60%), var(--bg-1);
-    border-color: var(--accent-line);
-  }
-
-  .stat.featured::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--accent), transparent);
-    opacity: 0.4;
-  }
-
-  .stat-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    color: var(--text-4);
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    margin-bottom: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .stat-label .pill {
-    font-size: 9px;
-    padding: 2px 6px;
-    border-radius: 3px;
-    background: var(--bg-3);
-    color: var(--text-3);
-    letter-spacing: 0.1em;
-  }
-
-  .stat-label .pill.live { background: var(--green-soft); color: var(--green); }
-
-  .stat-value {
-    font-family: 'Fraunces', serif;
-    font-weight: 400;
-    font-size: 30px;
-    letter-spacing: -0.02em;
-    line-height: 1;
-    color: var(--text);
-    font-variant-numeric: tabular-nums;
-  }
-
-  .stat-value .currency {
-    font-size: 18px;
-    color: var(--text-3);
-    font-weight: 300;
-    margin-right: 1px;
-  }
-
-  .stat.featured .stat-value { color: var(--accent); }
-  .stat.featured .stat-value .currency { color: var(--accent); opacity: 0.5; }
-
-  .stat-meta {
-    margin-top: 8px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--text-3);
-  }
-
-  .progress {
-    margin-top: 12px;
-    height: 3px;
-    background: var(--bg-3);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-
-  .progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent), #b8e040);
-    border-radius: 2px;
-    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .progress-fill.complete { background: linear-gradient(90deg, var(--green), #22c55e); }
-
-  /* SECTION */
-  .section-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin: 32px 0 14px;
-    gap: 16px;
-  }
-
-  .section-title {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--text-3);
-    text-transform: uppercase;
-    letter-spacing: 0.18em;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .section-title .num { color: var(--text-4); font-weight: 400; }
-
-  .section-title::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--line);
-    margin-left: 4px;
-    min-width: 40px;
-  }
-
-  /* ADD DEAL */
-  .add-deal {
-    background: var(--bg-1);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-lg);
-    padding: 20px;
-  }
-
-  .form-grid {
-    display: grid;
-    grid-template-columns: 2fr 1fr 1.4fr 1.1fr 1fr 1.2fr;
-    gap: 12px;
-  }
-
-  .field { display: flex; flex-direction: column; gap: 6px; }
-
-  .field-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    color: var(--text-4);
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-  }
-
-  .input {
-    background: var(--bg-2);
-    border: 1px solid var(--line);
-    color: var(--text);
-    padding: 9px 12px;
-    border-radius: var(--radius);
-    font-family: 'Inter', sans-serif;
-    font-size: 13px;
-    transition: border-color 0.15s, background 0.15s;
-    width: 100%;
-  }
-
-  .input::placeholder { color: var(--text-4); }
-  .input:hover { border-color: var(--line-2); }
-  .input:focus { outline: none; border-color: var(--accent-line); background: var(--bg-3); }
-
-  .input::-webkit-calendar-picker-indicator {
-    filter: invert(0.6);
-    cursor: pointer;
-  }
-
-  .input-currency { position: relative; }
-  .input-currency::before {
-    content: '$';
-    position: absolute;
-    left: 11px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--text-4);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
-    pointer-events: none;
-    z-index: 1;
-  }
-  .input-currency .input { padding-left: 22px; }
-
-  .form-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 16px;
-    padding-top: 16px;
-    border-top: 1px solid var(--line);
-    justify-content: flex-end;
-  }
+  .dd-option.selected .meta { color: var(--accent-strong); opacity: 0.7; }
 
   /* BUTTONS */
   .btn {
@@ -466,26 +764,35 @@
 
   .btn-primary {
     background: var(--accent);
-    color: #1a1a00;
+    color: var(--accent-fg);
     font-weight: 600;
+    box-shadow: 0 1px 2px rgba(107, 138, 20, 0.2);
   }
 
   .btn-primary:hover {
-    background: #c4ed4d;
+    background: #b5dc36;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(212, 255, 94, 0.2);
+    box-shadow: 0 4px 12px rgba(196, 232, 74, 0.4);
   }
 
+  .btn-primary:active { transform: translateY(0); }
+
   .btn-ghost {
-    background: transparent;
+    background: var(--surface);
     color: var(--text-2);
-    border-color: var(--line);
+    border-color: var(--line-2);
   }
 
   .btn-ghost:hover {
-    background: var(--bg-2);
-    border-color: var(--line-2);
+    background: var(--surface-2);
+    border-color: var(--line-3);
     color: var(--text);
+  }
+
+  .btn-danger:hover {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: var(--red);
   }
 
   .btn-icon {
@@ -504,23 +811,23 @@
   }
 
   .btn-icon:hover {
-    background: var(--bg-3);
+    background: #fef2f2;
     color: var(--red);
-    border-color: var(--line-2);
   }
 
   /* TABLE */
   .table-wrap {
-    background: var(--bg-1);
+    background: var(--surface);
     border: 1px solid var(--line);
     border-radius: var(--radius-lg);
     overflow: hidden;
+    box-shadow: var(--shadow-sm);
   }
 
   table { width: 100%; border-collapse: collapse; }
 
   thead tr {
-    background: linear-gradient(180deg, var(--bg-2), var(--bg-1));
+    background: var(--surface-2);
     border-bottom: 1px solid var(--line);
   }
 
@@ -531,8 +838,8 @@
     font-size: 10px;
     font-weight: 500;
     text-transform: uppercase;
-    letter-spacing: 0.15em;
-    color: var(--text-4);
+    letter-spacing: 0.14em;
+    color: var(--text-3);
   }
 
   th.right { text-align: right; }
@@ -543,9 +850,9 @@
   }
 
   tbody tr:last-child { border-bottom: none; }
-  tbody tr:hover { background: var(--bg-2); }
+  tbody tr:hover { background: var(--surface-2); }
 
-  td { padding: 14px 16px; font-size: 13px; vertical-align: middle; }
+  td { padding: 14px 16px; font-size: 13px; vertical-align: middle; color: var(--text-2); }
   td.right { text-align: right; }
 
   .deal-name { font-weight: 500; color: var(--text); }
@@ -555,7 +862,7 @@
     font-size: 10px;
     color: var(--text-4);
     margin-top: 2px;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.04em;
   }
 
   .mono { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
@@ -563,19 +870,19 @@
   .badge {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    padding: 3px 8px;
-    border-radius: 4px;
+    gap: 6px;
+    padding: 3px 9px;
+    border-radius: 999px;
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
     font-weight: 500;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
   }
 
   .badge-platform { background: var(--blue-soft); color: var(--blue); }
-  .badge-managed { background: var(--accent-soft); color: var(--accent); }
-  .badge-excluded { background: var(--bg-3); color: var(--text-3); }
+  .badge-managed { background: var(--accent-soft); color: var(--accent-strong); }
+  .badge-excluded { background: var(--surface-3); color: var(--text-3); }
 
   .badge::before {
     content: '';
@@ -605,7 +912,18 @@
   .eligibility.partial { color: var(--amber); }
   .eligibility.no { color: var(--text-4); }
 
-  .empty-state { padding: 80px 24px; text-align: center; }
+  .empty-state { padding: 72px 24px; text-align: center; }
+
+  .empty-state-icon {
+    width: 48px; height: 48px;
+    margin: 0 auto 16px;
+    border-radius: 50%;
+    background: var(--surface-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-4);
+  }
 
   .empty-state h3 {
     font-family: 'Fraunces', serif;
@@ -619,23 +937,61 @@
   .empty-state p { color: var(--text-3); font-size: 13px; }
 
   /* BREAKDOWN */
+  .breakdown-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-3);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    padding: 4px 0;
+    transition: color 0.12s;
+  }
+
+  .breakdown-toggle:hover { color: var(--text); }
+
+  .breakdown-toggle .chev {
+    width: 12px; height: 12px;
+    transition: transform 0.2s;
+  }
+
+  .breakdown-toggle.open .chev { transform: rotate(90deg); }
+
   .breakdown {
-    background: var(--bg-1);
+    background: var(--surface);
     border: 1px solid var(--line);
     border-radius: var(--radius-lg);
     padding: 24px;
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    transition: max-height 0.3s, opacity 0.2s, margin-top 0.2s, padding 0.2s;
   }
 
-  .breakdown-section { margin-bottom: 20px; }
-  .breakdown-section:last-child { margin-bottom: 0; }
+  .breakdown.collapsed {
+    max-height: 0;
+    opacity: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    border-width: 0;
+    margin-top: 0;
+    pointer-events: none;
+  }
+
+  .breakdown-section { margin-bottom: 22px; }
+  .breakdown-section:last-of-type { margin-bottom: 0; }
 
   .breakdown-section-title {
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
-    color: var(--text-4);
+    color: var(--text-3);
     text-transform: uppercase;
-    letter-spacing: 0.15em;
-    margin-bottom: 10px;
+    letter-spacing: 0.14em;
+    margin-bottom: 12px;
     padding-bottom: 8px;
     border-bottom: 1px solid var(--line);
   }
@@ -643,11 +999,17 @@
   .breakdown-row {
     display: flex;
     justify-content: space-between;
-    padding: 5px 0;
+    padding: 6px 0;
     font-family: 'JetBrains Mono', monospace;
     font-size: 12px;
     color: var(--text-2);
     font-variant-numeric: tabular-nums;
+    gap: 16px;
+  }
+
+  .breakdown-row > span:first-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .breakdown-row.subtotal {
@@ -662,9 +1024,9 @@
   .breakdown-row .value-positive { color: var(--green); }
 
   .breakdown-total {
-    margin-top: 20px;
-    padding: 16px 20px;
-    background: linear-gradient(135deg, var(--accent-soft), transparent);
+    margin-top: 22px;
+    padding: 18px 22px;
+    background: linear-gradient(135deg, var(--accent-soft) 0%, transparent 80%);
     border: 1px solid var(--accent-line);
     border-radius: var(--radius);
     display: flex;
@@ -677,90 +1039,59 @@
     font-size: 11px;
     color: var(--text-2);
     text-transform: uppercase;
-    letter-spacing: 0.15em;
+    letter-spacing: 0.14em;
   }
 
   .breakdown-total .value {
     font-family: 'Fraunces', serif;
-    font-size: 28px;
-    color: var(--accent);
+    font-size: 30px;
+    color: var(--text);
     font-weight: 400;
     letter-spacing: -0.02em;
     font-variant-numeric: tabular-nums;
   }
 
-  /* RULES */
-  details.rules {
-    background: var(--bg-1);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-lg);
-    margin-bottom: 24px;
-    overflow: hidden;
-  }
-
-  details.rules summary {
-    cursor: pointer;
-    padding: 16px 20px;
-    list-style: none;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--text-2);
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    transition: background 0.15s;
-  }
-
-  details.rules summary:hover { background: var(--bg-2); }
-  details.rules summary::-webkit-details-marker { display: none; }
-
-  details.rules .toggle {
-    width: 14px;
-    height: 14px;
-    color: var(--accent);
-    transition: transform 0.2s;
-  }
-
-  details.rules[open] .toggle { transform: rotate(45deg); }
-
-  .rules-content {
-    padding: 0 20px 20px;
-    border-top: 1px solid var(--line);
-    margin-top: 8px;
-    padding-top: 16px;
-  }
-
-  .rule-row {
-    display: grid;
-    grid-template-columns: 140px 1fr;
-    gap: 16px;
-    padding: 10px 0;
-    border-bottom: 1px dashed var(--line);
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--text);
+    color: var(--surface);
+    padding: 10px 18px;
+    border-radius: var(--radius);
     font-size: 13px;
+    box-shadow: var(--shadow-lg);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s, transform 0.2s;
+    z-index: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 90vw;
   }
 
-  .rule-row:last-child { border-bottom: none; }
-
-  .rule-row .key {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    color: var(--text-4);
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    padding-top: 2px;
+  .toast.visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
   }
 
-  .rule-row .val { color: var(--text-2); line-height: 1.6; }
-  .rule-row .val strong { color: var(--text); font-weight: 500; }
+  .toast.error { background: var(--red); }
+  .toast.success::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+  }
 
   /* FOOTER */
   .footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 32px;
+    margin-top: 36px;
     padding-top: 20px;
     border-top: 1px solid var(--line);
     flex-wrap: wrap;
@@ -772,28 +1103,40 @@
     font-size: 10px;
     color: var(--text-4);
     text-transform: uppercase;
-    letter-spacing: 0.15em;
+    letter-spacing: 0.14em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .footer-text .save-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 0 2px var(--green-soft);
   }
 
   .footer-actions { display: flex; gap: 8px; }
 
   /* RESPONSIVE */
   @media (max-width: 1100px) {
-    .stats { grid-template-columns: repeat(2, 1fr); }
+    .hero-grid { grid-template-columns: 1fr; gap: 24px; }
+    .stats-row { grid-template-columns: 1fr 1fr; }
     .form-grid { grid-template-columns: 1fr 1fr 1fr; }
   }
 
   @media (max-width: 720px) {
-    body { padding: 16px 14px; }
+    body { padding: 16px 14px 60px; }
     .brand h1 { font-size: 28px; }
+    .hero-amount { font-size: 48px; }
+    .hero-amount .currency, .hero-amount .cents { font-size: 22px; }
+    .hero { padding: 22px 20px; }
     .form-grid { grid-template-columns: 1fr 1fr; }
-    .stats { grid-template-columns: 1fr; }
+    .stats-row { grid-template-columns: 1fr; }
     th, td { padding: 10px 12px; font-size: 12px; }
-    .toolbar-group + .toolbar-group {
-      border-left: none;
-      padding-left: 0;
-      width: 100%;
-    }
+    .form-footer { flex-direction: column; align-items: stretch; }
+    .form-footer .form-actions { justify-content: flex-end; }
+    .header { gap: 16px; }
   }
 
   @media (max-width: 540px) {
@@ -813,9 +1156,9 @@
       font-size: 9px;
       color: var(--text-4);
       text-transform: uppercase;
-      letter-spacing: 0.15em;
+      letter-spacing: 0.14em;
     }
-    .rule-row { grid-template-columns: 1fr; gap: 4px; }
+    .month-stepper .month-display { min-width: 100px; padding: 0 12px; }
   }
 </style>
 </head>
@@ -831,116 +1174,153 @@
       <h1>Performance, <em>tracked.</em></h1>
       <div class="meta">Gabriel Dalton · accessibilitychecker.org</div>
     </div>
-    <div class="header-meta">
-      <div class="label">Structure</div>
-      <div class="value">10% above $1,000 MRR</div>
-      <div class="value" style="color: var(--text-3); margin-top: 6px;">Managed: flat $300</div>
-    </div>
-  </header>
-
-  <details class="rules">
-    <summary>
-      <svg class="toggle" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-        <path d="M8 3v10M3 8h10"/>
-      </svg>
-      <span>Commission Structure & Rules</span>
-    </summary>
-    <div class="rules-content">
-      <div class="rule-row">
-        <div class="key">Target</div>
-        <div class="val"><strong>$1,000 in eligible new MRR per month.</strong> Resets each calendar month.</div>
-      </div>
-      <div class="rule-row">
-        <div class="key">Above target</div>
-        <div class="val">10% commission on the new MRR above the $1,000 line, calculated on first-year contract value (12 × monthly MRR), paid as the client pays.</div>
-      </div>
-      <div class="rule-row">
-        <div class="key">Below target</div>
-        <div class="val">Hourly rate only. No commission on Platform deals below the threshold.</div>
-      </div>
-      <div class="rule-row">
-        <div class="key">Eligible plans</div>
-        <div class="val"><strong>Scale, all Pro tiers, and all Unlimited Domain plans</strong> count toward target and earn commission.</div>
-      </div>
-      <div class="rule-row">
-        <div class="key">Excluded plans</div>
-        <div class="val">Lite, Starter, and Growth — self-serve tiers — do not count toward target and do not earn commission.</div>
-      </div>
-      <div class="rule-row">
-        <div class="key">Managed deals</div>
-        <div class="val"><strong>Flat $300 commission per deal</strong>, regardless of size. Compensates for dev hours, audit hours, and referral fees baked into Managed pricing.</div>
-      </div>
-      <div class="rule-row">
-        <div class="key">12-month cap</div>
-        <div class="val">Commission stops after 12 months of payments per client, or earlier if the client cancels.</div>
-      </div>
-      <div class="rule-row">
-        <div class="key">Open question</div>
-        <div class="val" style="color: var(--amber);">Whether Managed deals count toward the $1,000 monthly target alongside the flat $300. Toggle below to model both scenarios.</div>
-      </div>
-    </div>
-  </details>
-
-  <div class="toolbar">
-    <div class="toolbar-group">
-      <span class="toolbar-label">Period</span>
-      <input type="month" id="monthSelector" class="input" style="min-width: 160px; max-width: 180px;">
-    </div>
-    <div class="toolbar-group">
-      <span class="toolbar-label">Managed counts toward target</span>
-      <div class="dd" data-dd="managedCounts" style="min-width: 200px;">
-        <button class="dd-trigger" type="button">
-          <span class="selected-label">Yes (recommended)</span>
-          <svg class="chev" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M3 4.5L6 7.5L9 4.5"/>
+    <div class="header-actions">
+      <div class="month-stepper">
+        <button type="button" id="prevMonth" title="Previous month" aria-label="Previous month">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 3.5L5 7l4 3.5"/>
           </svg>
         </button>
-        <div class="dd-menu">
-          <div class="dd-option selected" data-value="yes">
-            <span>Yes (recommended)</span>
-            <span class="meta">+ flat $300</span>
+        <label class="month-display" id="monthDisplay">
+          <span id="monthLabel">—</span>
+          <input type="month" id="monthSelector">
+        </label>
+        <button type="button" id="nextMonth" title="Next month" aria-label="Next month">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 3.5L9 7l-4 3.5"/>
+          </svg>
+        </button>
+      </div>
+      <div class="popover-wrap">
+        <button class="icon-btn" id="settingsBtn" title="Settings" aria-label="Settings">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="8" cy="8" r="2"/>
+            <path d="M8 1v2M8 13v2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M1 8h2M13 8h2M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41"/>
+          </svg>
+        </button>
+        <div class="popover" id="settingsPopover">
+          <div class="popover-title">Calculation Settings</div>
+          <div class="popover-setting">
+            <span class="label">Managed deals count toward target</span>
+            <span class="desc">When enabled, Managed MRR fills the $1,000 monthly target alongside the flat $300 bonus.</span>
+            <div class="dd" data-dd="managedCounts" style="margin-top: 4px;">
+              <button class="dd-trigger" type="button">
+                <span class="selected-label">Yes (recommended)</span>
+                <svg class="chev" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M3 4.5L6 7.5L9 4.5"/>
+                </svg>
+              </button>
+              <div class="dd-menu">
+                <div class="dd-option selected" data-value="yes">
+                  <span>Yes (recommended)</span>
+                  <span class="meta">+ flat $300</span>
+                </div>
+                <div class="dd-option" data-value="no">
+                  <span>No (separate)</span>
+                  <span class="meta">flat only</span>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="dd-option" data-value="no">
-            <span>No (separate)</span>
-            <span class="meta">flat only</span>
+        </div>
+      </div>
+      <div class="popover-wrap">
+        <button class="icon-btn" id="rulesBtn" title="Commission rules" aria-label="Commission rules">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="8" cy="8" r="6.5"/>
+            <path d="M8 5.5v3M8 11h.01"/>
+          </svg>
+        </button>
+        <div class="popover" id="rulesPopover" style="min-width: 360px;">
+          <div class="popover-title">Commission Structure</div>
+          <div class="popover-row">
+            <div class="key">Target</div>
+            <div class="val"><strong>$1,000 eligible MRR / month.</strong> Resets monthly.</div>
+          </div>
+          <div class="popover-row">
+            <div class="key">Above target</div>
+            <div class="val">10% commission on MRR above $1,000, on first-year value (×12), paid as the client pays.</div>
+          </div>
+          <div class="popover-row">
+            <div class="key">Below target</div>
+            <div class="val">Hourly rate only. No platform commission.</div>
+          </div>
+          <div class="popover-row">
+            <div class="key">Eligible</div>
+            <div class="val"><strong>Scale, Pro tiers, Unlimited Domain</strong> count toward target.</div>
+          </div>
+          <div class="popover-row">
+            <div class="key">Excluded</div>
+            <div class="val">Lite, Starter, Growth — self-serve tiers earn no commission.</div>
+          </div>
+          <div class="popover-row">
+            <div class="key">Managed</div>
+            <div class="val"><strong>Flat $300/deal</strong> regardless of size. Covers dev, audit, and referral baked into pricing.</div>
+          </div>
+          <div class="popover-row">
+            <div class="key">12-month cap</div>
+            <div class="val">Commission stops after 12 months per client, or earlier on cancel.</div>
+          </div>
+          <div class="popover-row">
+            <div class="key">Open question</div>
+            <div class="val warn">Whether Managed counts toward target alongside the flat $300 — toggle in settings to model both.</div>
           </div>
         </div>
       </div>
     </div>
-  </div>
+  </header>
 
-  <div class="stats">
-    <div class="stat">
-      <div class="stat-label">
-        <span>Eligible MRR</span>
-        <span class="pill" id="targetStatus">Below target</span>
+  <div class="hero">
+    <div class="hero-grid">
+      <div class="hero-main">
+        <div class="hero-label">
+          <span>Total Commission</span>
+          <span style="opacity: 0.5">·</span>
+          <span id="periodLabel">—</span>
+        </div>
+        <div class="hero-amount">
+          <span class="currency">$</span>
+          <span id="totalCommission">0</span>
+          <span class="cents" id="totalCents">.00</span>
+        </div>
+        <div class="hero-summary">
+          <span class="chip"><strong id="platformCommissionChip">$0</strong> platform</span>
+          <span class="chip"><strong id="managedCommissionChip">$0</strong> managed</span>
+          <span class="chip"><strong id="dealCountChip">0</strong> deals</span>
+        </div>
       </div>
-      <div class="stat-value"><span class="currency">$</span><span id="eligibleMRR">0</span></div>
-      <div class="stat-meta" id="targetProgress">$1,000 to unlock</div>
-      <div class="progress">
-        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+      <div class="hero-progress">
+        <div class="progress-header">
+          <span class="title">Eligible MRR</span>
+          <span class="target-status" id="targetStatus">Below target</span>
+        </div>
+        <div class="progress-numbers">
+          <span>$<span id="eligibleMRR">0</span></span>
+          <span class="of">of $1,000</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+        <div class="progress-meta" id="targetProgress">$1,000 to unlock commission</div>
       </div>
     </div>
+  </div>
 
+  <div class="stats-row">
     <div class="stat">
       <div class="stat-label"><span>Above Target</span></div>
       <div class="stat-value"><span class="currency">$</span><span id="overage">0</span></div>
-      <div class="stat-meta" id="overageNote">Locked</div>
+      <div class="stat-meta" id="overageNote">Locked — below target</div>
     </div>
-
     <div class="stat">
       <div class="stat-label"><span>Managed Bonus</span></div>
       <div class="stat-value"><span class="currency">$</span><span id="managedTotal">0</span></div>
       <div class="stat-meta" id="managedCount">0 deals × $300</div>
     </div>
-
-    <div class="stat featured">
-      <div class="stat-label">
-        <span>Total Commission</span>
-        <span class="pill live">Live</span>
-      </div>
-      <div class="stat-value"><span class="currency">$</span><span id="totalCommission">0</span></div>
-      <div class="stat-meta" id="commissionBreakdown">$0 platform + $0 managed</div>
+    <div class="stat">
+      <div class="stat-label"><span>First-Year Pipeline</span></div>
+      <div class="stat-value"><span class="currency">$</span><span id="annualPipeline">0</span></div>
+      <div class="stat-meta" id="pipelineNote">Sum of eligible ARR</div>
     </div>
   </div>
 
@@ -950,11 +1330,11 @@
   <div class="add-deal">
     <div class="form-grid">
       <div class="field">
-        <label class="field-label">Client name</label>
-        <input type="text" id="dealName" class="input" placeholder="e.g. Lift Box Inc.">
+        <label class="field-label" for="dealName">Client name</label>
+        <input type="text" id="dealName" class="input" placeholder="e.g. Lift Box Inc." autocomplete="off">
       </div>
       <div class="field">
-        <label class="field-label">MRR</label>
+        <label class="field-label" for="dealMRR">MRR</label>
         <div class="input-currency">
           <input type="number" id="dealMRR" class="input" placeholder="599" step="1" min="0">
         </div>
@@ -986,7 +1366,7 @@
         </div>
       </div>
       <div class="field">
-        <label class="field-label">Close date</label>
+        <label class="field-label" for="dealDate">Close date</label>
         <input type="date" id="dealDate" class="input">
       </div>
       <div class="field">
@@ -1005,18 +1385,25 @@
         </div>
       </div>
       <div class="field">
-        <label class="field-label">Reference</label>
-        <input type="text" id="dealRef" class="input" placeholder="ACE-2404-…">
+        <label class="field-label" for="dealRef">Reference</label>
+        <input type="text" id="dealRef" class="input" placeholder="ACE-2404-…" autocomplete="off">
       </div>
     </div>
-    <div class="form-actions">
-      <button type="button" class="btn btn-ghost" id="clearFormBtn">Clear</button>
-      <button type="button" class="btn btn-primary" id="addBtn">
-        <span>Add Deal</span>
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5">
-          <path d="M2.5 6h7M6 2.5v7"/>
-        </svg>
-      </button>
+    <div class="form-footer">
+      <div class="form-hint" id="formHint">
+        <span class="kbd">↵</span> to add ·
+        <span class="kbd">Esc</span> to clear
+      </div>
+      <div class="form-actions">
+        <span class="form-error" id="formError"></span>
+        <button type="button" class="btn btn-ghost" id="clearFormBtn">Clear</button>
+        <button type="button" class="btn btn-primary" id="addBtn">
+          <span>Add Deal</span>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+            <path d="M2.5 6h7M6 2.5v7"/>
+          </svg>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -1039,6 +1426,12 @@
       </thead>
       <tbody id="dealsBody">
         <tr><td colspan="8" class="empty-state">
+          <div class="empty-state-icon">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+              <rect x="3" y="4" width="14" height="13" rx="2"/>
+              <path d="M7 2v3M13 2v3M3 8h14"/>
+            </svg>
+          </div>
           <h3>No deals logged this month</h3>
           <p>Add your first deal above to start tracking commission.</p>
         </td></tr>
@@ -1048,29 +1441,41 @@
 
   <div class="section-head">
     <div class="section-title"><span class="num">03</span><span>Calculation</span></div>
+    <button type="button" class="breakdown-toggle open" id="breakdownToggle">
+      <svg class="chev" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6">
+        <path d="M4.5 3L8 6l-3.5 3"/>
+      </svg>
+      <span id="breakdownToggleLabel">Hide</span>
+    </button>
   </div>
   <div class="breakdown" id="breakdown">
-    <div id="breakdownContent" style="color: var(--text-4); text-align: center; padding: 32px;">
+    <div id="breakdownContent" style="color: var(--text-4); text-align: center; padding: 32px; font-size: 13px;">
       Add deals to see how commission is calculated.
     </div>
   </div>
 
   <footer class="footer">
-    <div class="footer-text">Auto-saved · Audit-ready</div>
+    <div class="footer-text">
+      <span class="save-dot"></span>
+      <span>Auto-saved · Audit-ready</span>
+    </div>
     <div class="footer-actions">
       <button class="btn btn-ghost" id="exportBtn">Export CSV</button>
       <button class="btn btn-ghost" id="importBtn">Import CSV</button>
       <input type="file" id="importFile" accept=".csv" style="display:none">
-      <button class="btn btn-ghost" id="clearMonthBtn">Clear month</button>
+      <button class="btn btn-ghost btn-danger" id="clearMonthBtn">Clear month</button>
     </div>
   </footer>
 
 </div>
 
+<div class="toast" id="toast"></div>
+
 <script>
   let deals = [];
   let currentMonth = new Date().toISOString().slice(0, 7);
   let managedCountsTowardTarget = 'yes';
+  let breakdownOpen = true;
 
   const TARGET = 1000;
   const COMMISSION_RATE = 0.10;
@@ -1097,7 +1502,7 @@
   async function saveData() {
     try {
       await window.storage.set('ct-deals-v2', JSON.stringify(deals));
-      await window.storage.set('ct-settings-v2', JSON.stringify({ managedCountsTowardTarget }));
+      await window.storage.set('ct-settings-v2', JSON.stringify({ managedCountsTowardTarget, breakdownOpen }));
     } catch(e) { console.error('Save failed:', e); }
   }
 
@@ -1111,6 +1516,7 @@
       if (r && r.value) {
         const s = JSON.parse(r.value);
         managedCountsTowardTarget = s.managedCountsTowardTarget || 'yes';
+        if (typeof s.breakdownOpen === 'boolean') breakdownOpen = s.breakdownOpen;
         ddState.managedCounts = managedCountsTowardTarget;
       }
     } catch(e) {}
@@ -1132,6 +1538,24 @@
     if (!d) return '—';
     const date = new Date(d + 'T12:00:00');
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+
+  function formatMonthLabel(ym) {
+    if (!ym) return '—';
+    const [y, m] = ym.split('-').map(Number);
+    return new Date(y, m - 1, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  }
+
+  function formatMonthLabelShort(ym) {
+    if (!ym) return '—';
+    const [y, m] = ym.split('-').map(Number);
+    return new Date(y, m - 1, 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+  }
+
+  function shiftMonth(ym, delta) {
+    const [y, m] = ym.split('-').map(Number);
+    const d = new Date(y, m - 1 + delta, 1);
+    return d.toISOString().slice(0, 7);
   }
 
   function getMonthDeals() {
@@ -1199,6 +1623,9 @@
   function render() {
     const c = calculateMonth();
 
+    document.getElementById('periodLabel').textContent = formatMonthLabel(currentMonth);
+    document.getElementById('monthLabel').textContent = formatMonthLabelShort(currentMonth);
+
     document.getElementById('eligibleMRR').textContent = fmt(c.eligibleMRR);
     const pct = Math.min(100, (c.eligibleMRR / TARGET) * 100);
     const fill = document.getElementById('progressFill');
@@ -1208,10 +1635,10 @@
     const targetStatus = document.getElementById('targetStatus');
     if (c.eligibleMRR >= TARGET) {
       targetStatus.textContent = 'Target hit';
-      targetStatus.className = 'pill live';
+      targetStatus.classList.add('hit');
     } else {
       targetStatus.textContent = 'Below target';
-      targetStatus.className = 'pill';
+      targetStatus.classList.remove('hit');
     }
 
     document.getElementById('targetProgress').textContent = c.eligibleMRR >= TARGET
@@ -1227,13 +1654,31 @@
     document.getElementById('managedCount').textContent =
       `${c.managedDeals.length} deal${c.managedDeals.length !== 1 ? 's' : ''} × $300`;
 
-    document.getElementById('totalCommission').textContent = fmtExact(c.totalCommission);
-    document.getElementById('commissionBreakdown').textContent =
-      `$${fmtExact(c.platformCommission)} platform + $${fmtExact(c.managedCommission)} managed`;
+    const eligibleARR = c.eligibleMRR * 12;
+    document.getElementById('annualPipeline').textContent = fmt(eligibleARR);
+    document.getElementById('pipelineNote').textContent =
+      c.monthDeals.length === 0 ? 'No deals yet' : `${c.platformDeals.length + (managedCountsTowardTarget === 'yes' ? c.managedDeals.length : 0)} eligible × 12`;
+
+    // Hero total: split dollars and cents
+    const total = c.totalCommission;
+    const dollars = Math.floor(total);
+    const cents = Math.round((total - dollars) * 100);
+    document.getElementById('totalCommission').textContent = fmt(dollars);
+    document.getElementById('totalCents').textContent = '.' + String(cents).padStart(2, '0');
+
+    document.getElementById('platformCommissionChip').textContent = '$' + fmt(c.platformCommission);
+    document.getElementById('managedCommissionChip').textContent = '$' + fmt(c.managedCommission);
+    document.getElementById('dealCountChip').textContent = String(c.monthDeals.length);
 
     const tbody = document.getElementById('dealsBody');
     if (c.monthDeals.length === 0) {
       tbody.innerHTML = `<tr><td colspan="8" class="empty-state">
+        <div class="empty-state-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+            <rect x="3" y="4" width="14" height="13" rx="2"/>
+            <path d="M7 2v3M13 2v3M3 8h14"/>
+          </svg>
+        </div>
         <h3>No deals logged this month</h3>
         <p>Add your first deal above to start tracking commission.</p>
       </td></tr>`;
@@ -1270,14 +1715,14 @@
               <div class="deal-name">${escapeHtml(d.name)}</div>
               ${d.ref ? `<div class="deal-ref">${escapeHtml(d.ref)}</div>` : ''}
             </td>
-            <td data-label="Date" class="mono" style="color:var(--text-2)">${formatDate(d.date)}</td>
+            <td data-label="Date" class="mono">${formatDate(d.date)}</td>
             <td data-label="Plan"><span class="badge ${badgeClass}">${badgeText}</span></td>
             <td data-label="MRR" class="right mono">$${fmt(mrr)}</td>
             <td data-label="ARR" class="right mono" style="color:var(--text-3)">$${fmt(arr)}</td>
             <td data-label="Status"><span class="eligibility ${eligClass}">${eligText}</span></td>
             <td data-label="Commission" class="right commission-cell ${commClass}">$${fmtExact(commission)}</td>
-            <td data-label="" class="right"><button class="btn-icon" onclick="deleteDeal('${d.id}')" title="Delete">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
+            <td data-label="" class="right"><button class="btn-icon" onclick="deleteDeal('${d.id}')" title="Delete deal" aria-label="Delete deal">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
                 <path d="M3.5 3.5l7 7M10.5 3.5l-7 7"/>
               </svg>
             </button></td>
@@ -1291,7 +1736,7 @@
   function renderBreakdown(c) {
     const el = document.getElementById('breakdownContent');
     if (c.monthDeals.length === 0) {
-      el.innerHTML = '<div style="color:var(--text-4);text-align:center;padding:32px;">Add deals to see how commission is calculated.</div>';
+      el.innerHTML = '<div style="color:var(--text-4);text-align:center;padding:32px;font-size:13px;">Add deals to see how commission is calculated.</div>';
       return;
     }
 
@@ -1415,7 +1860,29 @@
   document.addEventListener('click', () => {
     document.querySelectorAll('.dd-trigger.open').forEach(t => t.classList.remove('open'));
     document.querySelectorAll('.dd-menu.open').forEach(m => m.classList.remove('open'));
+    document.querySelectorAll('.popover.open').forEach(p => p.classList.remove('open'));
   });
+
+  let toastTimer;
+  function showToast(message, type = 'success') {
+    const t = document.getElementById('toast');
+    t.textContent = message;
+    t.className = 'toast visible ' + type;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { t.classList.remove('visible'); }, 2400);
+  }
+
+  function showFormError(msg) {
+    const el = document.getElementById('formError');
+    el.textContent = msg;
+    el.classList.add('visible');
+    clearTimeout(showFormError._t);
+    showFormError._t = setTimeout(() => el.classList.remove('visible'), 3500);
+  }
+
+  function clearFormError() {
+    document.getElementById('formError').classList.remove('visible');
+  }
 
   function addDeal() {
     const name = document.getElementById('dealName').value.trim();
@@ -1425,19 +1892,22 @@
     const billing = ddState.dealBilling;
     const ref = document.getElementById('dealRef').value.trim();
 
-    if (!name) { alert('Client name is required.'); return; }
-    if (!mrr || isNaN(mrr)) { alert('MRR is required.'); return; }
-    if (!plan) { alert('Please select a plan tier.'); return; }
-    if (!date) { alert('Close date is required.'); return; }
+    if (!name) { showFormError('Client name is required'); document.getElementById('dealName').focus(); return; }
+    if (!mrr || isNaN(mrr)) { showFormError('MRR is required'); document.getElementById('dealMRR').focus(); return; }
+    if (!plan) { showFormError('Select a plan tier'); return; }
+    if (!date) { showFormError('Close date is required'); document.getElementById('dealDate').focus(); return; }
 
     deals.push({
       id: 'd_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
       name, mrr, plan, date, billing, ref
     });
 
+    clearFormError();
     clearForm();
     saveData();
     render();
+    showToast(`Added ${name}`);
+    document.getElementById('dealName').focus();
   }
 
   function clearForm() {
@@ -1453,20 +1923,25 @@
       ddState.dealPlan = '';
     }
     document.getElementById('dealDate').value = new Date().toISOString().slice(0, 10);
+    clearFormError();
   }
 
   window.deleteDeal = function(id) {
     if (!confirm('Delete this deal?')) return;
+    const removed = deals.find(d => d.id === id);
     deals = deals.filter(d => d.id !== id);
     saveData();
     render();
+    if (removed) showToast(`Removed ${removed.name}`);
   };
 
   function clearMonth() {
-    if (!confirm(`Clear all deals from ${currentMonth}? This cannot be undone.`)) return;
+    const monthName = formatMonthLabel(currentMonth);
+    if (!confirm(`Clear all deals from ${monthName}? This cannot be undone.`)) return;
     deals = deals.filter(d => !d.date || !d.date.startsWith(currentMonth));
     saveData();
     render();
+    showToast(`Cleared ${monthName}`);
   }
 
   function exportCSV() {
@@ -1500,6 +1975,7 @@
     a.download = `commission-${currentMonth}.csv`;
     a.click();
     URL.revokeObjectURL(url);
+    showToast('CSV exported');
   }
 
   function importCSV(file) {
@@ -1539,7 +2015,7 @@
       }
       saveData();
       render();
-      alert(`Imported ${added} deal${added !== 1 ? 's' : ''}.`);
+      showToast(`Imported ${added} deal${added !== 1 ? 's' : ''}`);
     };
     reader.readAsText(file);
   }
@@ -1559,16 +2035,48 @@
     return result.map(s => s.trim());
   }
 
+  function setMonth(ym) {
+    currentMonth = ym;
+    document.getElementById('monthSelector').value = ym;
+    render();
+  }
+
+  function setupPopover(btnId, popoverId) {
+    const btn = document.getElementById(btnId);
+    const pop = document.getElementById(popoverId);
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = pop.classList.contains('open');
+      document.querySelectorAll('.popover.open').forEach(p => p.classList.remove('open'));
+      if (!isOpen) pop.classList.add('open');
+    });
+    pop.addEventListener('click', (e) => e.stopPropagation());
+  }
+
+  function applyBreakdownState() {
+    const breakdown = document.getElementById('breakdown');
+    const toggle = document.getElementById('breakdownToggle');
+    const label = document.getElementById('breakdownToggleLabel');
+    breakdown.classList.toggle('collapsed', !breakdownOpen);
+    toggle.classList.toggle('open', breakdownOpen);
+    label.textContent = breakdownOpen ? 'Hide' : 'Show';
+  }
+
   async function init() {
     await loadData();
 
     setupDropdown('managedCounts');
     setupDropdown('dealPlan');
     setupDropdown('dealBilling');
+    setupPopover('settingsBtn', 'settingsPopover');
+    setupPopover('rulesBtn', 'rulesPopover');
 
     const sel = document.getElementById('monthSelector');
     sel.value = currentMonth;
-    sel.addEventListener('change', (e) => { currentMonth = e.target.value; render(); });
+    sel.addEventListener('change', (e) => setMonth(e.target.value));
+
+    document.getElementById('prevMonth').addEventListener('click', () => setMonth(shiftMonth(currentMonth, -1)));
+    document.getElementById('nextMonth').addEventListener('click', () => setMonth(shiftMonth(currentMonth, 1)));
 
     document.getElementById('dealDate').value = new Date().toISOString().slice(0, 10);
 
@@ -1581,13 +2089,25 @@
     });
     document.getElementById('importFile').addEventListener('change', (e) => {
       if (e.target.files[0]) importCSV(e.target.files[0]);
+      e.target.value = '';
     });
 
-    ['dealName', 'dealMRR', 'dealRef'].forEach(id => {
-      document.getElementById(id).addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') addDeal();
+    const formInputs = ['dealName', 'dealMRR', 'dealRef', 'dealDate'];
+    formInputs.forEach(id => {
+      const el = document.getElementById(id);
+      el.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); addDeal(); }
+        else if (e.key === 'Escape') clearForm();
       });
     });
+
+    document.getElementById('breakdownToggle').addEventListener('click', () => {
+      breakdownOpen = !breakdownOpen;
+      applyBreakdownState();
+      saveData();
+    });
+
+    applyBreakdownState();
 
     if (deals.length === 0) {
       deals = [
