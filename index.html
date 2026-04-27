@@ -1055,6 +1055,130 @@
     font-variant-numeric: tabular-nums;
   }
 
+  /* MODAL */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 20, 22, 0.42);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 24px;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+  }
+
+  .modal-overlay.visible { opacity: 1; }
+  .modal-overlay[hidden] { display: none; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    width: 100%;
+    max-width: 480px;
+    max-height: calc(100vh - 48px);
+    display: flex;
+    flex-direction: column;
+    transform: scale(0.96) translateY(8px);
+    transition: transform 0.18s cubic-bezier(0.2, 0.9, 0.3, 1.05);
+    overflow: hidden;
+  }
+
+  .modal-overlay.visible .modal { transform: scale(1) translateY(0); }
+
+  .modal.modal-wide   { max-width: 560px; }
+  .modal.modal-narrow { max-width: 400px; }
+
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--line);
+    flex-shrink: 0;
+  }
+
+  .modal-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-2);
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+  }
+
+  .modal-close {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text-3);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.12s, color 0.12s, border-color 0.12s;
+  }
+
+  .modal-close:hover {
+    background: var(--surface-2);
+    color: var(--text);
+    border-color: var(--line);
+  }
+
+  .modal-body {
+    padding: 18px 22px;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+  }
+
+  .modal-body::-webkit-scrollbar { width: 8px; }
+  .modal-body::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 4px; }
+
+  .modal-message {
+    font-size: 14px;
+    color: var(--text-2);
+    line-height: 1.6;
+  }
+
+  .modal-message strong { color: var(--text); font-weight: 600; }
+
+  .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 14px 22px;
+    border-top: 1px solid var(--line);
+    flex-shrink: 0;
+    background: var(--surface-2);
+  }
+
+  .modal-footer:empty { display: none; }
+
+  .btn-danger-solid {
+    background: var(--red);
+    color: #fff;
+    font-weight: 600;
+    box-shadow: 0 1px 2px rgba(185, 28, 28, 0.25);
+  }
+
+  .btn-danger-solid:hover {
+    background: #9f1818;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(185, 28, 28, 0.3);
+  }
+
+  /* When .popover-row / .popover-setting is rendered inside a modal-body, drop their internal padding hack */
+  .modal-body .popover-row:first-child  { padding-top: 0; }
+  .modal-body .popover-row:last-child   { padding-bottom: 0; }
+  .modal-body .popover-setting:first-child { padding-top: 0; }
+
   /* TOAST */
   .toast {
     position: fixed;
@@ -1212,63 +1336,20 @@
           </svg>
         </button>
       </div>
-      <div class="popover-wrap">
-        <button class="icon-btn" id="settingsBtn" title="Settings" aria-label="Settings">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M2.5 4h6M11 4h2.5M2.5 8h2M7 8h6.5M2.5 12h8M12.5 12h1"/>
-            <circle cx="9.5" cy="4" r="1.5"/>
-            <circle cx="5.5" cy="8" r="1.5"/>
-            <circle cx="11.5" cy="12" r="1.5"/>
-          </svg>
-        </button>
-        <div class="popover" id="settingsPopover">
-          <div class="popover-title">Calculation Settings</div>
-          <div class="popover-setting">
-            <span class="label">Managed counts toward target</span>
-            <span class="desc">Confirmed policy: Managed MRR fills the $1,000 monthly target alongside the flat $300/deal bonus. A $599 Managed deal contributes $599 to the target <em>and</em> pays $300.</span>
-            <span class="desc" style="color: var(--text-3); font-style: italic;">No toggle — this is the agreed structure.</span>
-          </div>
-        </div>
-      </div>
-      <div class="popover-wrap">
-        <button class="icon-btn" id="rulesBtn" title="Commission rules" aria-label="Commission rules">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="8" cy="8" r="6.5"/>
-            <path d="M8 5.5v3M8 11h.01"/>
-          </svg>
-        </button>
-        <div class="popover" id="rulesPopover" style="min-width: 360px;">
-          <div class="popover-title">Commission Structure</div>
-          <div class="popover-row">
-            <div class="key">Target</div>
-            <div class="val"><strong>$1,000 eligible MRR / month.</strong> Resets monthly.</div>
-          </div>
-          <div class="popover-row">
-            <div class="key">Above target</div>
-            <div class="val">10% commission on MRR above $1,000, on first-year value (×12), paid as the client pays.</div>
-          </div>
-          <div class="popover-row">
-            <div class="key">Below target</div>
-            <div class="val">Hourly rate only. No platform commission.</div>
-          </div>
-          <div class="popover-row">
-            <div class="key">Eligible</div>
-            <div class="val"><strong>Scale, Pro tiers, Unlimited Domain</strong> count toward target.</div>
-          </div>
-          <div class="popover-row">
-            <div class="key">Excluded</div>
-            <div class="val">Lite, Starter, Growth — self-serve tiers earn no commission.</div>
-          </div>
-          <div class="popover-row">
-            <div class="key">Managed</div>
-            <div class="val"><strong>Flat $300/deal</strong> regardless of size, <strong>plus</strong> Managed MRR counts toward the $1,000 target. Covers dev, audit, and referral baked into pricing.</div>
-          </div>
-          <div class="popover-row">
-            <div class="key">12-month cap</div>
-            <div class="val">Commission stops after 12 months per client, or earlier on cancel.</div>
-          </div>
-        </div>
-      </div>
+      <button class="icon-btn" id="settingsBtn" title="Settings" aria-label="Settings">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M2.5 4h6M11 4h2.5M2.5 8h2M7 8h6.5M2.5 12h8M12.5 12h1"/>
+          <circle cx="9.5" cy="4" r="1.5"/>
+          <circle cx="5.5" cy="8" r="1.5"/>
+          <circle cx="11.5" cy="12" r="1.5"/>
+        </svg>
+      </button>
+      <button class="icon-btn" id="rulesBtn" title="Commission rules" aria-label="Commission rules">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="8" cy="8" r="6.5"/>
+          <path d="M8 5.5v3M8 11h.01"/>
+        </svg>
+      </button>
     </div>
   </header>
 
@@ -1486,6 +1567,21 @@
 </div>
 
 <div class="toast" id="toast"></div>
+
+<div class="modal-overlay" id="modalOverlay" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-header">
+      <span class="modal-title" id="modalTitle"></span>
+      <button class="modal-close" id="modalClose" aria-label="Close">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+          <path d="M3.5 3.5l7 7M10.5 3.5l-7 7"/>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer" id="modalFooter"></div>
+  </div>
+</div>
 
 <script>
   let deals = [];
@@ -2049,7 +2145,6 @@
   document.addEventListener('click', () => {
     document.querySelectorAll('.dd-trigger.open').forEach(t => t.classList.remove('open'));
     document.querySelectorAll('.dd-menu.open').forEach(m => m.classList.remove('open'));
-    document.querySelectorAll('.popover.open').forEach(p => p.classList.remove('open'));
   });
 
   let toastTimer;
@@ -2116,18 +2211,36 @@
     clearFormError();
   }
 
-  window.deleteDeal = function(id) {
-    if (!confirm('Delete this deal?')) return;
-    const removed = deals.find(d => d.id === id);
+  window.deleteDeal = async function(id) {
+    const target = deals.find(d => d.id === id);
+    if (!target) return;
+    const ok = await confirmModal({
+      title: 'Delete deal',
+      message: `Remove "${target.name}"? This will also delete it from Supabase.`,
+      confirmText: 'Delete',
+      danger: true
+    });
+    if (!ok) return;
     deals = deals.filter(d => d.id !== id);
     render();
     removeDealRemote(id);
-    if (removed) showToast(`Removed ${removed.name}`);
+    showToast(`Removed ${target.name}`);
   };
 
-  function clearMonth() {
+  async function clearMonth() {
     const monthName = formatMonthLabel(currentMonth);
-    if (!confirm(`Clear all deals from ${monthName}? This cannot be undone.`)) return;
+    const monthDealsCount = getMonthDeals().length;
+    if (monthDealsCount === 0) {
+      showToast(`${monthName} is already empty`);
+      return;
+    }
+    const ok = await confirmModal({
+      title: `Clear ${monthName}?`,
+      message: `This permanently deletes all ${monthDealsCount} deal${monthDealsCount !== 1 ? 's' : ''} logged in ${monthName}, in Supabase and locally. This cannot be undone.`,
+      confirmText: 'Clear month',
+      danger: true
+    });
+    if (!ok) return;
     deals = deals.filter(d => !d.date || !d.date.startsWith(currentMonth));
     render();
     removeMonthRemote(currentMonth);
@@ -2252,17 +2365,113 @@
     render();
   }
 
-  function setupPopover(btnId, popoverId) {
-    const btn = document.getElementById(btnId);
-    const pop = document.getElementById(popoverId);
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const isOpen = pop.classList.contains('open');
-      document.querySelectorAll('.popover.open').forEach(p => p.classList.remove('open'));
-      if (!isOpen) pop.classList.add('open');
+  // ─── Modal system ──────────────────────────────────────────────────────
+  let modalCloseHandlers = [];
+
+  function openModal({ title, content, buttons = [], size = '' }) {
+    const overlay = document.getElementById('modalOverlay');
+    const modal   = overlay.querySelector('.modal');
+    const titleEl = document.getElementById('modalTitle');
+    const body    = document.getElementById('modalBody');
+    const footer  = document.getElementById('modalFooter');
+
+    titleEl.textContent = title || '';
+
+    if (typeof content === 'string') body.innerHTML = content;
+    else { body.innerHTML = ''; if (content) body.appendChild(content); }
+
+    footer.innerHTML = '';
+    buttons.forEach(b => {
+      const btn = document.createElement('button');
+      btn.className = 'btn ' + (b.variant || 'btn-ghost');
+      btn.textContent = b.label;
+      btn.addEventListener('click', () => {
+        if (b.onClick) b.onClick();
+        if (b.closeOnClick !== false) closeModal();
+      });
+      footer.appendChild(btn);
     });
-    pop.addEventListener('click', (e) => e.stopPropagation());
+
+    modal.classList.toggle('modal-wide',   size === 'wide');
+    modal.classList.toggle('modal-narrow', size === 'narrow');
+
+    overlay.hidden = false;
+    requestAnimationFrame(() => overlay.classList.add('visible'));
+
+    // Auto-focus the rightmost button (or close icon if no buttons)
+    setTimeout(() => {
+      const focusable = footer.querySelector('button:last-child') || document.getElementById('modalClose');
+      focusable?.focus();
+    }, 10);
   }
+
+  function closeModal() {
+    const overlay = document.getElementById('modalOverlay');
+    overlay.classList.remove('visible');
+    setTimeout(() => { overlay.hidden = true; }, 180);
+    modalCloseHandlers.forEach(fn => { try { fn(); } catch(e) {} });
+    modalCloseHandlers = [];
+  }
+
+  function confirmModal({ title, message, confirmText = 'Confirm', cancelText = 'Cancel', danger = false }) {
+    return new Promise(resolve => {
+      let answered = false;
+      modalCloseHandlers.push(() => { if (!answered) resolve(false); });
+
+      openModal({
+        title,
+        size: 'narrow',
+        content: `<p class="modal-message">${escapeHtml(message)}</p>`,
+        buttons: [
+          { label: cancelText, variant: 'btn-ghost', onClick: () => { answered = true; resolve(false); } },
+          { label: confirmText, variant: danger ? 'btn-danger-solid' : 'btn-primary',
+            onClick: () => { answered = true; resolve(true); } }
+        ]
+      });
+    });
+  }
+
+  function openSettingsModal() {
+    openModal({
+      title: 'Calculation Settings',
+      content: `
+        <div class="popover-setting" style="padding-top:0;">
+          <span class="label">Managed counts toward target</span>
+          <span class="desc">Confirmed policy: Managed MRR fills the $1,000 monthly target alongside the flat $300/deal bonus. A $599 Managed deal contributes $599 to the target <em>and</em> pays $300.</span>
+          <span class="desc" style="color: var(--text-3); font-style: italic;">No toggle — this is the agreed structure.</span>
+        </div>
+      `,
+      buttons: [{ label: 'Close', variant: 'btn-ghost' }]
+    });
+  }
+
+  function openRulesModal() {
+    openModal({
+      title: 'Commission Structure',
+      size: 'wide',
+      content: `
+        <div class="popover-row"><div class="key">Target</div><div class="val"><strong>$1,000 eligible MRR / month.</strong> Resets monthly.</div></div>
+        <div class="popover-row"><div class="key">Above target</div><div class="val">10% commission on MRR above $1,000, on first-year value (×12), paid as the client pays.</div></div>
+        <div class="popover-row"><div class="key">Below target</div><div class="val">Hourly rate only. No platform commission.</div></div>
+        <div class="popover-row"><div class="key">Eligible</div><div class="val"><strong>Scale, Pro tiers, Unlimited Domain</strong> count toward target.</div></div>
+        <div class="popover-row"><div class="key">Excluded</div><div class="val">Lite, Starter, Growth — self-serve tiers earn no commission.</div></div>
+        <div class="popover-row"><div class="key">Managed</div><div class="val"><strong>Flat $300/deal</strong> regardless of size, <strong>plus</strong> Managed MRR counts toward the $1,000 target. Covers dev, audit, and referral baked into pricing.</div></div>
+        <div class="popover-row"><div class="key">12-month cap</div><div class="val">Commission stops after 12 months per client, or earlier on cancel.</div></div>
+      `,
+      buttons: [{ label: 'Close', variant: 'btn-ghost' }]
+    });
+  }
+
+  // Modal close wiring (one-time)
+  (function wireModal() {
+    const overlay = document.getElementById('modalOverlay');
+    if (!overlay) return;
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+    document.getElementById('modalClose').addEventListener('click', closeModal);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !overlay.hidden) closeModal();
+    });
+  })();
 
   function applyBreakdownState() {
     const breakdown = document.getElementById('breakdown');
@@ -2279,8 +2488,8 @@
 
     setupDropdown('dealPlan');
     setupDropdown('dealBilling');
-    setupPopover('settingsBtn', 'settingsPopover');
-    setupPopover('rulesBtn', 'rulesPopover');
+    document.getElementById('settingsBtn').addEventListener('click', openSettingsModal);
+    document.getElementById('rulesBtn').addEventListener('click', openRulesModal);
 
     const sel = document.getElementById('monthSelector');
     sel.value = currentMonth;
