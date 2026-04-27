@@ -8,8 +8,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.0/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.10/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.10/vfs_fonts.js"></script>
 <script src="config.local.js" onerror="void 0"></script>
 <style>
   :root {
@@ -1412,6 +1412,356 @@
     border-color: rgba(180, 83, 9, 0.18);
   }
 
+  /* PDF DOCUMENT (rendered off-screen, captured by html2pdf) */
+  .pdf-doc {
+    width: 760px;
+    background: #ffffff;
+    color: #15151a;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 12px;
+    line-height: 1.5;
+    padding: 8px 4px;
+    -webkit-font-smoothing: antialiased;
+    box-sizing: border-box;
+  }
+  .pdf-doc * { box-sizing: border-box; }
+
+  .pdf-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: #82828a;
+    font-weight: 600;
+  }
+
+  /* Header */
+  .pdf-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e8e8e2;
+    margin-bottom: 22px;
+  }
+  .pdf-brand { display: flex; gap: 14px; align-items: stretch; }
+  .pdf-accent-bar {
+    width: 5px;
+    background: #c4e84a;
+    border-radius: 3px;
+    align-self: stretch;
+    min-height: 42px;
+  }
+  .pdf-title {
+    font-size: 26px;
+    font-weight: 700;
+    margin-top: 4px;
+    letter-spacing: -0.022em;
+    color: #15151a;
+    line-height: 1.1;
+  }
+  .pdf-meta { text-align: right; font-size: 10px; line-height: 1.55; }
+  .pdf-meta-name { font-size: 11px; color: #15151a; font-weight: 700; }
+  .pdf-meta-row { color: #82828a; }
+
+  /* Hero */
+  .pdf-hero {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    background: #ffffff;
+    border: 1px solid #e8e8e2;
+    border-radius: 12px;
+    padding: 20px 22px;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .pdf-hero-tint {
+    position: absolute;
+    top: 0; right: 0;
+    width: 280px; height: 100%;
+    background: radial-gradient(ellipse at top right, #eef9c9 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .pdf-hero-left {
+    padding-right: 22px;
+    border-right: 1px solid #f0f0eb;
+    position: relative;
+  }
+  .pdf-hero-right {
+    padding-left: 22px;
+    position: relative;
+  }
+
+  .pdf-amount {
+    display: flex;
+    align-items: baseline;
+    gap: 2px;
+    margin-top: 10px;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  .pdf-currency, .pdf-cents { font-size: 14px; color: #82828a; font-weight: 400; }
+  .pdf-dollars {
+    font-size: 38px;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    color: #15151a;
+    line-height: 1;
+  }
+
+  .pdf-chips {
+    display: flex;
+    gap: 6px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+  .pdf-chip {
+    background: #f7f7f3;
+    border: 1px solid #e8e8e2;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 10px;
+    color: #4a4a52;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .pdf-chip strong { color: #15151a; font-weight: 700; }
+
+  .pdf-hero-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .pdf-status {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    padding: 4px 10px;
+    border-radius: 999px;
+  }
+  .pdf-status-hit { background: #e6f5ec; color: #15803d; }
+  .pdf-status-below { background: #fdf3e0; color: #b45309; }
+
+  .pdf-mrr {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .pdf-mrr-amount {
+    font-size: 24px;
+    font-weight: 700;
+    color: #15151a;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  .pdf-mrr-of { font-size: 11px; color: #82828a; font-family: 'JetBrains Mono', monospace; }
+
+  .pdf-progress {
+    height: 7px;
+    background: #ededea;
+    border-radius: 999px;
+    overflow: hidden;
+    margin-top: 12px;
+  }
+  .pdf-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #c4e84a, #a8d124);
+    border-radius: 999px;
+  }
+  .pdf-progress-fill.complete {
+    background: linear-gradient(90deg, #22c55e, #15803d);
+  }
+
+  .pdf-caption {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: #82828a;
+    margin-top: 8px;
+  }
+  .pdf-mini-stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-top: 14px;
+    padding-top: 10px;
+    border-top: 1px solid #f0f0eb;
+  }
+  .pdf-mini-value {
+    font-weight: 700;
+    font-size: 13px;
+    color: #15151a;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Section title */
+  .pdf-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 24px 0 12px;
+    page-break-after: avoid;
+  }
+  .pdf-section-dot {
+    width: 8px; height: 8px;
+    background: #c4e84a;
+    flex-shrink: 0;
+  }
+  .pdf-section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: #4a4a52;
+    font-weight: 700;
+  }
+  .pdf-section-rule {
+    flex: 1;
+    height: 1px;
+    background: #e8e8e2;
+  }
+
+  /* Table */
+  .pdf-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    border: 1px solid #e8e8e2;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #fff;
+    margin-top: 4px;
+  }
+  .pdf-table thead { background: #f7f7f3; }
+  .pdf-table th {
+    text-align: left;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #82828a;
+    padding: 10px 12px;
+    font-weight: 700;
+    border-bottom: 1px solid #e8e8e2;
+  }
+  .pdf-table th.right { text-align: right; }
+  .pdf-table tbody tr {
+    border-bottom: 1px solid #f0f0eb;
+    page-break-inside: avoid;
+  }
+  .pdf-table tbody tr:nth-child(even) { background: #fbfbf8; }
+  .pdf-table tbody tr:last-child { border-bottom: none; }
+  .pdf-table td {
+    padding: 11px 12px;
+    font-size: 11px;
+    color: #4a4a52;
+    vertical-align: middle;
+  }
+  .pdf-table td.client { font-weight: 700; color: #15151a; }
+  .pdf-table td.right { text-align: right; font-family: 'JetBrains Mono', monospace; }
+  .pdf-table td.commission {
+    text-align: right;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .pdf-table td.commission.earned { color: #15803d; }
+  .pdf-table td.commission.zero { color: #b0b0b6; }
+  .pdf-status-cell {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+  }
+  .pdf-status-cell.eligible { color: #15803d; }
+  .pdf-status-cell.managed { color: #6b8a14; }
+  .pdf-status-cell.excluded { color: #b0b0b6; }
+
+  /* Calculation */
+  .pdf-calc {
+    background: #f7f7f3;
+    border: 1px solid #e8e8e2;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-top: 4px;
+  }
+  .pdf-calc-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: #4a4a52;
+  }
+  .pdf-calc-row.subtotal {
+    margin-top: 4px;
+    padding-top: 8px;
+    border-top: 1px dashed #d6d6cf;
+    font-weight: 700;
+    color: #15151a;
+  }
+  .pdf-calc-row.calculation {
+    color: #82828a;
+    font-style: italic;
+  }
+  .pdf-calc-row .green { color: #15803d; }
+  .pdf-calc-divider { height: 8px; }
+
+  /* Total bar */
+  .pdf-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, #eef9c9 0%, #f9fce8 70%);
+    border: 1px solid #c4e84a;
+    border-radius: 12px;
+    padding: 20px 24px 20px 30px;
+    margin-top: 24px;
+    position: relative;
+    page-break-inside: avoid;
+  }
+  .pdf-total-accent {
+    position: absolute;
+    left: 8px; top: 16px; bottom: 16px;
+    width: 4px;
+    background: #c4e84a;
+    border-radius: 2px;
+  }
+  .pdf-total-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: #6b8a14;
+  }
+  .pdf-total-month {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: #6b8a14;
+    margin-top: 4px;
+    opacity: 0.75;
+  }
+  .pdf-total-value {
+    font-size: 30px;
+    font-weight: 700;
+    color: #15151a;
+    letter-spacing: -0.022em;
+  }
+
+  /* Footer line */
+  .pdf-footer {
+    margin-top: 24px;
+    padding-top: 12px;
+    border-top: 1px solid #f0f0eb;
+    display: flex;
+    justify-content: space-between;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: #b0b0b6;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+  }
+
   /* TOAST */
   .toast {
     position: fixed;
@@ -2587,8 +2937,416 @@
     showToast('CSV exported');
   }
 
-  function exportPDF() {
-    if (!window.jspdf || !window.jspdf.jsPDF) {
+  // ─── PDF export (pdfmake — vector text, no canvas rasterization) ────────
+  function buildPdfDocDefinition(c, monthName, today) {
+    const targetHit = c.eligibleMRR >= TARGET;
+    const pct = Math.min(1, c.eligibleMRR / TARGET);
+    const dollars = Math.floor(c.totalCommission);
+    const cents   = Math.round((c.totalCommission - dollars) * 100);
+
+    // Brand colors
+    const COL = {
+      lime:      '#c4e84a',
+      limeDeep:  '#6b8a14',
+      limeSoft:  '#eef9c9',
+      text:      '#15151a',
+      text2:     '#4a4a52',
+      text3:     '#82828a',
+      text4:     '#b0b0b6',
+      line:      '#e8e8e2',
+      lineSoft:  '#f0f0eb',
+      surface2:  '#f7f7f3',
+      rowAlt:    '#fbfbf8',
+      green:     '#15803d',
+      greenSoft: '#e6f5ec',
+      amber:     '#b45309',
+      amberSoft: '#fdf3e0'
+    };
+
+    // Helper: a chip pill rendered as a single-cell table (pdfmake has no border-radius, but
+    // we set a subtle fill + thin border for a rounded-feel look)
+    const chip = (label, value) => ({
+      table: {
+        body: [[{
+          text: [
+            { text: value, bold: true, color: COL.text },
+            { text: ' ' + label, color: COL.text2 }
+          ],
+          fontSize: 8,
+          font: 'Roboto'
+        }]]
+      },
+      layout: {
+        fillColor: () => COL.surface2,
+        hLineColor: () => COL.line, vLineColor: () => COL.line,
+        hLineWidth: () => 0.4, vLineWidth: () => 0.4,
+        paddingLeft: () => 7, paddingRight: () => 7,
+        paddingTop: () => 3, paddingBottom: () => 3
+      }
+    });
+
+    // Helper: status pill (TARGET HIT / BELOW TARGET)
+    const statusPill = () => ({
+      table: {
+        body: [[{
+          text: targetHit ? 'TARGET HIT' : 'BELOW TARGET',
+          bold: true,
+          fontSize: 7,
+          color: targetHit ? COL.green : COL.amber,
+          characterSpacing: 1
+        }]]
+      },
+      layout: {
+        fillColor: () => targetHit ? COL.greenSoft : COL.amberSoft,
+        hLineWidth: () => 0, vLineWidth: () => 0,
+        paddingLeft: () => 7, paddingRight: () => 7,
+        paddingTop: () => 3, paddingBottom: () => 3
+      }
+    });
+
+    // Sort deals by date for the table
+    const sortedDeals = [...c.monthDeals].sort((a, b) => a.date.localeCompare(b.date));
+
+    // Status string + color for each deal
+    const dealStatusInfo = (d) => {
+      if (isManaged(d.plan))  return { text: 'Managed',  color: COL.limeDeep };
+      if (isExcluded(d.plan)) return { text: 'Excluded', color: COL.text4 };
+      return { text: 'Eligible', color: COL.green };
+    };
+
+    const tableBody = [
+      [
+        { text: 'DATE',       style: 'tableHeader' },
+        { text: 'CLIENT',     style: 'tableHeader' },
+        { text: 'PLAN',       style: 'tableHeader' },
+        { text: 'MRR',        style: 'tableHeader', alignment: 'right' },
+        { text: 'ARR',        style: 'tableHeader', alignment: 'right' },
+        { text: 'STATUS',     style: 'tableHeader' },
+        { text: 'COMMISSION', style: 'tableHeader', alignment: 'right' }
+      ],
+      ...sortedDeals.map(d => {
+        const mrr = Number(d.mrr);
+        const arr = mrr * 12;
+        const comm = c.dealCommissions[d.id] || 0;
+        const si = dealStatusInfo(d);
+        return [
+          { text: formatDate(d.date), fontSize: 9, color: COL.text3 },
+          { text: d.name, fontSize: 10, bold: true, color: COL.text },
+          { text: planLabel(d.plan), fontSize: 9, color: COL.text2 },
+          { text: '$' + fmt(mrr),  fontSize: 10, bold: true, color: COL.text, alignment: 'right' },
+          { text: '$' + fmt(arr),  fontSize: 9,  color: COL.text3, alignment: 'right' },
+          { text: si.text, fontSize: 9, bold: true, color: si.color },
+          {
+            text: '$' + fmtExact(comm),
+            fontSize: 10, bold: true,
+            color: comm > 0 ? COL.green : COL.text4,
+            alignment: 'right'
+          }
+        ];
+      })
+    ];
+
+    // Calculation rows
+    const calcRows = [];
+    if (c.platformDeals.length > 0 || c.managedDeals.length > 0) {
+      if (c.platformMRR > 0) {
+        calcRows.push([
+          { text: `Platform MRR (${c.platformDeals.length} deal${c.platformDeals.length !== 1 ? 's' : ''})`, color: COL.text2 },
+          { text: '$' + fmt(c.platformMRR), color: COL.text2, alignment: 'right' }
+        ]);
+      }
+      if (c.managedMRR > 0) {
+        calcRows.push([
+          { text: `Managed MRR (${c.managedDeals.length} deal${c.managedDeals.length !== 1 ? 's' : ''}, counts toward target)`, color: COL.text2 },
+          { text: '$' + fmt(c.managedMRR), color: COL.text2, alignment: 'right' }
+        ]);
+      }
+      calcRows.push([
+        { text: 'Eligible MRR', bold: true, color: COL.text },
+        { text: '$' + fmt(c.eligibleMRR), bold: true, color: COL.text, alignment: 'right' }
+      ]);
+      calcRows.push([
+        { text: 'Target threshold', color: COL.text2 },
+        { text: '-$' + fmt(TARGET), color: COL.text2, alignment: 'right' }
+      ]);
+      calcRows.push([
+        { text: 'Above target', bold: true, color: COL.text },
+        { text: '$' + fmt(c.overage), bold: true, color: c.overage > 0 ? COL.green : COL.text, alignment: 'right' }
+      ]);
+    }
+    if (c.platformCommission > 0) {
+      const targetToFill = Math.max(0, TARGET - c.managedMRR);
+      const platAbove = Math.max(0, c.platformMRR - targetToFill);
+      calcRows.push([
+        { text: 'Platform MRR above line', italics: true, color: COL.text3 },
+        { text: '$' + fmt(platAbove), italics: true, color: COL.text3, alignment: 'right' }
+      ]);
+      calcRows.push([
+        { text: '× 12 months (first-year value)', italics: true, color: COL.text3 },
+        { text: '$' + fmt(platAbove * 12), italics: true, color: COL.text3, alignment: 'right' }
+      ]);
+      calcRows.push([
+        { text: '× 10% commission', bold: true, color: COL.green },
+        { text: '$' + fmtExact(c.platformCommission), bold: true, color: COL.green, alignment: 'right' }
+      ]);
+    }
+    if (c.managedDeals.length > 0) {
+      calcRows.push([
+        { text: `${c.managedDeals.length} Managed deal${c.managedDeals.length !== 1 ? 's' : ''} × $300 flat`, bold: true, color: COL.green },
+        { text: '$' + fmtExact(c.managedCommission), bold: true, color: COL.green, alignment: 'right' }
+      ]);
+    }
+
+    return {
+      pageSize: 'LETTER',
+      pageMargins: [44, 50, 44, 56],
+
+      defaultStyle: {
+        font: 'Roboto',
+        fontSize: 10,
+        color: COL.text,
+        lineHeight: 1.35
+      },
+
+      // ── Page footer (every page) ──────────────────────────
+      footer: (currentPage, pageCount) => ({
+        margin: [44, 14, 44, 0],
+        columns: [
+          { text: `ACE Commission Statement  ·  ${monthName}  ·  Generated ${today}`,
+            fontSize: 7.5, color: COL.text4, characterSpacing: 0.5 },
+          { text: `Page ${currentPage} of ${pageCount}`,
+            fontSize: 7.5, color: COL.text4, alignment: 'right' }
+        ]
+      }),
+
+      content: [
+        // ── Header ────────────────────────────────────────────
+        {
+          columns: [
+            // Lime accent bar
+            {
+              width: 5,
+              canvas: [{ type: 'rect', x: 0, y: 4, w: 5, h: 38, color: COL.lime, r: 1 }]
+            },
+            // Title block
+            {
+              width: '*',
+              stack: [
+                { text: 'ACE  ·  COMMISSION STATEMENT', fontSize: 8, bold: true,
+                  color: COL.text3, characterSpacing: 1.5, margin: [10, 2, 0, 4] },
+                { text: monthName, fontSize: 24, bold: true, color: COL.text, margin: [10, 0, 0, 0] }
+              ]
+            },
+            // Right meta
+            {
+              width: 'auto',
+              alignment: 'right',
+              stack: [
+                { text: 'Gabriel Dalton', fontSize: 10, bold: true, color: COL.text },
+                { text: `Generated ${today}`, fontSize: 9, color: COL.text3, margin: [0, 2, 0, 0] },
+                { text: 'accessibilitychecker.org', fontSize: 9, color: COL.text3 }
+              ]
+            }
+          ]
+        },
+
+        // Header divider
+        {
+          canvas: [{ type: 'line', x1: 0, y1: 0, x2: 525, y2: 0, lineWidth: 0.6, lineColor: COL.line }],
+          margin: [0, 14, 0, 18]
+        },
+
+        // ── Hero card ─────────────────────────────────────────
+        {
+          table: {
+            widths: ['*', '*'],
+            body: [[
+              // LEFT — Total Commission
+              {
+                stack: [
+                  { text: 'TOTAL COMMISSION', fontSize: 8, bold: true,
+                    color: COL.text3, characterSpacing: 1.5, margin: [0, 0, 0, 8] },
+                  {
+                    text: [
+                      { text: '$', fontSize: 14, color: COL.text3 },
+                      { text: fmt(dollars), fontSize: 32, bold: true, color: COL.text },
+                      { text: '.' + String(cents).padStart(2, '0'), fontSize: 14, color: COL.text3 }
+                    ],
+                    margin: [0, 0, 0, 14]
+                  },
+                  {
+                    columns: [
+                      { width: 'auto', ...chip('platform', '$' + fmt(c.platformCommission)) },
+                      { width: 'auto', ...chip('managed',  '$' + fmt(c.managedCommission)) },
+                      { width: 'auto', ...chip('deals',    String(c.monthDeals.length)) }
+                    ],
+                    columnGap: 5
+                  }
+                ]
+              },
+              // RIGHT — Eligible MRR + progress
+              {
+                stack: [
+                  {
+                    columns: [
+                      { width: '*', text: 'ELIGIBLE MRR', fontSize: 8, bold: true,
+                        color: COL.text3, characterSpacing: 1.5 },
+                      { width: 'auto', ...statusPill() }
+                    ]
+                  },
+                  {
+                    text: [
+                      { text: '$' + fmt(c.eligibleMRR), fontSize: 22, bold: true, color: COL.text },
+                      { text: '   of $' + fmt(TARGET), fontSize: 10, color: COL.text3 }
+                    ],
+                    margin: [0, 8, 0, 10]
+                  },
+                  // Progress bar via canvas
+                  {
+                    canvas: [
+                      { type: 'rect', x: 0, y: 0, w: 240, h: 6, r: 3, color: '#ededea' },
+                      pct > 0
+                        ? { type: 'rect', x: 0, y: 0, w: Math.max(6, 240 * pct), h: 6, r: 3,
+                            color: targetHit ? COL.green : COL.lime }
+                        : null
+                    ].filter(Boolean)
+                  },
+                  {
+                    text: targetHit
+                      ? `${Math.round(pct * 100)}% of target  ·  $${fmt(c.overage)} above line`
+                      : `${Math.round(pct * 100)}% of target  ·  $${fmt(TARGET - c.eligibleMRR)} more to unlock`,
+                    fontSize: 8.5, color: COL.text3, margin: [0, 8, 0, 12]
+                  },
+                  {
+                    canvas: [{ type: 'line', x1: 0, y1: 0, x2: 240, y2: 0, lineWidth: 0.5, lineColor: COL.lineSoft }],
+                    margin: [0, 0, 0, 8]
+                  },
+                  {
+                    columns: [
+                      { width: '*', text: 'FIRST-YEAR PIPELINE', fontSize: 7.5, bold: true,
+                        color: COL.text3, characterSpacing: 1.4 },
+                      { width: 'auto', text: '$' + fmt(c.eligibleMRR * 12),
+                        fontSize: 11, bold: true, color: COL.text, alignment: 'right' }
+                    ]
+                  }
+                ]
+              }
+            ]]
+          },
+          layout: {
+            fillColor: () => '#ffffff',
+            hLineColor: () => COL.line, vLineColor: () => COL.line,
+            hLineWidth: () => 0.6, vLineWidth: () => 0.6,
+            paddingLeft: (i) => i === 0 ? 18 : 18,
+            paddingRight: (i) => 18,
+            paddingTop: () => 18, paddingBottom: () => 18
+          }
+        },
+
+        // ── Section: Deals This Month ─────────────────────────
+        {
+          margin: [0, 22, 0, 8],
+          columns: [
+            { width: 8, canvas: [{ type: 'rect', x: 0, y: 4, w: 8, h: 8, color: COL.lime }] },
+            { width: 'auto', text: 'DEALS THIS MONTH', fontSize: 8.5, bold: true,
+              color: COL.text2, characterSpacing: 1.5, margin: [8, 2, 0, 0] },
+            { width: '*', canvas: [{ type: 'line', x1: 8, y1: 7, x2: 380, y2: 7, lineWidth: 0.5, lineColor: COL.line }] }
+          ]
+        },
+
+        // ── Deals table ───────────────────────────────────────
+        {
+          table: {
+            headerRows: 1,
+            widths: [50, '*', 'auto', 50, 50, 'auto', 70],
+            body: tableBody
+          },
+          layout: {
+            fillColor: (rowIndex) => {
+              if (rowIndex === 0) return COL.surface2;
+              return rowIndex % 2 === 0 ? COL.rowAlt : null;
+            },
+            hLineColor: (i) => i <= 1 ? COL.line : COL.lineSoft,
+            vLineColor: () => null,
+            hLineWidth: (i) => i === 0 ? 0.6 : (i === 1 ? 0.6 : 0.3),
+            vLineWidth: () => 0,
+            paddingLeft: () => 10, paddingRight: () => 10,
+            paddingTop: () => 9, paddingBottom: () => 9
+          }
+        },
+
+        // ── Section: Calculation ──────────────────────────────
+        {
+          margin: [0, 22, 0, 8],
+          columns: [
+            { width: 8, canvas: [{ type: 'rect', x: 0, y: 4, w: 8, h: 8, color: COL.lime }] },
+            { width: 'auto', text: 'CALCULATION', fontSize: 8.5, bold: true,
+              color: COL.text2, characterSpacing: 1.5, margin: [8, 2, 0, 0] },
+            { width: '*', canvas: [{ type: 'line', x1: 8, y1: 7, x2: 420, y2: 7, lineWidth: 0.5, lineColor: COL.line }] }
+          ]
+        },
+
+        // ── Calculation panel ─────────────────────────────────
+        {
+          table: {
+            widths: ['*', 'auto'],
+            body: calcRows.length > 0 ? calcRows : [[
+              { text: 'No deals this month', italics: true, color: COL.text3 },
+              { text: '$0', italics: true, color: COL.text3, alignment: 'right' }
+            ]]
+          },
+          layout: {
+            fillColor: () => COL.surface2,
+            hLineColor: () => null, vLineColor: () => null,
+            hLineWidth: () => 0, vLineWidth: () => 0,
+            paddingLeft: () => 18, paddingRight: () => 18,
+            paddingTop: () => 6, paddingBottom: () => 6
+          }
+        },
+
+        // ── Total Earned bar ──────────────────────────────────
+        {
+          margin: [0, 24, 0, 0],
+          unbreakable: true,
+          table: {
+            widths: ['*'],
+            body: [[
+              {
+                columns: [
+                  { width: 4, canvas: [{ type: 'rect', x: 0, y: 4, w: 4, h: 30, color: COL.lime }] },
+                  {
+                    width: '*',
+                    stack: [
+                      { text: 'TOTAL COMMISSION EARNED', fontSize: 9, bold: true,
+                        color: COL.limeDeep, characterSpacing: 1.4, margin: [10, 2, 0, 4] },
+                      { text: monthName, fontSize: 9, color: COL.limeDeep, margin: [10, 0, 0, 0] }
+                    ]
+                  },
+                  {
+                    width: 'auto',
+                    text: '$' + fmtExact(c.totalCommission),
+                    fontSize: 26, bold: true, color: COL.text,
+                    alignment: 'right',
+                    margin: [0, 6, 0, 0]
+                  }
+                ]
+              }
+            ]]
+          },
+          layout: {
+            fillColor: () => COL.limeSoft,
+            hLineColor: () => COL.lime, vLineColor: () => COL.lime,
+            hLineWidth: () => 1, vLineWidth: () => 1,
+            paddingLeft: () => 16, paddingRight: () => 20,
+            paddingTop: () => 16, paddingBottom: () => 16
+          }
+        }
+      ]
+    };
+  }
+
+  async function exportPDF() {
+    if (!window.pdfMake) {
       showToast('PDF library failed to load', 'error');
       return;
     }
@@ -2600,461 +3358,55 @@
 
     const monthName = formatMonthLabel(currentMonth);
     const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ unit: 'pt', format: 'letter' });
 
-    const W = doc.internal.pageSize.getWidth();
-    const H = doc.internal.pageSize.getHeight();
-    const M = 52;
+    setStatus('syncing', 'Generating PDF…');
 
-    // jsPDF defaults to WinAnsi, which lacks Unicode minus, check, math-x.
-    // Stick to ASCII-safe glyphs in body text.
-    const HYPHEN = '-';
-    const TIMES  = '×'; // U+00D7, in WinAnsi (multiplication sign) — renders correctly
-    const DOT    = '·'; // U+00B7, middle dot — also in WinAnsi
+    // Loading overlay shown for at least 1 second
+    const overlay = document.createElement('div');
+    overlay.style.cssText = [
+      'position: fixed', 'inset: 0',
+      'background: rgba(255, 255, 255, 0.96)',
+      'z-index: 99999',
+      'display: flex', 'flex-direction: column',
+      'align-items: center', 'justify-content: center',
+      'gap: 12px',
+      'font-family: Inter, system-ui, sans-serif'
+    ].join(';');
+    overlay.innerHTML = `
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:14px;height:14px;border:2px solid #ededea;border-top-color:#c4e84a;border-radius:50%;animation:pdfSpin 0.7s linear infinite;"></div>
+        <div style="font-size:14px;font-weight:600;color:#15151a;">Generating PDF…</div>
+      </div>
+      <div style="font-size:11px;color:#82828a;font-family:'JetBrains Mono',monospace;letter-spacing:0.05em;">${escapeHtml(monthName)}</div>
+      <style>@keyframes pdfSpin { to { transform: rotate(360deg); } }</style>
+    `;
+    document.body.appendChild(overlay);
 
-    const COL = {
-      lime:     [196, 232, 74],
-      limeDeep: [107, 138, 20],
-      limeSoft: [238, 249, 201],
-      text:     [21, 21, 26],
-      text2:    [74, 74, 82],
-      text3:    [130, 130, 138],
-      text4:    [176, 176, 182],
-      line:     [232, 232, 226],
-      lineSoft: [240, 240, 235],
-      surface:  [255, 255, 255],
-      surface2: [247, 247, 243],
-      surface3: [237, 237, 232],
-      green:    [21, 128, 61],
-      greenSoft:[230, 245, 236],
-      amber:    [180, 83, 9],
-      amberSoft:[253, 243, 224],
-      blue:     [30, 78, 178],
-      blueSoft: [231, 238, 251]
-    };
+    const minDisplayMs = 1000;
+    const start = Date.now();
 
-    // ── Helpers ─────────────────────────────────────────────
-    const setFG = (c) => doc.setTextColor(c[0], c[1], c[2]);
-    const setBG = (c) => doc.setFillColor(c[0], c[1], c[2]);
-    const setStroke = (c) => doc.setDrawColor(c[0], c[1], c[2]);
+    try {
+      const docDef = buildPdfDocDefinition(c, monthName, today);
 
-    function pill(x, y, text, fg, bg, opts = {}) {
-      const fontSize = opts.fontSize || 8;
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(fontSize);
-      const padX = opts.padX || 8;
-      const h = opts.h || (fontSize + 6);
-      const w = doc.getTextWidth(text) + padX * 2;
-      setBG(bg);
-      doc.roundedRect(x, y, w, h, h / 2, h / 2, 'F');
-      setFG(fg);
-      doc.text(text, x + w / 2, y + h - (h - fontSize) / 2 - 1.5, { align: 'center' });
-      return w;
-    }
-
-    function progressBar(x, y, w, h, pct, fillColor) {
-      setBG(COL.surface3);
-      doc.roundedRect(x, y, w, h, h / 2, h / 2, 'F');
-      const filled = Math.max(0, Math.min(1, pct)) * w;
-      if (filled > 0) {
-        setBG(fillColor);
-        doc.roundedRect(x, y, Math.max(filled, h), h, h / 2, h / 2, 'F');
-      }
-    }
-
-    function sectionHeader(yPos, label) {
-      // Lime square accent + small-caps label + thin line
-      setBG(COL.lime);
-      doc.rect(M, yPos - 6, 6, 6, 'F');
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(8);
-      setFG(COL.text2);
-      doc.text(label.toUpperCase(), M + 12, yPos);
-      // line continues to right margin
-      const labelW = doc.getTextWidth(label.toUpperCase()) + 18;
-      setStroke(COL.line);
-      doc.setLineWidth(0.5);
-      doc.line(M + labelW, yPos - 2, W - M, yPos - 2);
-      return yPos + 12;
-    }
-
-    // ── Header band ─────────────────────────────────────────
-    setBG(COL.lime);
-    doc.rect(M, 50, 5, 36, 'F');
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7.5);
-    setFG(COL.text3);
-    doc.text(`ACE  ${DOT}  COMMISSION STATEMENT`, M + 14, 60);
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(24);
-    setFG(COL.text);
-    doc.text(monthName, M + 14, 84);
-
-    // Right side meta
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(9.5);
-    setFG(COL.text);
-    doc.text('Gabriel Dalton', W - M, 60, { align: 'right' });
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8.5);
-    setFG(COL.text3);
-    doc.text(`Generated ${today}`, W - M, 74, { align: 'right' });
-    doc.text('accessibilitychecker.org', W - M, 86, { align: 'right' });
-
-    // Divider under header
-    setStroke(COL.line);
-    doc.setLineWidth(0.6);
-    doc.line(M, 102, W - M, 102);
-
-    let y = 124;
-
-    // ── Hero card ───────────────────────────────────────────
-    const heroH = 130;
-    setStroke(COL.line);
-    setBG(COL.surface);
-    doc.roundedRect(M, y, W - 2 * M, heroH, 10, 10, 'FD');
-
-    // Subtle lime tint corner (top-right, like the web hero)
-    setBG(COL.limeSoft);
-    doc.roundedRect(W - M - 220, y + 1, 219, 50, 10, 10, 'F');
-    setBG(COL.surface);
-    doc.rect(W - M - 220, y + 30, 220, 22, 'F'); // mask the bottom of tint
-
-    // Internal divider between left and right halves
-    const splitX = M + (W - 2 * M) * 0.5;
-    setStroke(COL.lineSoft);
-    doc.setLineWidth(0.5);
-    doc.line(splitX, y + 20, splitX, y + heroH - 20);
-
-    // LEFT: Total commission
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(7.5);
-    setFG(COL.text3);
-    doc.text('TOTAL COMMISSION', M + 22, y + 26);
-
-    const totalDollars = Math.floor(c.totalCommission);
-    const totalCents = Math.round((c.totalCommission - totalDollars) * 100);
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(13);
-    setFG(COL.text3);
-    doc.text('$', M + 22, y + 70);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(34);
-    setFG(COL.text);
-    const dollarsStr = fmt(totalDollars);
-    doc.text(dollarsStr, M + 32, y + 70);
-    const dollarsW = doc.getTextWidth(dollarsStr);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(13);
-    setFG(COL.text3);
-    doc.text(`.${String(totalCents).padStart(2, '0')}`, M + 34 + dollarsW, y + 70);
-
-    // Chips below total
-    let chipX = M + 22;
-    const chipY = y + 92;
-    chipX += pill(chipX, chipY, `$${fmt(c.platformCommission)} platform`, COL.text2, COL.surface2, { fontSize: 7.5, padX: 8, h: 16 }) + 6;
-    chipX += pill(chipX, chipY, `$${fmt(c.managedCommission)} managed`, COL.text2, COL.surface2, { fontSize: 7.5, padX: 8, h: 16 }) + 6;
-    chipX += pill(chipX, chipY, `${c.monthDeals.length} deals`, COL.text2, COL.surface2, { fontSize: 7.5, padX: 8, h: 16 });
-
-    // RIGHT: Eligible MRR + progress bar + status pill
-    const rX = splitX + 22;
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(7.5);
-    setFG(COL.text3);
-    doc.text('ELIGIBLE MRR', rX, y + 26);
-
-    // Status pill (top-right)
-    const targetHit = c.eligibleMRR >= TARGET;
-    const pillText = targetHit ? 'TARGET HIT' : 'BELOW TARGET';
-    const pillFG = targetHit ? COL.green : COL.amber;
-    const pillBG = targetHit ? COL.greenSoft : COL.amberSoft;
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(7);
-    const pillW = doc.getTextWidth(pillText) + 16;
-    pill(W - M - 22 - pillW, y + 18, pillText, pillFG, pillBG, { fontSize: 7, padX: 8, h: 14 });
-
-    // Eligible MRR amount
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(22);
-    setFG(COL.text);
-    doc.text(`$${fmt(c.eligibleMRR)}`, rX, y + 56);
-    const elgW = doc.getTextWidth(`$${fmt(c.eligibleMRR)}`);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-    setFG(COL.text3);
-    doc.text(`of $${fmt(TARGET)}`, rX + elgW + 8, y + 56);
-
-    // Progress bar
-    const barX = rX;
-    const barW = (W - M) - rX - 22;
-    const pct = Math.min(1, c.eligibleMRR / TARGET);
-    progressBar(barX, y + 70, barW, 6, pct, targetHit ? COL.green : COL.lime);
-
-    // Below-bar caption
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8);
-    setFG(COL.text3);
-    const captionText = targetHit
-      ? `${Math.round(pct * 100)}% of target  ${DOT}  $${fmt(c.overage)} above line`
-      : `${Math.round(pct * 100)}% of target  ${DOT}  $${fmt(TARGET - c.eligibleMRR)} more to unlock`;
-    doc.text(captionText, rX, y + 92);
-
-    // Bottom-row mini-stats on right side
-    const miniY = y + 110;
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7);
-    setFG(COL.text3);
-    doc.text('FIRST-YEAR PIPELINE', rX, miniY);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(10);
-    setFG(COL.text);
-    doc.text(`$${fmt(c.eligibleMRR * 12)}`, rX + doc.getTextWidth('FIRST-YEAR PIPELINE') + 10, miniY);
-
-    y += heroH + 26;
-
-    // ── Deals table ─────────────────────────────────────────
-    y = sectionHeader(y, 'Deals This Month');
-    y += 4;
-
-    const sorted = [...c.monthDeals].sort((a, b) => a.date.localeCompare(b.date));
-    const tableBody = sorted.map(d => {
-      const mrr = Number(d.mrr);
-      const arr = mrr * 12;
-      const comm = c.dealCommissions[d.id] || 0;
-      const status = isManaged(d.plan)
-        ? 'Managed'
-        : (isExcluded(d.plan) ? 'Excluded' : 'Eligible');
-      return [
-        formatDate(d.date),
-        d.name,
-        planLabel(d.plan),
-        `$${fmt(mrr)}`,
-        `$${fmt(arr)}`,
-        status,
-        comm > 0 ? `$${fmtExact(comm)}` : '$0.00'
-      ];
-    });
-
-    doc.autoTable({
-      startY: y,
-      margin: { left: M, right: M },
-      head: [['Date', 'Client', 'Plan', 'MRR', 'ARR', 'Status', 'Commission']],
-      body: tableBody,
-      theme: 'plain',
-      styles: {
-        font: 'helvetica',
-        fontSize: 9,
-        cellPadding: { top: 9, right: 10, bottom: 9, left: 10 },
-        lineColor: COL.line,
-        lineWidth: 0,
-        textColor: COL.text2,
-        valign: 'middle'
-      },
-      headStyles: {
-        fillColor: COL.surface2,
-        textColor: COL.text3,
-        fontStyle: 'bold',
-        fontSize: 7.5,
-        cellPadding: { top: 9, right: 10, bottom: 9, left: 10 },
-        lineColor: COL.line,
-        lineWidth: 0
-      },
-      alternateRowStyles: {
-        fillColor: [251, 251, 248]
-      },
-      columnStyles: {
-        0: { cellWidth: 56,  textColor: COL.text3 },
-        1: { fontStyle: 'bold', textColor: COL.text },
-        2: { textColor: COL.text2, fontSize: 8.5 },
-        3: { halign: 'right', cellWidth: 56, fontStyle: 'bold', textColor: COL.text },
-        4: { halign: 'right', cellWidth: 60, textColor: COL.text3, fontSize: 8.5 },
-        5: { cellWidth: 66, fontSize: 8, fontStyle: 'bold' },
-        6: { halign: 'right', cellWidth: 80, fontStyle: 'bold' }
-      },
-      didParseCell: (data) => {
-        if (data.section === 'body') {
-          // Status column color
-          if (data.column.index === 5) {
-            const v = data.cell.raw;
-            if (v === 'Eligible') data.cell.styles.textColor = COL.green;
-            else if (v === 'Excluded') data.cell.styles.textColor = COL.text4;
-            else if (v === 'Managed') data.cell.styles.textColor = COL.limeDeep;
-          }
-          // Commission color: green if earned, gray if zero
-          if (data.column.index === 6) {
-            const v = (data.cell.raw || '').toString();
-            if (v === '$0.00') data.cell.styles.textColor = COL.text4;
-            else data.cell.styles.textColor = COL.green;
-          }
-        }
-      },
-      didDrawCell: (data) => {
-        // Bottom border on each body row, very subtle
-        if (data.section === 'body' && data.column.index === 0) {
-          setStroke(COL.lineSoft);
-          doc.setLineWidth(0.4);
-          doc.line(
-            data.cell.x,
-            data.cell.y + data.cell.height,
-            W - M,
-            data.cell.y + data.cell.height
-          );
-        }
-        // Bold separator under header
-        if (data.section === 'head' && data.column.index === 0) {
-          setStroke(COL.line);
-          doc.setLineWidth(0.6);
-          doc.line(
-            data.cell.x,
-            data.cell.y + data.cell.height,
-            W - M,
-            data.cell.y + data.cell.height
-          );
-        }
-      }
-    });
-
-    y = doc.lastAutoTable.finalY + 28;
-
-    // Page-break check before calculation block
-    const calcMinHeight = 220;
-    if (y + calcMinHeight > H - 70) {
-      doc.addPage();
-      y = M + 24;
-    }
-
-    // ── Calculation breakdown ───────────────────────────────
-    y = sectionHeader(y, 'Calculation');
-    y += 4;
-
-    // Subtle panel background for the calc block
-    const calcStartY = y;
-    const lines = [];
-    if (c.platformDeals.length > 0 || c.managedDeals.length > 0) {
-      if (c.platformMRR > 0) lines.push([`Platform MRR (${c.platformDeals.length} deal${c.platformDeals.length !== 1 ? 's' : ''})`, `$${fmt(c.platformMRR)}`, 'normal']);
-      if (c.managedMRR > 0)  lines.push([`Managed MRR (${c.managedDeals.length} deal${c.managedDeals.length !== 1 ? 's' : ''}, counts toward target)`, `$${fmt(c.managedMRR)}`, 'normal']);
-      lines.push([`Eligible MRR`, `$${fmt(c.eligibleMRR)}`, 'subtotal']);
-      lines.push([`Target threshold`, `${HYPHEN}$${fmt(TARGET)}`, 'normal']);
-      lines.push([`Above target`, `$${fmt(c.overage)}`, 'subtotal', c.overage > 0 ? COL.green : null]);
-    }
-    if (c.platformCommission > 0) {
-      const targetToFill = Math.max(0, TARGET - c.managedMRR);
-      const platAbove = Math.max(0, c.platformMRR - targetToFill);
-      lines.push(['__divider__']);
-      lines.push([`Platform MRR above line`, `$${fmt(platAbove)}`, 'calc']);
-      lines.push([`${TIMES} 12 months (first-year value)`, `$${fmt(platAbove * 12)}`, 'calc']);
-      lines.push([`${TIMES} 10% commission`, `$${fmtExact(c.platformCommission)}`, 'subtotal', COL.green]);
-    }
-    if (c.managedDeals.length > 0) {
-      lines.push(['__divider__']);
-      lines.push([`${c.managedDeals.length} Managed deal${c.managedDeals.length !== 1 ? 's' : ''} ${TIMES} $300 flat`, `$${fmtExact(c.managedCommission)}`, 'subtotal', COL.green]);
-    }
-
-    // Estimate panel height
-    let panelH = 16; // top padding
-    lines.forEach(row => {
-      if (row[0] === '__divider__') panelH += 8;
-      else panelH += 17;
-    });
-    panelH += 12; // bottom padding
-
-    setBG(COL.surface2);
-    setStroke(COL.line);
-    doc.setLineWidth(0.5);
-    doc.roundedRect(M, calcStartY, W - 2 * M, panelH, 8, 8, 'FD');
-
-    // Render lines
-    let cy = calcStartY + 18;
-    lines.forEach(row => {
-      if (row[0] === '__divider__') { cy += 6; return; }
-      const [label, val, kind, customColor] = row;
-
-      if (kind === 'subtotal') {
-        // Draw dashed separator above subtotal row
-        setStroke(COL.line);
-        doc.setLineWidth(0.5);
-        doc.setLineDashPattern([2, 2], 0);
-        doc.line(M + 16, cy - 9, W - M - 16, cy - 9);
-        doc.setLineDashPattern([], 0);
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(10);
-        setFG(customColor || COL.text);
-      } else if (kind === 'calc') {
-        doc.setFont('helvetica', 'italic');
-        doc.setFontSize(9.5);
-        setFG(COL.text3);
-      } else {
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(10);
-        setFG(COL.text2);
+      // pdfmake builds synchronously; wait the remainder of the min display time
+      const elapsed = Date.now() - start;
+      if (elapsed < minDisplayMs) {
+        await new Promise(r => setTimeout(r, minDisplayMs - elapsed));
       }
 
-      doc.text(label, M + 18, cy);
-      doc.text(val, W - M - 18, cy, { align: 'right' });
-      cy += 17;
-    });
-
-    y = calcStartY + panelH + 26;
-
-    // ── Total bar (the big lime takeaway) ──────────────────
-    if (y + 64 > H - 70) { doc.addPage(); y = M + 24; }
-
-    const totalBarH = 64;
-    setStroke(COL.lime);
-    doc.setLineWidth(1);
-    setBG(COL.limeSoft);
-    doc.roundedRect(M, y, W - 2 * M, totalBarH, 10, 10, 'FD');
-
-    // Lime accent bar on the left
-    setBG(COL.lime);
-    doc.rect(M + 6, y + 14, 4, totalBarH - 28, 'F');
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8);
-    setFG(COL.limeDeep);
-    doc.text('TOTAL COMMISSION EARNED', M + 22, y + 24);
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8.5);
-    setFG(COL.limeDeep);
-    doc.text(monthName, M + 22, y + 42);
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(28);
-    setFG(COL.text);
-    doc.text(`$${fmtExact(c.totalCommission)}`, W - M - 22, y + 42, { align: 'right' });
-
-    // ── Page footer on every page ──────────────────────────
-    const pageCount = doc.internal.getNumberOfPages();
-    for (let p = 1; p <= pageCount; p++) {
-      doc.setPage(p);
-
-      // thin top divider for footer
-      setStroke(COL.lineSoft);
-      doc.setLineWidth(0.4);
-      doc.line(M, H - 40, W - M, H - 40);
-
-      // Lime dot on the left of footer
-      setBG(COL.lime);
-      doc.circle(M + 3, H - 28, 2, 'F');
-
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(7.5);
-      setFG(COL.text4);
-      doc.text(
-        `ACE Commission Statement  ${DOT}  ${monthName}  ${DOT}  Generated ${today}`,
-        M + 10, H - 26
-      );
-      doc.text(`Page ${p} of ${pageCount}`, W - M, H - 26, { align: 'right' });
+      pdfMake.createPdf(docDef).download(`ACE-Commission-${currentMonth}.pdf`);
+      showToast('PDF exported');
+    } catch (e) {
+      console.error('PDF export failed:', e);
+      showToast('PDF export failed — see console', 'error');
+    } finally {
+      // Keep the overlay visible for a beat after the download triggers
+      setTimeout(() => {
+        if (document.body.contains(overlay)) document.body.removeChild(overlay);
+      }, 300);
+      if (online) setStatus('online', 'Synced · Cloud');
+      else setStatus('offline', 'Offline · Local only');
     }
-
-    doc.save(`ACE-Commission-${currentMonth}.pdf`);
-    showToast('PDF exported');
   }
 
   function importCSV(file) {
