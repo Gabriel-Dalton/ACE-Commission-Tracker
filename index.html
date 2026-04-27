@@ -7,6 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.local.js" onerror="void 0"></script>
 <style>
   :root {
     --bg: #fafaf7;
@@ -1116,6 +1118,23 @@
     border-radius: 50%;
     background: var(--green);
     box-shadow: 0 0 0 2px var(--green-soft);
+    flex-shrink: 0;
+  }
+
+  .footer-text .save-dot.syncing {
+    background: var(--amber);
+    box-shadow: 0 0 0 2px var(--amber-soft);
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+
+  .footer-text .save-dot.offline {
+    background: var(--text-4);
+    box-shadow: 0 0 0 2px var(--surface-3);
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
   }
 
   .footer-actions { display: flex; gap: 8px; }
@@ -1459,9 +1478,9 @@
   </div>
 
   <footer class="footer">
-    <div class="footer-text">
-      <span class="save-dot"></span>
-      <span>Auto-saved · Audit-ready</span>
+    <div class="footer-text" id="syncStatus">
+      <span class="save-dot syncing"></span>
+      <span>Connecting…</span>
     </div>
     <div class="footer-actions">
       <button class="btn btn-ghost" id="exportBtn">Export CSV</button>
@@ -1503,28 +1522,161 @@
     dealBilling: { monthly: 'Monthly', annual: 'Annual upfront' }
   };
 
-  async function saveData() {
+  // ─── Supabase + cache persistence layer ─────────────────────────────────
+  const SETTINGS_ROW_KEY = 'global';
+
+  let supa = null;
+  let online = false;
+
+  // Fetch credentials from /api/config (Vercel env vars) with a window.APP_CONFIG fallback
+  // for local dev (create config.local.js: `window.APP_CONFIG = { url, key }`).
+  async function initSupabase() {
+    let url, key;
     try {
-      await window.storage.set('ct-deals-v2', JSON.stringify(deals));
-      await window.storage.set('ct-settings-v2', JSON.stringify({ managedCountsTowardTarget, breakdownOpen }));
-    } catch(e) { console.error('Save failed:', e); }
+      const res = await fetch('/api/config', { cache: 'no-store' });
+      if (res.ok) ({ url, key } = await res.json());
+    } catch(e) { /* /api/config unavailable — try fallback */ }
+
+    if ((!url || !key) && window.APP_CONFIG) ({ url, key } = window.APP_CONFIG);
+
+    if (!url || !key) {
+      console.warn('Supabase config unavailable — running in local-only mode.');
+      return;
+    }
+
+    try {
+      if (window.supabase) supa = window.supabase.createClient(url, key);
+    } catch(e) { console.error('Supabase init failed:', e); }
   }
 
-  async function loadData() {
-    try {
-      const r = await window.storage.get('ct-deals-v2');
-      if (r && r.value) deals = JSON.parse(r.value);
-    } catch(e) { deals = []; }
-    try {
-      const r = await window.storage.get('ct-settings-v2');
-      if (r && r.value) {
-        const s = JSON.parse(r.value);
+  // window.storage (custom host) → localStorage fallback
+  const cache = {
+    async set(k, v) {
+      try {
+        if (window.storage?.set) await window.storage.set(k, v);
+        else localStorage.setItem(k, v);
+      } catch(e) { try { localStorage.setItem(k, v); } catch(_) {} }
+    },
+    async get(k) {
+      try {
+        if (window.storage?.get) { const r = await window.storage.get(k); return r?.value ?? null; }
+        return localStorage.getItem(k);
+      } catch(e) { try { return localStorage.getItem(k); } catch(_) { return null; } }
+    }
+  };
+
+  function setStatus(state, message) {
+    const el = document.getElementById('syncStatus');
+    if (!el) return;
+    const dotClass = state === 'online' ? '' : (state === 'syncing' ? 'syncing' : 'offline');
+    el.innerHTML = `<span class="save-dot ${dotClass}"></span><span>${message}</span>`;
+  }
+
+  async function cacheLocal() {
+    await cache.set('ct-deals-v2', JSON.stringify(deals));
+    await cache.set('ct-settings-v2', JSON.stringify({ managedCountsTowardTarget, breakdownOpen }));
+  }
+
+  async function loadFromCache() {
+    const cd = await cache.get('ct-deals-v2');
+    if (cd) { try { deals = JSON.parse(cd); } catch(e) {} }
+    const cs = await cache.get('ct-settings-v2');
+    if (cs) {
+      try {
+        const s = JSON.parse(cs);
         managedCountsTowardTarget = s.managedCountsTowardTarget || 'yes';
         if (typeof s.breakdownOpen === 'boolean') breakdownOpen = s.breakdownOpen;
         ddState.managedCounts = managedCountsTowardTarget;
-      }
-    } catch(e) {}
+      } catch(e) {}
+    }
   }
+
+  async function loadData() {
+    setStatus('syncing', 'Connecting…');
+    await loadFromCache();
+
+    if (!supa) {
+      online = false;
+      setStatus('offline', 'Offline · Local only');
+      return;
+    }
+
+    try {
+      const [dealsRes, settingsRes] = await Promise.all([
+        supa.from('deals').select('*'),
+        supa.from('settings').select('value').eq('key', SETTINGS_ROW_KEY).maybeSingle()
+      ]);
+
+      if (dealsRes.error) throw dealsRes.error;
+      if (settingsRes.error && settingsRes.error.code !== 'PGRST116') throw settingsRes.error;
+
+      const remoteDeals = (dealsRes.data || []).map(d => ({
+        id: d.id, name: d.name, mrr: Number(d.mrr), plan: d.plan,
+        date: d.date, billing: d.billing || 'monthly', ref: d.ref || ''
+      }));
+
+      // First-time migration: empty cloud, local has data → upload it once
+      if (remoteDeals.length === 0 && deals.length > 0) {
+        setStatus('syncing', 'Migrating local data…');
+        const { error } = await supa.from('deals').upsert(deals);
+        if (error) throw error;
+      } else {
+        deals = remoteDeals;
+      }
+
+      if (settingsRes.data?.value) {
+        const s = settingsRes.data.value;
+        if (s.managedCountsTowardTarget) managedCountsTowardTarget = s.managedCountsTowardTarget;
+        if (typeof s.breakdownOpen === 'boolean') breakdownOpen = s.breakdownOpen;
+        ddState.managedCounts = managedCountsTowardTarget;
+      }
+
+      online = true;
+      await cacheLocal();
+      setStatus('online', 'Synced · Cloud');
+    } catch(e) {
+      console.error('Supabase load failed:', e);
+      online = false;
+      setStatus('offline', 'Offline · Local only');
+    }
+  }
+
+  async function persistDeal(deal) {
+    await cacheLocal();
+    if (!supa || !online) return;
+    const { error } = await supa.from('deals').upsert(deal);
+    if (error) { console.error(error); online = false; setStatus('offline', 'Sync failed · Local only'); }
+  }
+
+  async function removeDealRemote(id) {
+    await cacheLocal();
+    if (!supa || !online) return;
+    const { error } = await supa.from('deals').delete().eq('id', id);
+    if (error) { console.error(error); online = false; setStatus('offline', 'Sync failed · Local only'); }
+  }
+
+  async function removeMonthRemote(month) {
+    await cacheLocal();
+    if (!supa || !online) return;
+    const start = month + '-01';
+    const end = shiftMonth(month, 1) + '-01';
+    const { error } = await supa.from('deals').delete().gte('date', start).lt('date', end);
+    if (error) { console.error(error); online = false; setStatus('offline', 'Sync failed · Local only'); }
+  }
+
+  async function persistSettings() {
+    await cacheLocal();
+    if (!supa || !online) return;
+    const { error } = await supa.from('settings').upsert({
+      key: SETTINGS_ROW_KEY,
+      value: { managedCountsTowardTarget, breakdownOpen },
+      updated_at: new Date().toISOString()
+    });
+    if (error) { console.error(error); online = false; setStatus('offline', 'Sync failed · Local only'); }
+  }
+
+  // Back-compat shim: any leftover saveData() call writes settings-only.
+  async function saveData() { await persistSettings(); }
 
   const fmt = (n) => Math.round(n).toLocaleString('en-US');
   const fmtExact = (n) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -1831,7 +1983,7 @@
 
       if (name === 'managedCounts') {
         managedCountsTowardTarget = v;
-        saveData();
+        persistSettings();
         render();
       }
     }
@@ -1901,15 +2053,16 @@
     if (!plan) { showFormError('Select a plan tier'); return; }
     if (!date) { showFormError('Close date is required'); document.getElementById('dealDate').focus(); return; }
 
-    deals.push({
+    const newDeal = {
       id: 'd_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
       name, mrr, plan, date, billing, ref
-    });
+    };
+    deals.push(newDeal);
 
     clearFormError();
     clearForm();
-    saveData();
     render();
+    persistDeal(newDeal);
     showToast(`Added ${name}`);
     document.getElementById('dealName').focus();
   }
@@ -1934,8 +2087,8 @@
     if (!confirm('Delete this deal?')) return;
     const removed = deals.find(d => d.id === id);
     deals = deals.filter(d => d.id !== id);
-    saveData();
     render();
+    removeDealRemote(id);
     if (removed) showToast(`Removed ${removed.name}`);
   };
 
@@ -1943,8 +2096,8 @@
     const monthName = formatMonthLabel(currentMonth);
     if (!confirm(`Clear all deals from ${monthName}? This cannot be undone.`)) return;
     deals = deals.filter(d => !d.date || !d.date.startsWith(currentMonth));
-    saveData();
     render();
+    removeMonthRemote(currentMonth);
     showToast(`Cleared ${monthName}`);
   }
 
@@ -1984,10 +2137,10 @@
 
   function importCSV(file) {
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       const text = e.target.result;
       const lines = text.split('\n').filter(l => l.trim());
-      let added = 0;
+      const newDeals = [];
       for (let i = 1; i < lines.length; i++) {
         const cells = parseCSVLine(lines[i]);
         if (cells.length < 5) continue;
@@ -2010,16 +2163,20 @@
         else if (planText.includes('managed')) plan = 'managed';
         else if (planText.includes('unlimited')) plan = 'unlimited';
 
-        deals.push({
-          id: 'd_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+        newDeals.push({
+          id: 'd_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7) + '_' + i,
           name, mrr, plan, date,
           billing: (cells[6] || 'monthly').toLowerCase(), ref
         });
-        added++;
       }
-      saveData();
+      deals.push(...newDeals);
       render();
-      showToast(`Imported ${added} deal${added !== 1 ? 's' : ''}`);
+      await cacheLocal();
+      if (supa && online && newDeals.length) {
+        const { error } = await supa.from('deals').upsert(newDeals);
+        if (error) { console.error(error); online = false; setStatus('offline', 'Sync failed · Local only'); }
+      }
+      showToast(`Imported ${newDeals.length} deal${newDeals.length !== 1 ? 's' : ''}`);
     };
     reader.readAsText(file);
   }
@@ -2067,6 +2224,7 @@
   }
 
   async function init() {
+    await initSupabase();
     await loadData();
 
     setupDropdown('managedCounts');
@@ -2108,19 +2266,10 @@
     document.getElementById('breakdownToggle').addEventListener('click', () => {
       breakdownOpen = !breakdownOpen;
       applyBreakdownState();
-      saveData();
+      persistSettings();
     });
 
     applyBreakdownState();
-
-    if (deals.length === 0) {
-      deals = [
-        { id: 'seed_1', name: 'Government of SC', mrr: 299, plan: 'growth', date: '2026-04-28', billing: 'monthly', ref: 'ACE-2404-GSC' },
-        { id: 'seed_2', name: 'The Richland Group', mrr: 399, plan: 'unlimited', date: '2026-04-23', billing: 'annual', ref: 'ACE-2404-RG-PO1' },
-        { id: 'seed_3', name: 'Lift Box Inc.', mrr: 599, plan: 'managed', date: '2026-04-17', billing: 'monthly', ref: 'ACE-2404-LB' }
-      ];
-      saveData();
-    }
 
     render();
   }
