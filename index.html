@@ -1224,26 +1224,9 @@
         <div class="popover" id="settingsPopover">
           <div class="popover-title">Calculation Settings</div>
           <div class="popover-setting">
-            <span class="label">Managed deals count toward target</span>
-            <span class="desc">When enabled, Managed MRR fills the $1,000 monthly target alongside the flat $300 bonus.</span>
-            <div class="dd" data-dd="managedCounts" style="margin-top: 4px;">
-              <button class="dd-trigger" type="button">
-                <span class="selected-label">Yes (recommended)</span>
-                <svg class="chev" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <path d="M3 4.5L6 7.5L9 4.5"/>
-                </svg>
-              </button>
-              <div class="dd-menu">
-                <div class="dd-option selected" data-value="yes">
-                  <span>Yes (recommended)</span>
-                  <span class="meta">+ flat $300</span>
-                </div>
-                <div class="dd-option" data-value="no">
-                  <span>No (separate)</span>
-                  <span class="meta">flat only</span>
-                </div>
-              </div>
-            </div>
+            <span class="label">Managed counts toward target</span>
+            <span class="desc">Confirmed policy: Managed MRR fills the $1,000 monthly target alongside the flat $300/deal bonus. A $599 Managed deal contributes $599 to the target <em>and</em> pays $300.</span>
+            <span class="desc" style="color: var(--text-3); font-style: italic;">No toggle — this is the agreed structure.</span>
           </div>
         </div>
       </div>
@@ -1278,15 +1261,11 @@
           </div>
           <div class="popover-row">
             <div class="key">Managed</div>
-            <div class="val"><strong>Flat $300/deal</strong> regardless of size. Covers dev, audit, and referral baked into pricing.</div>
+            <div class="val"><strong>Flat $300/deal</strong> regardless of size, <strong>plus</strong> Managed MRR counts toward the $1,000 target. Covers dev, audit, and referral baked into pricing.</div>
           </div>
           <div class="popover-row">
             <div class="key">12-month cap</div>
             <div class="val">Commission stops after 12 months per client, or earlier on cancel.</div>
-          </div>
-          <div class="popover-row">
-            <div class="key">Open question</div>
-            <div class="val warn">Whether Managed counts toward target alongside the flat $300 — toggle in settings to model both.</div>
           </div>
         </div>
       </div>
@@ -1511,7 +1490,8 @@
 <script>
   let deals = [];
   let currentMonth = new Date().toISOString().slice(0, 7);
-  let managedCountsTowardTarget = 'yes';
+  // Hardcoded policy: Managed deals always count toward the $1,000 target alongside their flat $300 bonus.
+  const managedCountsTowardTarget = 'yes';
   let breakdownOpen = true;
 
   const TARGET = 1000;
@@ -1640,9 +1620,7 @@
     if (cs) {
       try {
         const s = JSON.parse(cs);
-        managedCountsTowardTarget = s.managedCountsTowardTarget || 'yes';
         if (typeof s.breakdownOpen === 'boolean') breakdownOpen = s.breakdownOpen;
-        ddState.managedCounts = managedCountsTowardTarget;
       } catch(e) {}
     }
   }
@@ -1682,9 +1660,7 @@
 
       if (settingsRes.data?.value) {
         const s = settingsRes.data.value;
-        if (s.managedCountsTowardTarget) managedCountsTowardTarget = s.managedCountsTowardTarget;
         if (typeof s.breakdownOpen === 'boolean') breakdownOpen = s.breakdownOpen;
-        ddState.managedCounts = managedCountsTowardTarget;
       }
 
       online = true;
@@ -2038,12 +2014,6 @@
         o.classList.toggle('selected', o.dataset.value === v);
       });
 
-      if (name === 'managedCounts') {
-        managedCountsTowardTarget = v;
-        persistSettings();
-        render();
-      }
-
       // Auto-fill MRR when a tier with a known list price is picked (don't clobber user input)
       if (name === 'dealPlan' && PLAN_PRICES[v]) {
         const mrrInput = document.getElementById('dealMRR');
@@ -2307,7 +2277,6 @@
     await initSupabase();
     await loadData();
 
-    setupDropdown('managedCounts');
     setupDropdown('dealPlan');
     setupDropdown('dealBilling');
     setupPopover('settingsBtn', 'settingsPopover');
