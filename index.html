@@ -1,0 +1,1607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ACE Commission Tracker — Gabriel Dalton</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0c0c0d;
+    --bg-1: #131316;
+    --bg-2: #1a1a1e;
+    --bg-3: #232328;
+    --line: #26262d;
+    --line-2: #34343c;
+    --text: #f2f2f5;
+    --text-2: #a8a8b3;
+    --text-3: #6b6b76;
+    --text-4: #45454e;
+    --accent: #d4ff5e;
+    --accent-soft: rgba(212, 255, 94, 0.08);
+    --accent-line: rgba(212, 255, 94, 0.18);
+    --green: #4ade80;
+    --green-soft: rgba(74, 222, 128, 0.1);
+    --amber: #f59e0b;
+    --red: #ef4444;
+    --blue: #60a5fa;
+    --blue-soft: rgba(96, 165, 250, 0.12);
+    --radius: 8px;
+    --radius-lg: 12px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.5;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(212, 255, 94, 0.04), transparent 60%),
+      radial-gradient(800px 400px at 0% 100%, rgba(96, 165, 250, 0.03), transparent 60%),
+      var(--bg);
+    padding: 28px 24px 60px;
+  }
+
+  .container { max-width: 1320px; margin: 0 auto; }
+
+  /* HEADER */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding-bottom: 28px;
+    margin-bottom: 28px;
+    border-bottom: 1px solid var(--line);
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .brand { display: flex; flex-direction: column; gap: 6px; }
+
+  .brand-mark {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+  }
+
+  .brand-mark .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 12px rgba(212, 255, 94, 0.5);
+  }
+
+  .brand h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: 38px;
+    letter-spacing: -0.025em;
+    line-height: 1.1;
+  }
+
+  .brand h1 em { font-style: italic; color: var(--text-2); font-weight: 300; }
+
+  .brand .meta {
+    color: var(--text-3);
+    font-size: 13px;
+    font-family: 'JetBrains Mono', monospace;
+    margin-top: 2px;
+  }
+
+  .header-meta {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+  }
+
+  .header-meta .label {
+    color: var(--text-4);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+  }
+
+  .header-meta .value { color: var(--text-2); font-size: 12px; }
+
+  /* TOOLBAR */
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding: 14px 16px;
+    background: var(--bg-1);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    flex-wrap: wrap;
+  }
+
+  .toolbar-group { display: flex; align-items: center; gap: 10px; }
+
+  .toolbar-group + .toolbar-group {
+    border-left: 1px solid var(--line);
+    padding-left: 12px;
+  }
+
+  .toolbar-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-4);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    white-space: nowrap;
+  }
+
+  /* CUSTOM DROPDOWN */
+  .dd { position: relative; display: inline-block; }
+
+  .dd-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    color: var(--text);
+    padding: 8px 12px;
+    border-radius: var(--radius);
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    min-width: 180px;
+    transition: border-color 0.15s, background 0.15s;
+    user-select: none;
+    width: 100%;
+  }
+
+  .dd-trigger:hover { border-color: var(--line-2); background: var(--bg-3); }
+  .dd-trigger.open { border-color: var(--accent-line); background: var(--bg-3); }
+
+  .dd-trigger .chev {
+    width: 12px; height: 12px; flex-shrink: 0;
+    transition: transform 0.2s;
+    color: var(--text-3);
+  }
+
+  .dd-trigger.open .chev { transform: rotate(180deg); }
+
+  .dd-trigger .selected-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+    text-align: left;
+  }
+
+  .dd-trigger .selected-label.placeholder { color: var(--text-4); }
+
+  .dd-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    min-width: 100%;
+    background: var(--bg-2);
+    border: 1px solid var(--line-2);
+    border-radius: var(--radius);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.4), 0 4px 12px rgba(0,0,0,0.3);
+    padding: 6px;
+    z-index: 100;
+    max-height: 360px;
+    overflow-y: auto;
+    opacity: 0;
+    transform: translateY(-4px);
+    pointer-events: none;
+    transition: opacity 0.15s, transform 0.15s;
+  }
+
+  .dd-menu.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  .dd-menu::-webkit-scrollbar { width: 6px; }
+  .dd-menu::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 3px; }
+
+  .dd-group-label {
+    padding: 8px 10px 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--text-4);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+  }
+
+  .dd-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text-2);
+    transition: background 0.1s, color 0.1s;
+  }
+
+  .dd-option:hover { background: var(--bg-3); color: var(--text); }
+  .dd-option.selected { background: var(--accent-soft); color: var(--accent); }
+  .dd-option .meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-4);
+  }
+  .dd-option.selected .meta { color: var(--accent); opacity: 0.7; }
+
+  /* STATS */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+
+  .stat {
+    background: var(--bg-1);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .stat:hover { border-color: var(--line-2); }
+
+  .stat.featured {
+    background: linear-gradient(135deg, var(--accent-soft), transparent 60%), var(--bg-1);
+    border-color: var(--accent-line);
+  }
+
+  .stat.featured::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0.4;
+  }
+
+  .stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-4);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .stat-label .pill {
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    background: var(--bg-3);
+    color: var(--text-3);
+    letter-spacing: 0.1em;
+  }
+
+  .stat-label .pill.live { background: var(--green-soft); color: var(--green); }
+
+  .stat-value {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: 30px;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stat-value .currency {
+    font-size: 18px;
+    color: var(--text-3);
+    font-weight: 300;
+    margin-right: 1px;
+  }
+
+  .stat.featured .stat-value { color: var(--accent); }
+  .stat.featured .stat-value .currency { color: var(--accent); opacity: 0.5; }
+
+  .stat-meta {
+    margin-top: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-3);
+  }
+
+  .progress {
+    margin-top: 12px;
+    height: 3px;
+    background: var(--bg-3);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), #b8e040);
+    border-radius: 2px;
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .progress-fill.complete { background: linear-gradient(90deg, var(--green), #22c55e); }
+
+  /* SECTION */
+  .section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 32px 0 14px;
+    gap: 16px;
+  }
+
+  .section-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-title .num { color: var(--text-4); font-weight: 400; }
+
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+    margin-left: 4px;
+    min-width: 40px;
+  }
+
+  /* ADD DEAL */
+  .add-deal {
+    background: var(--bg-1);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1.4fr 1.1fr 1fr 1.2fr;
+    gap: 12px;
+  }
+
+  .field { display: flex; flex-direction: column; gap: 6px; }
+
+  .field-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-4);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+  }
+
+  .input {
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    color: var(--text);
+    padding: 9px 12px;
+    border-radius: var(--radius);
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    transition: border-color 0.15s, background 0.15s;
+    width: 100%;
+  }
+
+  .input::placeholder { color: var(--text-4); }
+  .input:hover { border-color: var(--line-2); }
+  .input:focus { outline: none; border-color: var(--accent-line); background: var(--bg-3); }
+
+  .input::-webkit-calendar-picker-indicator {
+    filter: invert(0.6);
+    cursor: pointer;
+  }
+
+  .input-currency { position: relative; }
+  .input-currency::before {
+    content: '$';
+    position: absolute;
+    left: 11px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-4);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .input-currency .input { padding-left: 22px; }
+
+  .form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+    justify-content: flex-end;
+  }
+
+  /* BUTTONS */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 9px 16px;
+    border-radius: var(--radius);
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: 1px solid transparent;
+    white-space: nowrap;
+    line-height: 1;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #1a1a00;
+    font-weight: 600;
+  }
+
+  .btn-primary:hover {
+    background: #c4ed4d;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(212, 255, 94, 0.2);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-2);
+    border-color: var(--line);
+  }
+
+  .btn-ghost:hover {
+    background: var(--bg-2);
+    border-color: var(--line-2);
+    color: var(--text);
+  }
+
+  .btn-icon {
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text-3);
+    padding: 6px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.15s;
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn-icon:hover {
+    background: var(--bg-3);
+    color: var(--red);
+    border-color: var(--line-2);
+  }
+
+  /* TABLE */
+  .table-wrap {
+    background: var(--bg-1);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+
+  table { width: 100%; border-collapse: collapse; }
+
+  thead tr {
+    background: linear-gradient(180deg, var(--bg-2), var(--bg-1));
+    border-bottom: 1px solid var(--line);
+  }
+
+  th {
+    text-align: left;
+    padding: 12px 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--text-4);
+  }
+
+  th.right { text-align: right; }
+
+  tbody tr {
+    border-bottom: 1px solid var(--line);
+    transition: background 0.1s;
+  }
+
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--bg-2); }
+
+  td { padding: 14px 16px; font-size: 13px; vertical-align: middle; }
+  td.right { text-align: right; }
+
+  .deal-name { font-weight: 500; color: var(--text); }
+
+  .deal-ref {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-4);
+    margin-top: 2px;
+    letter-spacing: 0.05em;
+  }
+
+  .mono { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .badge-platform { background: var(--blue-soft); color: var(--blue); }
+  .badge-managed { background: var(--accent-soft); color: var(--accent); }
+  .badge-excluded { background: var(--bg-3); color: var(--text-3); }
+
+  .badge::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.7;
+  }
+
+  .commission-cell {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .commission-cell.earned { color: var(--green); }
+  .commission-cell.zero { color: var(--text-4); }
+
+  .eligibility {
+    font-size: 11px;
+    color: var(--text-3);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .eligibility.yes { color: var(--green); }
+  .eligibility.partial { color: var(--amber); }
+  .eligibility.no { color: var(--text-4); }
+
+  .empty-state { padding: 80px 24px; text-align: center; }
+
+  .empty-state h3 {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: 22px;
+    margin-bottom: 8px;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+
+  .empty-state p { color: var(--text-3); font-size: 13px; }
+
+  /* BREAKDOWN */
+  .breakdown {
+    background: var(--bg-1);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+  }
+
+  .breakdown-section { margin-bottom: 20px; }
+  .breakdown-section:last-child { margin-bottom: 0; }
+
+  .breakdown-section-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-4);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-2);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .breakdown-row.subtotal {
+    margin-top: 6px;
+    padding-top: 8px;
+    border-top: 1px dashed var(--line);
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .breakdown-row.calculation { color: var(--text-3); font-style: italic; }
+  .breakdown-row .value-positive { color: var(--green); }
+
+  .breakdown-total {
+    margin-top: 20px;
+    padding: 16px 20px;
+    background: linear-gradient(135deg, var(--accent-soft), transparent);
+    border: 1px solid var(--accent-line);
+    border-radius: var(--radius);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  .breakdown-total .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-2);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+  }
+
+  .breakdown-total .value {
+    font-family: 'Fraunces', serif;
+    font-size: 28px;
+    color: var(--accent);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* RULES */
+  details.rules {
+    background: var(--bg-1);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+
+  details.rules summary {
+    cursor: pointer;
+    padding: 16px 20px;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-2);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    transition: background 0.15s;
+  }
+
+  details.rules summary:hover { background: var(--bg-2); }
+  details.rules summary::-webkit-details-marker { display: none; }
+
+  details.rules .toggle {
+    width: 14px;
+    height: 14px;
+    color: var(--accent);
+    transition: transform 0.2s;
+  }
+
+  details.rules[open] .toggle { transform: rotate(45deg); }
+
+  .rules-content {
+    padding: 0 20px 20px;
+    border-top: 1px solid var(--line);
+    margin-top: 8px;
+    padding-top: 16px;
+  }
+
+  .rule-row {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 16px;
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--line);
+    font-size: 13px;
+  }
+
+  .rule-row:last-child { border-bottom: none; }
+
+  .rule-row .key {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-4);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    padding-top: 2px;
+  }
+
+  .rule-row .val { color: var(--text-2); line-height: 1.6; }
+  .rule-row .val strong { color: var(--text); font-weight: 500; }
+
+  /* FOOTER */
+  .footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 32px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .footer-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-4);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+  }
+
+  .footer-actions { display: flex; gap: 8px; }
+
+  /* RESPONSIVE */
+  @media (max-width: 1100px) {
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .form-grid { grid-template-columns: 1fr 1fr 1fr; }
+  }
+
+  @media (max-width: 720px) {
+    body { padding: 16px 14px; }
+    .brand h1 { font-size: 28px; }
+    .form-grid { grid-template-columns: 1fr 1fr; }
+    .stats { grid-template-columns: 1fr; }
+    th, td { padding: 10px 12px; font-size: 12px; }
+    .toolbar-group + .toolbar-group {
+      border-left: none;
+      padding-left: 0;
+      width: 100%;
+    }
+  }
+
+  @media (max-width: 540px) {
+    .form-grid { grid-template-columns: 1fr; }
+    table thead { display: none; }
+    table, tbody, tr, td { display: block; width: 100%; }
+    tbody tr { padding: 12px 16px; border-bottom: 1px solid var(--line); }
+    td {
+      padding: 4px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    td::before {
+      content: attr(data-label);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      color: var(--text-4);
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+    }
+    .rule-row { grid-template-columns: 1fr; gap: 4px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header class="header">
+    <div class="brand">
+      <div class="brand-mark">
+        <span class="dot"></span>
+        <span>ACE · Commission Tracker</span>
+      </div>
+      <h1>Performance, <em>tracked.</em></h1>
+      <div class="meta">Gabriel Dalton · accessibilitychecker.org</div>
+    </div>
+    <div class="header-meta">
+      <div class="label">Structure</div>
+      <div class="value">10% above $1,000 MRR</div>
+      <div class="value" style="color: var(--text-3); margin-top: 6px;">Managed: flat $300</div>
+    </div>
+  </header>
+
+  <details class="rules">
+    <summary>
+      <svg class="toggle" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M8 3v10M3 8h10"/>
+      </svg>
+      <span>Commission Structure & Rules</span>
+    </summary>
+    <div class="rules-content">
+      <div class="rule-row">
+        <div class="key">Target</div>
+        <div class="val"><strong>$1,000 in eligible new MRR per month.</strong> Resets each calendar month.</div>
+      </div>
+      <div class="rule-row">
+        <div class="key">Above target</div>
+        <div class="val">10% commission on the new MRR above the $1,000 line, calculated on first-year contract value (12 × monthly MRR), paid as the client pays.</div>
+      </div>
+      <div class="rule-row">
+        <div class="key">Below target</div>
+        <div class="val">Hourly rate only. No commission on Platform deals below the threshold.</div>
+      </div>
+      <div class="rule-row">
+        <div class="key">Eligible plans</div>
+        <div class="val"><strong>Scale, all Pro tiers, and all Unlimited Domain plans</strong> count toward target and earn commission.</div>
+      </div>
+      <div class="rule-row">
+        <div class="key">Excluded plans</div>
+        <div class="val">Lite, Starter, and Growth — self-serve tiers — do not count toward target and do not earn commission.</div>
+      </div>
+      <div class="rule-row">
+        <div class="key">Managed deals</div>
+        <div class="val"><strong>Flat $300 commission per deal</strong>, regardless of size. Compensates for dev hours, audit hours, and referral fees baked into Managed pricing.</div>
+      </div>
+      <div class="rule-row">
+        <div class="key">12-month cap</div>
+        <div class="val">Commission stops after 12 months of payments per client, or earlier if the client cancels.</div>
+      </div>
+      <div class="rule-row">
+        <div class="key">Open question</div>
+        <div class="val" style="color: var(--amber);">Whether Managed deals count toward the $1,000 monthly target alongside the flat $300. Toggle below to model both scenarios.</div>
+      </div>
+    </div>
+  </details>
+
+  <div class="toolbar">
+    <div class="toolbar-group">
+      <span class="toolbar-label">Period</span>
+      <input type="month" id="monthSelector" class="input" style="min-width: 160px; max-width: 180px;">
+    </div>
+    <div class="toolbar-group">
+      <span class="toolbar-label">Managed counts toward target</span>
+      <div class="dd" data-dd="managedCounts" style="min-width: 200px;">
+        <button class="dd-trigger" type="button">
+          <span class="selected-label">Yes (recommended)</span>
+          <svg class="chev" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M3 4.5L6 7.5L9 4.5"/>
+          </svg>
+        </button>
+        <div class="dd-menu">
+          <div class="dd-option selected" data-value="yes">
+            <span>Yes (recommended)</span>
+            <span class="meta">+ flat $300</span>
+          </div>
+          <div class="dd-option" data-value="no">
+            <span>No (separate)</span>
+            <span class="meta">flat only</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-label">
+        <span>Eligible MRR</span>
+        <span class="pill" id="targetStatus">Below target</span>
+      </div>
+      <div class="stat-value"><span class="currency">$</span><span id="eligibleMRR">0</span></div>
+      <div class="stat-meta" id="targetProgress">$1,000 to unlock</div>
+      <div class="progress">
+        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+      </div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-label"><span>Above Target</span></div>
+      <div class="stat-value"><span class="currency">$</span><span id="overage">0</span></div>
+      <div class="stat-meta" id="overageNote">Locked</div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-label"><span>Managed Bonus</span></div>
+      <div class="stat-value"><span class="currency">$</span><span id="managedTotal">0</span></div>
+      <div class="stat-meta" id="managedCount">0 deals × $300</div>
+    </div>
+
+    <div class="stat featured">
+      <div class="stat-label">
+        <span>Total Commission</span>
+        <span class="pill live">Live</span>
+      </div>
+      <div class="stat-value"><span class="currency">$</span><span id="totalCommission">0</span></div>
+      <div class="stat-meta" id="commissionBreakdown">$0 platform + $0 managed</div>
+    </div>
+  </div>
+
+  <div class="section-head">
+    <div class="section-title"><span class="num">01</span><span>Log a Deal</span></div>
+  </div>
+  <div class="add-deal">
+    <div class="form-grid">
+      <div class="field">
+        <label class="field-label">Client name</label>
+        <input type="text" id="dealName" class="input" placeholder="e.g. Lift Box Inc.">
+      </div>
+      <div class="field">
+        <label class="field-label">MRR</label>
+        <div class="input-currency">
+          <input type="number" id="dealMRR" class="input" placeholder="599" step="1" min="0">
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">Plan tier</label>
+        <div class="dd" data-dd="dealPlan">
+          <button class="dd-trigger" type="button">
+            <span class="selected-label placeholder">Select plan…</span>
+            <svg class="chev" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M3 4.5L6 7.5L9 4.5"/>
+            </svg>
+          </button>
+          <div class="dd-menu">
+            <div class="dd-group-label">Excluded — no commission</div>
+            <div class="dd-option" data-value="lite"><span>Lite</span><span class="meta">$89</span></div>
+            <div class="dd-option" data-value="starter"><span>Starter</span><span class="meta">$149</span></div>
+            <div class="dd-option" data-value="growth"><span>Growth</span><span class="meta">$239–299</span></div>
+            <div class="dd-group-label">Single Domain — eligible</div>
+            <div class="dd-option" data-value="scale"><span>Scale</span><span class="meta">$359–449</span></div>
+            <div class="dd-option" data-value="pro1500"><span>Pro 1500</span><span class="meta">$439–549</span></div>
+            <div class="dd-option" data-value="pro2000"><span>Pro 2000</span><span class="meta">$519–649</span></div>
+            <div class="dd-option" data-value="pro2500"><span>Pro 2500</span><span class="meta">$599–749</span></div>
+            <div class="dd-group-label">Unlimited Domains — eligible</div>
+            <div class="dd-option" data-value="unlimited"><span>Platform Unlimited</span><span class="meta">any tier</span></div>
+            <div class="dd-group-label">Managed — flat $300</div>
+            <div class="dd-option" data-value="managed"><span>Managed Accessibility</span><span class="meta">+$300</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">Close date</label>
+        <input type="date" id="dealDate" class="input">
+      </div>
+      <div class="field">
+        <label class="field-label">Billing</label>
+        <div class="dd" data-dd="dealBilling">
+          <button class="dd-trigger" type="button">
+            <span class="selected-label">Monthly</span>
+            <svg class="chev" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M3 4.5L6 7.5L9 4.5"/>
+            </svg>
+          </button>
+          <div class="dd-menu">
+            <div class="dd-option selected" data-value="monthly"><span>Monthly</span></div>
+            <div class="dd-option" data-value="annual"><span>Annual upfront</span><span class="meta">−20%</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">Reference</label>
+        <input type="text" id="dealRef" class="input" placeholder="ACE-2404-…">
+      </div>
+    </div>
+    <div class="form-actions">
+      <button type="button" class="btn btn-ghost" id="clearFormBtn">Clear</button>
+      <button type="button" class="btn btn-primary" id="addBtn">
+        <span>Add Deal</span>
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M2.5 6h7M6 2.5v7"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="section-head">
+    <div class="section-title"><span class="num">02</span><span>Deals This Month</span></div>
+  </div>
+  <div class="table-wrap">
+    <table id="dealsTable">
+      <thead>
+        <tr>
+          <th>Client</th>
+          <th>Date</th>
+          <th>Plan</th>
+          <th class="right">MRR</th>
+          <th class="right">ARR</th>
+          <th>Status</th>
+          <th class="right">Commission</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="dealsBody">
+        <tr><td colspan="8" class="empty-state">
+          <h3>No deals logged this month</h3>
+          <p>Add your first deal above to start tracking commission.</p>
+        </td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-head">
+    <div class="section-title"><span class="num">03</span><span>Calculation</span></div>
+  </div>
+  <div class="breakdown" id="breakdown">
+    <div id="breakdownContent" style="color: var(--text-4); text-align: center; padding: 32px;">
+      Add deals to see how commission is calculated.
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="footer-text">Auto-saved · Audit-ready</div>
+    <div class="footer-actions">
+      <button class="btn btn-ghost" id="exportBtn">Export CSV</button>
+      <button class="btn btn-ghost" id="importBtn">Import CSV</button>
+      <input type="file" id="importFile" accept=".csv" style="display:none">
+      <button class="btn btn-ghost" id="clearMonthBtn">Clear month</button>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+  let deals = [];
+  let currentMonth = new Date().toISOString().slice(0, 7);
+  let managedCountsTowardTarget = 'yes';
+
+  const TARGET = 1000;
+  const COMMISSION_RATE = 0.10;
+  const MANAGED_FLAT = 300;
+  const EXCLUDED_PLANS = ['lite', 'starter', 'growth'];
+  const MANAGED_PLAN = 'managed';
+
+  const ddState = {
+    managedCounts: 'yes',
+    dealPlan: '',
+    dealBilling: 'monthly'
+  };
+
+  const ddLabels = {
+    managedCounts: { yes: 'Yes (recommended)', no: 'No (separate)' },
+    dealPlan: {
+      lite: 'Lite', starter: 'Starter', growth: 'Growth',
+      scale: 'Scale', pro1500: 'Pro 1500', pro2000: 'Pro 2000', pro2500: 'Pro 2500',
+      unlimited: 'Platform Unlimited', managed: 'Managed Accessibility'
+    },
+    dealBilling: { monthly: 'Monthly', annual: 'Annual upfront' }
+  };
+
+  async function saveData() {
+    try {
+      await window.storage.set('ct-deals-v2', JSON.stringify(deals));
+      await window.storage.set('ct-settings-v2', JSON.stringify({ managedCountsTowardTarget }));
+    } catch(e) { console.error('Save failed:', e); }
+  }
+
+  async function loadData() {
+    try {
+      const r = await window.storage.get('ct-deals-v2');
+      if (r && r.value) deals = JSON.parse(r.value);
+    } catch(e) { deals = []; }
+    try {
+      const r = await window.storage.get('ct-settings-v2');
+      if (r && r.value) {
+        const s = JSON.parse(r.value);
+        managedCountsTowardTarget = s.managedCountsTowardTarget || 'yes';
+        ddState.managedCounts = managedCountsTowardTarget;
+      }
+    } catch(e) {}
+  }
+
+  const fmt = (n) => Math.round(n).toLocaleString('en-US');
+  const fmtExact = (n) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const isExcluded = (p) => EXCLUDED_PLANS.includes(p);
+  const isManaged = (p) => p === MANAGED_PLAN;
+  const isPlatform = (p) => !isExcluded(p) && !isManaged(p);
+  const planLabel = (p) => ddLabels.dealPlan[p] || p;
+
+  function escapeHtml(s) {
+    if (!s) return '';
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+  }
+
+  function formatDate(d) {
+    if (!d) return '—';
+    const date = new Date(d + 'T12:00:00');
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+
+  function getMonthDeals() {
+    return deals.filter(d => d.date && d.date.startsWith(currentMonth));
+  }
+
+  function calculateMonth() {
+    const monthDeals = getMonthDeals();
+    const platformDeals = monthDeals.filter(d => isPlatform(d.plan));
+    const managedDeals = monthDeals.filter(d => isManaged(d.plan));
+    const excludedDeals = monthDeals.filter(d => isExcluded(d.plan));
+
+    const platformMRR = platformDeals.reduce((s, d) => s + Number(d.mrr), 0);
+    const managedMRR = managedDeals.reduce((s, d) => s + Number(d.mrr), 0);
+
+    let eligibleMRR = platformMRR;
+    if (managedCountsTowardTarget === 'yes') eligibleMRR += managedMRR;
+
+    const overage = Math.max(0, eligibleMRR - TARGET);
+
+    let platformCommission = 0;
+    const dealCommissions = {};
+
+    if (overage > 0 && platformMRR > 0) {
+      const targetToFill = managedCountsTowardTarget === 'yes'
+        ? Math.max(0, TARGET - managedMRR)
+        : TARGET;
+      const platformAboveLine = Math.max(0, platformMRR - targetToFill);
+      platformCommission = platformAboveLine * 12 * COMMISSION_RATE;
+
+      if (platformAboveLine > 0) {
+        const sortedPlatform = [...platformDeals].sort((a, b) => a.date.localeCompare(b.date));
+        let runningTotal = 0;
+        for (const d of sortedPlatform) {
+          const dealMRR = Number(d.mrr);
+          const before = runningTotal;
+          const after = runningTotal + dealMRR;
+          let aboveLine = 0;
+          if (after <= targetToFill) aboveLine = 0;
+          else if (before >= targetToFill) aboveLine = dealMRR;
+          else aboveLine = after - targetToFill;
+          dealCommissions[d.id] = aboveLine * 12 * COMMISSION_RATE;
+          runningTotal = after;
+        }
+      } else {
+        platformDeals.forEach(d => dealCommissions[d.id] = 0);
+      }
+    } else {
+      platformDeals.forEach(d => dealCommissions[d.id] = 0);
+    }
+
+    managedDeals.forEach(d => dealCommissions[d.id] = MANAGED_FLAT);
+    excludedDeals.forEach(d => dealCommissions[d.id] = 0);
+
+    return {
+      monthDeals, platformDeals, managedDeals, excludedDeals,
+      platformMRR, managedMRR, eligibleMRR, overage,
+      platformCommission,
+      managedCommission: managedDeals.length * MANAGED_FLAT,
+      totalCommission: platformCommission + (managedDeals.length * MANAGED_FLAT),
+      dealCommissions
+    };
+  }
+
+  function render() {
+    const c = calculateMonth();
+
+    document.getElementById('eligibleMRR').textContent = fmt(c.eligibleMRR);
+    const pct = Math.min(100, (c.eligibleMRR / TARGET) * 100);
+    const fill = document.getElementById('progressFill');
+    fill.style.width = pct + '%';
+    fill.classList.toggle('complete', c.eligibleMRR >= TARGET);
+
+    const targetStatus = document.getElementById('targetStatus');
+    if (c.eligibleMRR >= TARGET) {
+      targetStatus.textContent = 'Target hit';
+      targetStatus.className = 'pill live';
+    } else {
+      targetStatus.textContent = 'Below target';
+      targetStatus.className = 'pill';
+    }
+
+    document.getElementById('targetProgress').textContent = c.eligibleMRR >= TARGET
+      ? `${Math.round((c.eligibleMRR / TARGET) * 100)}% of $1,000 target`
+      : `$${fmt(TARGET - c.eligibleMRR)} more to unlock`;
+
+    document.getElementById('overage').textContent = fmt(c.overage);
+    document.getElementById('overageNote').textContent = c.overage > 0
+      ? `× 12 × 10% = $${fmtExact(c.platformCommission)}`
+      : 'Locked — below target';
+
+    document.getElementById('managedTotal').textContent = fmt(c.managedCommission);
+    document.getElementById('managedCount').textContent =
+      `${c.managedDeals.length} deal${c.managedDeals.length !== 1 ? 's' : ''} × $300`;
+
+    document.getElementById('totalCommission').textContent = fmtExact(c.totalCommission);
+    document.getElementById('commissionBreakdown').textContent =
+      `$${fmtExact(c.platformCommission)} platform + $${fmtExact(c.managedCommission)} managed`;
+
+    const tbody = document.getElementById('dealsBody');
+    if (c.monthDeals.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="8" class="empty-state">
+        <h3>No deals logged this month</h3>
+        <p>Add your first deal above to start tracking commission.</p>
+      </td></tr>`;
+    } else {
+      const sorted = [...c.monthDeals].sort((a, b) => a.date.localeCompare(b.date));
+      tbody.innerHTML = sorted.map(d => {
+        const mrr = Number(d.mrr);
+        const arr = mrr * 12;
+        const commission = c.dealCommissions[d.id] || 0;
+        let badgeClass, badgeText, eligText, eligClass;
+
+        if (isManaged(d.plan)) {
+          badgeClass = 'badge-managed';
+          badgeText = 'Managed';
+          eligText = managedCountsTowardTarget === 'yes' ? 'Counts + flat $300' : 'Flat $300 only';
+          eligClass = 'partial';
+        } else if (isExcluded(d.plan)) {
+          badgeClass = 'badge-excluded';
+          badgeText = planLabel(d.plan);
+          eligText = 'Excluded';
+          eligClass = 'no';
+        } else {
+          badgeClass = 'badge-platform';
+          badgeText = planLabel(d.plan);
+          eligText = 'Eligible';
+          eligClass = 'yes';
+        }
+
+        const commClass = commission > 0 ? 'earned' : 'zero';
+
+        return `
+          <tr data-id="${d.id}">
+            <td data-label="Client">
+              <div class="deal-name">${escapeHtml(d.name)}</div>
+              ${d.ref ? `<div class="deal-ref">${escapeHtml(d.ref)}</div>` : ''}
+            </td>
+            <td data-label="Date" class="mono" style="color:var(--text-2)">${formatDate(d.date)}</td>
+            <td data-label="Plan"><span class="badge ${badgeClass}">${badgeText}</span></td>
+            <td data-label="MRR" class="right mono">$${fmt(mrr)}</td>
+            <td data-label="ARR" class="right mono" style="color:var(--text-3)">$${fmt(arr)}</td>
+            <td data-label="Status"><span class="eligibility ${eligClass}">${eligText}</span></td>
+            <td data-label="Commission" class="right commission-cell ${commClass}">$${fmtExact(commission)}</td>
+            <td data-label="" class="right"><button class="btn-icon" onclick="deleteDeal('${d.id}')" title="Delete">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M3.5 3.5l7 7M10.5 3.5l-7 7"/>
+              </svg>
+            </button></td>
+          </tr>`;
+      }).join('');
+    }
+
+    renderBreakdown(c);
+  }
+
+  function renderBreakdown(c) {
+    const el = document.getElementById('breakdownContent');
+    if (c.monthDeals.length === 0) {
+      el.innerHTML = '<div style="color:var(--text-4);text-align:center;padding:32px;">Add deals to see how commission is calculated.</div>';
+      return;
+    }
+
+    let html = '';
+
+    html += `<div class="breakdown-section">`;
+    html += `<div class="breakdown-section-title">Eligible MRR Toward Target</div>`;
+
+    if (c.platformDeals.length > 0) {
+      c.platformDeals.forEach(d => {
+        html += `<div class="breakdown-row"><span>${escapeHtml(d.name)} <span style="color:var(--text-4)">— ${planLabel(d.plan)}</span></span><span>$${fmt(Number(d.mrr))}/mo</span></div>`;
+      });
+      if (c.managedDeals.length > 0 && managedCountsTowardTarget === 'yes') {
+        c.managedDeals.forEach(d => {
+          html += `<div class="breakdown-row"><span>${escapeHtml(d.name)} <span style="color:var(--text-4)">— Managed (counts toward target)</span></span><span>$${fmt(Number(d.mrr))}/mo</span></div>`;
+        });
+      }
+      html += `<div class="breakdown-row subtotal"><span>Total eligible MRR</span><span>$${fmt(c.eligibleMRR)}</span></div>`;
+    } else if (c.managedDeals.length > 0 && managedCountsTowardTarget === 'yes') {
+      c.managedDeals.forEach(d => {
+        html += `<div class="breakdown-row"><span>${escapeHtml(d.name)} <span style="color:var(--text-4)">— Managed (counts toward target)</span></span><span>$${fmt(Number(d.mrr))}/mo</span></div>`;
+      });
+      html += `<div class="breakdown-row subtotal"><span>Total eligible MRR</span><span>$${fmt(c.eligibleMRR)}</span></div>`;
+    } else {
+      html += `<div class="breakdown-row" style="color:var(--text-4)"><span>No eligible deals this month</span><span>$0</span></div>`;
+    }
+    html += `</div>`;
+
+    html += `<div class="breakdown-section">`;
+    html += `<div class="breakdown-section-title">Above Target Calculation</div>`;
+    html += `<div class="breakdown-row"><span>Eligible MRR</span><span>$${fmt(c.eligibleMRR)}</span></div>`;
+    html += `<div class="breakdown-row"><span>− Target threshold</span><span>($${fmt(TARGET)})</span></div>`;
+    html += `<div class="breakdown-row subtotal"><span>Above target</span><span class="${c.overage > 0 ? 'value-positive' : ''}">$${fmt(c.overage)}</span></div>`;
+
+    if (c.platformCommission > 0) {
+      const targetToFill = managedCountsTowardTarget === 'yes' ? Math.max(0, TARGET - c.managedMRR) : TARGET;
+      const platformAboveLine = Math.max(0, c.platformMRR - targetToFill);
+      html += `<div class="breakdown-row calculation"><span>Platform MRR above line</span><span>$${fmt(platformAboveLine)}</span></div>`;
+      html += `<div class="breakdown-row calculation"><span>× 12 months (first-year value)</span><span>$${fmt(platformAboveLine * 12)}</span></div>`;
+      html += `<div class="breakdown-row calculation"><span>× 10% commission</span><span class="value-positive">$${fmtExact(c.platformCommission)}</span></div>`;
+    }
+    html += `</div>`;
+
+    if (c.managedDeals.length > 0) {
+      html += `<div class="breakdown-section">`;
+      html += `<div class="breakdown-section-title">Managed Bonuses</div>`;
+      c.managedDeals.forEach(d => {
+        html += `<div class="breakdown-row"><span>${escapeHtml(d.name)} <span style="color:var(--text-4)">($${fmt(Number(d.mrr))}/mo)</span></span><span class="value-positive">+$300.00</span></div>`;
+      });
+      html += `<div class="breakdown-row subtotal"><span>Managed total (${c.managedDeals.length} × $300)</span><span class="value-positive">$${fmtExact(c.managedCommission)}</span></div>`;
+      html += `</div>`;
+    }
+
+    if (c.excludedDeals.length > 0) {
+      html += `<div class="breakdown-section">`;
+      html += `<div class="breakdown-section-title">Excluded Deals</div>`;
+      c.excludedDeals.forEach(d => {
+        html += `<div class="breakdown-row" style="color:var(--text-4)"><span>${escapeHtml(d.name)} <span>— ${planLabel(d.plan)} (self-serve tier)</span></span><span>$0</span></div>`;
+      });
+      html += `</div>`;
+    }
+
+    html += `<div class="breakdown-total">
+      <span class="label">Total commission earned</span>
+      <span class="value">$${fmtExact(c.totalCommission)}</span>
+    </div>`;
+
+    el.innerHTML = html;
+  }
+
+  function setupDropdown(name) {
+    const dd = document.querySelector(`[data-dd="${name}"]`);
+    if (!dd) return;
+
+    const trigger = dd.querySelector('.dd-trigger');
+    const menu = dd.querySelector('.dd-menu');
+    const label = trigger.querySelector('.selected-label');
+
+    function setValue(v) {
+      ddState[name] = v;
+      const labelText = ddLabels[name][v] || 'Select…';
+      label.textContent = labelText;
+      label.classList.remove('placeholder');
+
+      menu.querySelectorAll('.dd-option').forEach(o => {
+        o.classList.toggle('selected', o.dataset.value === v);
+      });
+
+      if (name === 'managedCounts') {
+        managedCountsTowardTarget = v;
+        saveData();
+        render();
+      }
+    }
+
+    trigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = trigger.classList.contains('open');
+      document.querySelectorAll('.dd-trigger.open').forEach(t => t.classList.remove('open'));
+      document.querySelectorAll('.dd-menu.open').forEach(m => m.classList.remove('open'));
+      if (!isOpen) {
+        trigger.classList.add('open');
+        menu.classList.add('open');
+      }
+    });
+
+    menu.querySelectorAll('.dd-option').forEach(opt => {
+      opt.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setValue(opt.dataset.value);
+        trigger.classList.remove('open');
+        menu.classList.remove('open');
+      });
+    });
+
+    if (ddState[name]) setValue(ddState[name]);
+
+    return { setValue };
+  }
+
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.dd-trigger.open').forEach(t => t.classList.remove('open'));
+    document.querySelectorAll('.dd-menu.open').forEach(m => m.classList.remove('open'));
+  });
+
+  function addDeal() {
+    const name = document.getElementById('dealName').value.trim();
+    const mrr = parseFloat(document.getElementById('dealMRR').value);
+    const plan = ddState.dealPlan;
+    const date = document.getElementById('dealDate').value;
+    const billing = ddState.dealBilling;
+    const ref = document.getElementById('dealRef').value.trim();
+
+    if (!name) { alert('Client name is required.'); return; }
+    if (!mrr || isNaN(mrr)) { alert('MRR is required.'); return; }
+    if (!plan) { alert('Please select a plan tier.'); return; }
+    if (!date) { alert('Close date is required.'); return; }
+
+    deals.push({
+      id: 'd_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+      name, mrr, plan, date, billing, ref
+    });
+
+    clearForm();
+    saveData();
+    render();
+  }
+
+  function clearForm() {
+    document.getElementById('dealName').value = '';
+    document.getElementById('dealMRR').value = '';
+    document.getElementById('dealRef').value = '';
+    const planDd = document.querySelector('[data-dd="dealPlan"]');
+    if (planDd) {
+      const lbl = planDd.querySelector('.selected-label');
+      lbl.textContent = 'Select plan…';
+      lbl.classList.add('placeholder');
+      planDd.querySelectorAll('.dd-option').forEach(o => o.classList.remove('selected'));
+      ddState.dealPlan = '';
+    }
+    document.getElementById('dealDate').value = new Date().toISOString().slice(0, 10);
+  }
+
+  window.deleteDeal = function(id) {
+    if (!confirm('Delete this deal?')) return;
+    deals = deals.filter(d => d.id !== id);
+    saveData();
+    render();
+  };
+
+  function clearMonth() {
+    if (!confirm(`Clear all deals from ${currentMonth}? This cannot be undone.`)) return;
+    deals = deals.filter(d => !d.date || !d.date.startsWith(currentMonth));
+    saveData();
+    render();
+  }
+
+  function exportCSV() {
+    const c = calculateMonth();
+    const header = ['Client', 'Reference', 'Close Date', 'Plan', 'MRR', 'ARR', 'Billing', 'Commission'];
+    const rows = [...c.monthDeals]
+      .sort((a, b) => a.date.localeCompare(b.date))
+      .map(d => [
+        d.name, d.ref || '', d.date, planLabel(d.plan),
+        Number(d.mrr), Number(d.mrr) * 12, d.billing || 'monthly',
+        (c.dealCommissions[d.id] || 0).toFixed(2)
+      ]);
+
+    rows.push([], ['Eligible MRR', '', '', '', c.eligibleMRR, '', '', '']);
+    rows.push(['Above Target', '', '', '', c.overage, '', '', '']);
+    rows.push(['Platform Commission', '', '', '', '', '', '', c.platformCommission.toFixed(2)]);
+    rows.push(['Managed Commission', '', '', '', '', '', '', c.managedCommission.toFixed(2)]);
+    rows.push(['Total Commission', '', '', '', '', '', '', c.totalCommission.toFixed(2)]);
+
+    const csv = [header, ...rows].map(row =>
+      row.map(cell => {
+        const s = String(cell ?? '');
+        return s.includes(',') || s.includes('"') ? `"${s.replace(/"/g, '""')}"` : s;
+      }).join(',')
+    ).join('\n');
+
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `commission-${currentMonth}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function importCSV(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target.result;
+      const lines = text.split('\n').filter(l => l.trim());
+      let added = 0;
+      for (let i = 1; i < lines.length; i++) {
+        const cells = parseCSVLine(lines[i]);
+        if (cells.length < 5) continue;
+        const name = cells[0];
+        const ref = cells[1];
+        const date = cells[2];
+        const planText = (cells[3] || '').toLowerCase();
+        const mrr = parseFloat(cells[4]);
+        if (!name || !mrr || !date || isNaN(mrr)) continue;
+        if (/total|eligible|above/i.test(name)) continue;
+
+        let plan = 'unlimited';
+        if (planText.includes('lite')) plan = 'lite';
+        else if (planText.includes('starter')) plan = 'starter';
+        else if (planText.includes('growth')) plan = 'growth';
+        else if (planText.includes('scale')) plan = 'scale';
+        else if (planText.includes('pro 1500') || planText.includes('pro1500')) plan = 'pro1500';
+        else if (planText.includes('pro 2000') || planText.includes('pro2000')) plan = 'pro2000';
+        else if (planText.includes('pro 2500') || planText.includes('pro2500')) plan = 'pro2500';
+        else if (planText.includes('managed')) plan = 'managed';
+        else if (planText.includes('unlimited')) plan = 'unlimited';
+
+        deals.push({
+          id: 'd_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+          name, mrr, plan, date,
+          billing: (cells[6] || 'monthly').toLowerCase(), ref
+        });
+        added++;
+      }
+      saveData();
+      render();
+      alert(`Imported ${added} deal${added !== 1 ? 's' : ''}.`);
+    };
+    reader.readAsText(file);
+  }
+
+  function parseCSVLine(line) {
+    const result = [];
+    let cur = '', inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      if (c === '"') {
+        if (inQuotes && line[i+1] === '"') { cur += '"'; i++; }
+        else inQuotes = !inQuotes;
+      } else if (c === ',' && !inQuotes) { result.push(cur); cur = ''; }
+      else cur += c;
+    }
+    result.push(cur);
+    return result.map(s => s.trim());
+  }
+
+  async function init() {
+    await loadData();
+
+    setupDropdown('managedCounts');
+    setupDropdown('dealPlan');
+    setupDropdown('dealBilling');
+
+    const sel = document.getElementById('monthSelector');
+    sel.value = currentMonth;
+    sel.addEventListener('change', (e) => { currentMonth = e.target.value; render(); });
+
+    document.getElementById('dealDate').value = new Date().toISOString().slice(0, 10);
+
+    document.getElementById('addBtn').addEventListener('click', addDeal);
+    document.getElementById('clearFormBtn').addEventListener('click', clearForm);
+    document.getElementById('exportBtn').addEventListener('click', exportCSV);
+    document.getElementById('clearMonthBtn').addEventListener('click', clearMonth);
+    document.getElementById('importBtn').addEventListener('click', () => {
+      document.getElementById('importFile').click();
+    });
+    document.getElementById('importFile').addEventListener('change', (e) => {
+      if (e.target.files[0]) importCSV(e.target.files[0]);
+    });
+
+    ['dealName', 'dealMRR', 'dealRef'].forEach(id => {
+      document.getElementById(id).addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') addDeal();
+      });
+    });
+
+    if (deals.length === 0) {
+      deals = [
+        { id: 'seed_1', name: 'Government of SC', mrr: 299, plan: 'growth', date: '2026-04-28', billing: 'monthly', ref: 'ACE-2404-GSC' },
+        { id: 'seed_2', name: 'The Richland Group', mrr: 399, plan: 'unlimited', date: '2026-04-23', billing: 'annual', ref: 'ACE-2404-RG-PO1' },
+        { id: 'seed_3', name: 'Lift Box Inc.', mrr: 599, plan: 'managed', date: '2026-04-17', billing: 'monthly', ref: 'ACE-2404-LB' }
+      ];
+      saveData();
+    }
+
+    render();
+  }
+
+  init();
+</script>
+</body>
+</html>
