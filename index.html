@@ -8,6 +8,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.0/jspdf.plugin.autotable.min.js"></script>
 <script src="config.local.js" onerror="void 0"></script>
 <style>
   :root {
@@ -503,6 +505,46 @@
     font-family: 'JetBrains Mono', monospace;
     font-size: 11px;
     color: var(--text-3);
+  }
+
+  .stat-meta.good { color: var(--green); }
+  .stat-meta.warn { color: var(--amber); }
+
+  .stat-flag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    color: var(--text-3);
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+  }
+  .stat-flag.flag-good {
+    color: var(--green);
+    background: var(--green-soft);
+    border-color: rgba(21, 128, 61, 0.18);
+  }
+  .stat-flag.flag-warn {
+    color: var(--amber);
+    background: var(--amber-soft);
+    border-color: rgba(180, 83, 9, 0.18);
+  }
+
+  .stat-value .of-small {
+    font-size: 16px;
+    color: var(--text-3);
+    font-weight: 300;
+    font-family: 'JetBrains Mono', monospace;
+    margin-left: 4px;
+  }
+
+  .stat-name-truncate {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
   }
 
   /* SECTION */
@@ -1689,7 +1731,31 @@
   </div>
 
   <div class="section-head">
-    <div class="section-title"><span class="num">03</span><span>Calculation</span></div>
+    <div class="section-title"><span class="num">03</span><span>Statistics</span></div>
+  </div>
+  <div class="stats-row">
+    <div class="stat">
+      <div class="stat-label">
+        <span>Avg MRR / Deal</span>
+        <span class="stat-flag" id="avgMrrFlag">TARGET $600</span>
+      </div>
+      <div class="stat-value"><span class="currency">$</span><span id="avgMrrValue">0</span></div>
+      <div class="stat-meta" id="avgMrrNote">Goal: $600/deal (Yotam)</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label"><span>Largest Deal</span></div>
+      <div class="stat-value"><span class="currency">$</span><span id="largestDealValue">0</span></div>
+      <div class="stat-meta"><span class="stat-name-truncate" id="largestDealName">No deals yet</span></div>
+    </div>
+    <div class="stat">
+      <div class="stat-label"><span>Eligible Deals</span></div>
+      <div class="stat-value"><span id="eligibleDealCount">0</span><span class="of-small"> / <span id="totalDealCount">0</span></span></div>
+      <div class="stat-meta" id="eligibleDealNote">Counting toward target</div>
+    </div>
+  </div>
+
+  <div class="section-head">
+    <div class="section-title"><span class="num">04</span><span>Calculation</span></div>
     <button type="button" class="breakdown-toggle open" id="breakdownToggle">
       <svg class="chev" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6">
         <path d="M4.5 3L8 6l-3.5 3"/>
@@ -1709,6 +1775,13 @@
       <span>Connecting…</span>
     </div>
     <div class="footer-actions">
+      <button class="btn btn-primary" id="exportPdfBtn">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 2.5h6L13 5.5v8a1 1 0 01-1 1H4a1 1 0 01-1-1v-10a1 1 0 011-1z"/>
+          <path d="M10 2.5v3h3M5.5 9.5v3M8 8.5v4M10.5 10.5v2"/>
+        </svg>
+        <span>Export PDF</span>
+      </button>
       <button class="btn btn-ghost" id="exportBtn">Export CSV</button>
       <button class="btn btn-ghost" id="importBtn">Import CSV</button>
       <input type="file" id="importFile" accept=".csv" style="display:none">
@@ -2204,7 +2277,59 @@
       }).join('');
     }
 
+    renderStats(c);
     renderBreakdown(c);
+  }
+
+  // Yotam's stated benchmark for the pricing-form / lawyer-referral funnel
+  const AVG_MRR_TARGET = 600;
+
+  function renderStats(c) {
+    const all = c.monthDeals;
+    const eligibleCount = c.platformDeals.length + c.managedDeals.length;
+    const totalMRR = all.reduce((s, d) => s + Number(d.mrr), 0);
+    const avgMRR = all.length > 0 ? totalMRR / all.length : 0;
+
+    const avgValue = document.getElementById('avgMrrValue');
+    const avgFlag  = document.getElementById('avgMrrFlag');
+    const avgNote  = document.getElementById('avgMrrNote');
+    avgValue.textContent = fmt(avgMRR);
+
+    if (all.length === 0) {
+      avgFlag.textContent = 'TARGET $600';
+      avgFlag.className = 'stat-flag';
+      avgNote.textContent = 'Goal: $600/deal (Yotam)';
+      avgNote.className = 'stat-meta';
+    } else if (avgMRR >= AVG_MRR_TARGET) {
+      avgFlag.textContent = 'ON TRACK';
+      avgFlag.className = 'stat-flag flag-good';
+      avgNote.textContent = `+$${fmt(avgMRR - AVG_MRR_TARGET)} above $${AVG_MRR_TARGET} goal`;
+      avgNote.className = 'stat-meta good';
+    } else {
+      avgFlag.textContent = 'BELOW';
+      avgFlag.className = 'stat-flag flag-warn';
+      avgNote.textContent = `$${fmt(AVG_MRR_TARGET - avgMRR)} below $${AVG_MRR_TARGET} goal`;
+      avgNote.className = 'stat-meta warn';
+    }
+
+    let largest = null;
+    all.forEach(d => { if (!largest || Number(d.mrr) > Number(largest.mrr)) largest = d; });
+    document.getElementById('largestDealValue').textContent = fmt(largest ? Number(largest.mrr) : 0);
+    document.getElementById('largestDealName').textContent = largest
+      ? `${largest.name} · ${planShortLabel(largest.plan)}`
+      : 'No deals yet';
+
+    document.getElementById('eligibleDealCount').textContent = eligibleCount;
+    document.getElementById('totalDealCount').textContent = all.length;
+    const noteEl = document.getElementById('eligibleDealNote');
+    if (all.length === 0) {
+      noteEl.textContent = 'Counting toward target';
+    } else if (eligibleCount === all.length) {
+      noteEl.textContent = 'All deals count toward target';
+    } else {
+      const excluded = all.length - eligibleCount;
+      noteEl.textContent = `${excluded} excluded (self-serve)`;
+    }
   }
 
   function renderBreakdown(c) {
@@ -2456,6 +2581,276 @@
     a.click();
     URL.revokeObjectURL(url);
     showToast('CSV exported');
+  }
+
+  function exportPDF() {
+    if (!window.jspdf || !window.jspdf.jsPDF) {
+      showToast('PDF library failed to load', 'error');
+      return;
+    }
+    const c = calculateMonth();
+    if (c.monthDeals.length === 0) {
+      showToast('Nothing to export — no deals this month', 'error');
+      return;
+    }
+
+    const monthName = formatMonthLabel(currentMonth);
+    const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'pt', format: 'letter' });
+
+    const W = doc.internal.pageSize.getWidth();
+    const H = doc.internal.pageSize.getHeight();
+    const M = 48;
+
+    const COL = {
+      lime:     [196, 232, 74],
+      limeDeep: [107, 138, 20],
+      limeSoft: [238, 249, 201],
+      text:     [21, 21, 26],
+      text2:    [74, 74, 82],
+      text3:    [130, 130, 138],
+      text4:    [176, 176, 182],
+      line:     [232, 232, 226],
+      surface2: [247, 247, 243],
+      green:    [21, 128, 61],
+      amber:    [180, 83, 9]
+    };
+
+    // ── Header ──────────────────────────────────────────────
+    doc.setFillColor(...COL.lime);
+    doc.rect(M, 56, 4, 28, 'F');
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(...COL.text3);
+    doc.text('ACE  ·  COMMISSION STATEMENT', M + 14, 66);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(22);
+    doc.setTextColor(...COL.text);
+    doc.text(monthName, M + 14, 86);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(...COL.text3);
+    doc.text('Gabriel Dalton', W - M, 66, { align: 'right' });
+    doc.text(`Generated ${today}`, W - M, 80, { align: 'right' });
+    doc.text('accessibilitychecker.org', W - M, 94, { align: 'right' });
+
+    let y = 116;
+
+    // ── Hero summary box ────────────────────────────────────
+    const boxH = 92;
+    doc.setDrawColor(...COL.line);
+    doc.setFillColor(...COL.surface2);
+    doc.roundedRect(M, y, W - 2 * M, boxH, 8, 8, 'FD');
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(...COL.text3);
+    doc.text('TOTAL COMMISSION', M + 18, y + 22);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(30);
+    doc.setTextColor(...COL.text);
+    doc.text(`$${fmtExact(c.totalCommission)}`, M + 18, y + 58);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(...COL.text3);
+    doc.text(
+      `${c.platformDeals.length} platform · ${c.managedDeals.length} managed · ${c.monthDeals.length} total deals`,
+      M + 18, y + 76
+    );
+
+    // Right side metrics
+    const rightX = W - M - 200;
+    doc.setFontSize(8);
+    doc.setTextColor(...COL.text3);
+    doc.text('ELIGIBLE MRR', rightX, y + 22);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(14);
+    doc.setTextColor(...COL.text);
+    doc.text(`$${fmt(c.eligibleMRR)}`, rightX, y + 40);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(...COL.text3);
+    doc.text(`of $${fmt(TARGET)} target`, rightX + 60, y + 40);
+
+    doc.setFontSize(8);
+    doc.setTextColor(...COL.text3);
+    doc.text('STATUS', rightX, y + 60);
+    if (c.eligibleMRR >= TARGET) {
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...COL.green);
+      doc.setFontSize(11);
+      doc.text(`✓ Target hit · $${fmt(c.overage)} above`, rightX, y + 76);
+    } else {
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...COL.amber);
+      doc.setFontSize(11);
+      doc.text(`$${fmt(TARGET - c.eligibleMRR)} below target`, rightX, y + 76);
+    }
+
+    y += boxH + 28;
+
+    // ── Deals table ─────────────────────────────────────────
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(...COL.text3);
+    doc.text('DEALS THIS MONTH', M, y);
+    y += 6;
+
+    const sorted = [...c.monthDeals].sort((a, b) => a.date.localeCompare(b.date));
+    const tableBody = sorted.map(d => {
+      const mrr = Number(d.mrr);
+      const arr = mrr * 12;
+      const comm = c.dealCommissions[d.id] || 0;
+      const status = isManaged(d.plan)
+        ? 'Managed (flat)'
+        : (isExcluded(d.plan) ? 'Excluded' : 'Eligible');
+      return [
+        formatDate(d.date),
+        d.name,
+        planLabel(d.plan),
+        `$${fmt(mrr)}`,
+        `$${fmt(arr)}`,
+        status,
+        `$${fmtExact(comm)}`
+      ];
+    });
+
+    doc.autoTable({
+      startY: y + 6,
+      margin: { left: M, right: M },
+      head: [['Date', 'Client', 'Plan', 'MRR', 'ARR', 'Status', 'Commission']],
+      body: tableBody,
+      theme: 'plain',
+      styles: {
+        font: 'helvetica',
+        fontSize: 9,
+        cellPadding: { top: 8, right: 10, bottom: 8, left: 10 },
+        lineColor: COL.line,
+        lineWidth: 0.5,
+        textColor: COL.text2,
+        valign: 'middle'
+      },
+      headStyles: {
+        fillColor: COL.surface2,
+        textColor: COL.text3,
+        fontStyle: 'bold',
+        fontSize: 8,
+        cellPadding: { top: 8, right: 10, bottom: 8, left: 10 },
+        lineColor: COL.line,
+        lineWidth: 0.5
+      },
+      columnStyles: {
+        0: { cellWidth: 56 },
+        3: { halign: 'right', cellWidth: 50 },
+        4: { halign: 'right', cellWidth: 56, textColor: COL.text3 },
+        5: { cellWidth: 70, fontSize: 8 },
+        6: { halign: 'right', cellWidth: 70, fontStyle: 'bold', textColor: COL.text }
+      },
+      didParseCell: (data) => {
+        if (data.section === 'body' && data.column.index === 5) {
+          const v = data.cell.raw;
+          if (v === 'Eligible')        data.cell.styles.textColor = COL.green;
+          else if (v === 'Excluded')   data.cell.styles.textColor = COL.text4;
+          else if (v && v.toString().startsWith('Managed')) data.cell.styles.textColor = COL.limeDeep;
+        }
+      }
+    });
+
+    y = doc.lastAutoTable.finalY + 28;
+
+    // Page-break check before calculation block
+    const calcMinHeight = 200;
+    if (y + calcMinHeight > H - 60) {
+      doc.addPage();
+      y = M;
+    }
+
+    // ── Calculation breakdown ───────────────────────────────
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(...COL.text3);
+    doc.text('CALCULATION', M, y);
+    y += 14;
+
+    const lines = [];
+    if (c.platformDeals.length > 0 || c.managedDeals.length > 0) {
+      if (c.platformMRR > 0) lines.push([`Platform MRR (${c.platformDeals.length} deal${c.platformDeals.length !== 1 ? 's' : ''})`, `$${fmt(c.platformMRR)}`]);
+      if (c.managedMRR > 0)  lines.push([`Managed MRR (${c.managedDeals.length} deal${c.managedDeals.length !== 1 ? 's' : ''}, counts toward target)`, `$${fmt(c.managedMRR)}`]);
+      lines.push([`Eligible MRR`, `$${fmt(c.eligibleMRR)}`, true]);
+      lines.push([`Target threshold`, `−$${fmt(TARGET)}`]);
+      lines.push([`Above target`, `$${fmt(c.overage)}`, true]);
+    }
+    if (c.platformCommission > 0) {
+      const targetToFill = Math.max(0, TARGET - c.managedMRR);
+      const platAbove = Math.max(0, c.platformMRR - targetToFill);
+      lines.push([null]);
+      lines.push([`Platform MRR above line`, `$${fmt(platAbove)}`]);
+      lines.push([`× 12 months (first-year value)`, `$${fmt(platAbove * 12)}`]);
+      lines.push([`× 10% commission`, `$${fmtExact(c.platformCommission)}`, true]);
+    }
+    if (c.managedDeals.length > 0) {
+      lines.push([null]);
+      lines.push([`${c.managedDeals.length} Managed deal${c.managedDeals.length !== 1 ? 's' : ''} × $300 flat`, `$${fmtExact(c.managedCommission)}`, true]);
+    }
+
+    doc.setFontSize(10);
+    lines.forEach(row => {
+      if (row[0] === null) { y += 4; return; }
+      const [label, val, isSubtotal] = row;
+      if (isSubtotal) {
+        doc.setDrawColor(...COL.line);
+        doc.setLineDashPattern([2, 2], 0);
+        doc.line(M, y - 8, W - M, y - 8);
+        doc.setLineDashPattern([], 0);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(...COL.text);
+      } else {
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(...COL.text2);
+      }
+      doc.text(label, M, y);
+      doc.text(val, W - M, y, { align: 'right' });
+      y += 16;
+    });
+
+    // ── Total bar ──────────────────────────────────────────
+    y += 12;
+    if (y + 56 > H - 60) { doc.addPage(); y = M; }
+
+    doc.setFillColor(...COL.limeSoft);
+    doc.setDrawColor(...COL.lime);
+    doc.roundedRect(M, y, W - 2 * M, 52, 8, 8, 'FD');
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(...COL.limeDeep);
+    doc.text('TOTAL COMMISSION EARNED', M + 18, y + 22);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(22);
+    doc.setTextColor(...COL.text);
+    doc.text(`$${fmtExact(c.totalCommission)}`, W - M - 18, y + 34, { align: 'right' });
+
+    // ── Page footer on every page ──────────────────────────
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let p = 1; p <= pageCount; p++) {
+      doc.setPage(p);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(...COL.text4);
+      doc.text(
+        `ACE Commission Statement  ·  ${monthName}  ·  Generated ${today}`,
+        M, H - 28
+      );
+      doc.text(`${p} / ${pageCount}`, W - M, H - 28, { align: 'right' });
+    }
+
+    doc.save(`ACE-Commission-${currentMonth}.pdf`);
+    showToast('PDF exported');
   }
 
   function importCSV(file) {
@@ -2817,6 +3212,7 @@
     document.getElementById('addBtn').addEventListener('click', addDeal);
     document.getElementById('clearFormBtn').addEventListener('click', clearForm);
     document.getElementById('exportBtn').addEventListener('click', exportCSV);
+    document.getElementById('exportPdfBtn').addEventListener('click', exportPDF);
     document.getElementById('clearMonthBtn').addEventListener('click', clearMonth);
     document.getElementById('importBtn').addEventListener('click', () => {
       document.getElementById('importFile').click();
