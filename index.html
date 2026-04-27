@@ -1336,14 +1336,6 @@
           </svg>
         </button>
       </div>
-      <button class="icon-btn" id="settingsBtn" title="Settings" aria-label="Settings">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M2.5 4h6M11 4h2.5M2.5 8h2M7 8h6.5M2.5 12h8M12.5 12h1"/>
-          <circle cx="9.5" cy="4" r="1.5"/>
-          <circle cx="5.5" cy="8" r="1.5"/>
-          <circle cx="11.5" cy="12" r="1.5"/>
-        </svg>
-      </button>
       <button class="icon-btn" id="rulesBtn" title="Commission rules" aria-label="Commission rules">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="8" cy="8" r="6.5"/>
@@ -2431,20 +2423,6 @@
     });
   }
 
-  function openSettingsModal() {
-    openModal({
-      title: 'Calculation Settings',
-      content: `
-        <div class="popover-setting" style="padding-top:0;">
-          <span class="label">Managed counts toward target</span>
-          <span class="desc">Confirmed policy: Managed MRR fills the $1,000 monthly target alongside the flat $300/deal bonus. A $599 Managed deal contributes $599 to the target <em>and</em> pays $300.</span>
-          <span class="desc" style="color: var(--text-3); font-style: italic;">No toggle — this is the agreed structure.</span>
-        </div>
-      `,
-      buttons: [{ label: 'Close', variant: 'btn-ghost' }]
-    });
-  }
-
   function openRulesModal() {
     openModal({
       title: 'Commission Structure',
@@ -2457,6 +2435,9 @@
         <div class="popover-row"><div class="key">Excluded</div><div class="val">Lite, Starter, Growth — self-serve tiers earn no commission.</div></div>
         <div class="popover-row"><div class="key">Managed</div><div class="val"><strong>Flat $300/deal</strong> regardless of size, <strong>plus</strong> Managed MRR counts toward the $1,000 target. Covers dev, audit, and referral baked into pricing.</div></div>
         <div class="popover-row"><div class="key">12-month cap</div><div class="val">Commission stops after 12 months per client, or earlier on cancel.</div></div>
+        <p style="margin-top: 18px; padding-top: 14px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--text-3); font-style: italic; line-height: 1.55;">
+          Note: a $599 Managed deal contributes $599 toward the $1,000 target <em>and</em> pays the flat $300 — confirmed policy, not configurable.
+        </p>
       `,
       buttons: [{ label: 'Close', variant: 'btn-ghost' }]
     });
@@ -2488,7 +2469,6 @@
 
     setupDropdown('dealPlan');
     setupDropdown('dealBilling');
-    document.getElementById('settingsBtn').addEventListener('click', openSettingsModal);
     document.getElementById('rulesBtn').addEventListener('click', openRulesModal);
 
     const sel = document.getElementById('monthSelector');
