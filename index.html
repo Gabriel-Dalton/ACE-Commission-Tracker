@@ -819,6 +819,18 @@
     color: var(--red);
   }
 
+  .btn-icon.btn-trash {
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+  }
+
+  .btn-icon.btn-trash:hover {
+    background: #fef2f2;
+    color: var(--red);
+    border-color: #fecaca;
+  }
+
   /* TABLE */
   .table-wrap {
     background: var(--surface);
@@ -1179,6 +1191,185 @@
   .modal-body .popover-row:last-child   { padding-bottom: 0; }
   .modal-body .popover-setting:first-child { padding-top: 0; }
 
+  /* PLAN PICKER (button looks like input) */
+  .plan-pick-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: var(--surface);
+    border: 1px solid var(--line-2);
+    color: var(--text);
+    padding: 9px 12px;
+    border-radius: var(--radius);
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    user-select: none;
+    width: 100%;
+    text-align: left;
+  }
+
+  .plan-pick-btn:hover { border-color: var(--line-3); }
+  .plan-pick-btn:focus { outline: none; border-color: var(--accent-line); box-shadow: 0 0 0 3px rgba(196, 232, 74, 0.18); }
+
+  .plan-pick-btn .plan-pick-label {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .plan-pick-btn .plan-pick-label.placeholder { color: var(--text-4); }
+
+  .plan-pick-btn .chev {
+    width: 12px; height: 12px;
+    color: var(--text-3);
+    flex-shrink: 0;
+  }
+
+  /* PLAN PICKER MODAL CONTENT */
+  .plan-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 18px;
+    background: var(--surface-2);
+    padding: 4px;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+  }
+
+  .plan-tab {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-3);
+    cursor: pointer;
+    transition: background 0.12s, color 0.12s, box-shadow 0.12s;
+  }
+
+  .plan-tab:hover { color: var(--text-2); }
+  .plan-tab.active {
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .plan-coverage {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .plan-coverage-btn {
+    background: var(--surface);
+    border: 1px solid var(--line-2);
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: border-color 0.12s, background 0.12s, color 0.12s;
+    text-align: left;
+    font-family: inherit;
+    color: var(--text-2);
+  }
+
+  .plan-coverage-btn:hover { border-color: var(--line-3); }
+  .plan-coverage-btn.active {
+    border-color: var(--accent-line);
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+  }
+
+  .plan-coverage-btn .label { display: block; font-weight: 600; font-size: 13px; }
+  .plan-coverage-btn .desc { display: block; font-size: 11px; color: var(--text-3); margin-top: 3px; font-family: 'JetBrains Mono', monospace; }
+  .plan-coverage-btn.active .desc { color: var(--accent-strong); opacity: 0.7; }
+
+  .plan-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .plan-section-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    margin-top: 14px;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .plan-section-title:first-child { margin-top: 0; }
+
+  .plan-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: border-color 0.12s, background 0.12s, transform 0.12s;
+    text-align: left;
+    width: 100%;
+    font-family: inherit;
+    color: var(--text);
+  }
+
+  .plan-card:hover {
+    border-color: var(--accent-line);
+    background: var(--accent-soft);
+  }
+
+  .plan-card.selected {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+
+  .plan-card-info { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .plan-card-name { font-weight: 600; font-size: 14px; color: var(--text); }
+  .plan-card-meta {
+    font-size: 11px;
+    color: var(--text-3);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .plan-card-price {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+    flex-shrink: 0;
+  }
+  .plan-card-price .suffix { font-weight: 400; color: var(--text-3); font-size: 11px; }
+
+  .plan-info-banner {
+    background: var(--blue-soft);
+    border: 1px solid rgba(30, 78, 178, 0.15);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    font-size: 12px;
+    color: var(--text-2);
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+
+  .plan-info-banner.warn {
+    background: var(--amber-soft);
+    border-color: rgba(180, 83, 9, 0.18);
+  }
+
   /* TOAST */
   .toast {
     position: fixed;
@@ -1416,43 +1607,12 @@
       </div>
       <div class="field">
         <label class="field-label">Plan tier</label>
-        <div class="dd" data-dd="dealPlan">
-          <button class="dd-trigger" type="button">
-            <span class="selected-label placeholder">Select plan…</span>
-            <svg class="chev" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5">
-              <path d="M3 4.5L6 7.5L9 4.5"/>
-            </svg>
-          </button>
-          <div class="dd-menu">
-            <div class="dd-group-label">Excluded — no commission</div>
-            <div class="dd-option" data-value="lite"><span>Lite</span><span class="meta">$89</span></div>
-            <div class="dd-option" data-value="starter"><span>Starter</span><span class="meta">$149</span></div>
-            <div class="dd-option" data-value="growth"><span>Growth</span><span class="meta">$239–299</span></div>
-            <div class="dd-group-label">Single Domain — eligible</div>
-            <div class="dd-option" data-value="scale"><span>Scale</span><span class="meta">$359–449</span></div>
-            <div class="dd-option" data-value="pro1500"><span>Pro 1500</span><span class="meta">$439–549</span></div>
-            <div class="dd-option" data-value="pro2000"><span>Pro 2000</span><span class="meta">$519–649</span></div>
-            <div class="dd-option" data-value="pro2500"><span>Pro 2500</span><span class="meta">$599–749</span></div>
-            <div class="dd-group-label">Unlimited Domains — eligible</div>
-            <div class="dd-option" data-value="unlimited"><span>Platform Unlimited</span><span class="meta">any tier</span></div>
-            <div class="dd-group-label">Managed Accessibility — flat $300/deal</div>
-            <div class="dd-option" data-value="managed_small"><span>Small Sites · 25 pages</span><span class="meta">$359</span></div>
-            <div class="dd-option" data-value="managed_medium"><span>Medium Sites · 100 pages</span><span class="meta">$569</span></div>
-            <div class="dd-option" data-value="managed_large"><span>Large Sites · 500 pages</span><span class="meta">$749</span></div>
-            <div class="dd-option" data-value="managed_scale"><span>Scale · 1,000 pages</span><span class="meta">$1,049</span></div>
-            <div class="dd-group-label">Managed Enterprise — flat $300/deal</div>
-            <div class="dd-option" data-value="managed_ent_s"><span>Enterprise S · 1,500 pages</span><span class="meta">$1,319</span></div>
-            <div class="dd-option" data-value="managed_ent_m"><span>Enterprise M · 2,000 pages</span><span class="meta">$1,559</span></div>
-            <div class="dd-option" data-value="managed_ent_l"><span>Enterprise L · 2,500 pages</span><span class="meta">$1,799</span></div>
-            <div class="dd-option" data-value="managed_ent_xl"><span>Enterprise XL · 5,000 pages</span><span class="meta">$2,699</span></div>
-            <div class="dd-option" data-value="managed_ent_2xl"><span>Enterprise 2XL · 7,500 pages</span><span class="meta">$3,299</span></div>
-            <div class="dd-option" data-value="managed_ent_3xl"><span>Enterprise 3XL · 10,000 pages</span><span class="meta">$3,899</span></div>
-            <div class="dd-option" data-value="managed_ent_4xl"><span>Enterprise 4XL · 15,000 pages</span><span class="meta">$4,799</span></div>
-            <div class="dd-option" data-value="managed_ent_5xl"><span>Enterprise 5XL · 20,000 pages</span><span class="meta">$5,699</span></div>
-            <div class="dd-option" data-value="managed_ent_6xl"><span>Enterprise 6XL · 30,000 pages</span><span class="meta">$7,199</span></div>
-            <div class="dd-option" data-value="managed_ent_7xl"><span>Enterprise 7XL · 50,000 pages</span><span class="meta">$9,599</span></div>
-          </div>
-        </div>
+        <button type="button" class="plan-pick-btn" id="planPickBtn">
+          <span class="plan-pick-label placeholder" id="planPickLabel">Select plan…</span>
+          <svg class="chev" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M3 4.5L6 7.5L9 4.5"/>
+          </svg>
+        </button>
       </div>
       <div class="field">
         <label class="field-label" for="dealDate">Close date</label>
@@ -1510,7 +1670,7 @@
           <th class="right">ARR</th>
           <th>Status</th>
           <th class="right">Commission</th>
-          <th></th>
+          <th class="right" style="width: 60px;">Delete</th>
         </tr>
       </thead>
       <tbody id="dealsBody">
@@ -1595,56 +1755,76 @@
   };
 
   const ddLabels = {
-    managedCounts: { yes: 'Yes (recommended)', no: 'No (separate)' },
-    dealPlan: {
-      lite: 'Lite', starter: 'Starter', growth: 'Growth',
-      scale: 'Scale', pro1500: 'Pro 1500', pro2000: 'Pro 2000', pro2500: 'Pro 2500',
-      unlimited: 'Platform Unlimited',
-      managed: 'Managed Accessibility', // legacy — kept for back-compat with old rows
-      managed_small:   'Small Sites · 25 pages',
-      managed_medium:  'Medium Sites · 100 pages',
-      managed_large:   'Large Sites · 500 pages',
-      managed_scale:   'Scale · 1,000 pages',
-      managed_ent_s:   'Enterprise S · 1,500 pages',
-      managed_ent_m:   'Enterprise M · 2,000 pages',
-      managed_ent_l:   'Enterprise L · 2,500 pages',
-      managed_ent_xl:  'Enterprise XL · 5,000 pages',
-      managed_ent_2xl: 'Enterprise 2XL · 7,500 pages',
-      managed_ent_3xl: 'Enterprise 3XL · 10,000 pages',
-      managed_ent_4xl: 'Enterprise 4XL · 15,000 pages',
-      managed_ent_5xl: 'Enterprise 5XL · 20,000 pages',
-      managed_ent_6xl: 'Enterprise 6XL · 30,000 pages',
-      managed_ent_7xl: 'Enterprise 7XL · 50,000 pages'
-    },
     dealBilling: { monthly: 'Monthly', annual: 'Annual upfront' }
   };
 
-  // Short labels for table badges (the dropdown labels are too long to fit)
-  const planShortLabels = {
-    managed:         'Managed',
-    managed_small:   'Mgd · Small',
-    managed_medium:  'Mgd · Medium',
-    managed_large:   'Mgd · Large',
-    managed_scale:   'Mgd · Scale',
-    managed_ent_s:   'Mgd · Ent S',
-    managed_ent_m:   'Mgd · Ent M',
-    managed_ent_l:   'Mgd · Ent L',
-    managed_ent_xl:  'Mgd · Ent XL',
-    managed_ent_2xl: 'Mgd · Ent 2XL',
-    managed_ent_3xl: 'Mgd · Ent 3XL',
-    managed_ent_4xl: 'Mgd · Ent 4XL',
-    managed_ent_5xl: 'Mgd · Ent 5XL',
-    managed_ent_6xl: 'Mgd · Ent 6XL',
-    managed_ent_7xl: 'Mgd · Ent 7XL'
+  // Master catalog — drives the plan picker modal, the price auto-fill,
+  // long & short labels, and the categorization (platform/managed/excluded).
+  const PLAN_CATALOG = {
+    platformSingle: [
+      { key: 'scale',    name: 'Scale',    pages: '1,000', price: 359 },
+      { key: 'pro1500',  name: 'Pro 1500', pages: '1,500', price: 439 },
+      { key: 'pro2000',  name: 'Pro 2000', pages: '2,000', price: 519 },
+      { key: 'pro2500',  name: 'Pro 2500', pages: '2,500', price: 599 }
+    ],
+    platformUnlimited: [
+      { key: 'unlimited_scale',   name: 'Scale',    pages: '1,000', price: 449 },
+      { key: 'unlimited_pro1500', name: 'Pro 1500', pages: '1,500', price: 549 },
+      { key: 'unlimited_pro2000', name: 'Pro 2000', pages: '2,000', price: 649 },
+      { key: 'unlimited_pro2500', name: 'Pro 2500', pages: '2,500', price: 749 }
+    ],
+    managedStandard: [
+      { key: 'managed_small',  name: 'Small Sites',  pages: '25',    price: 359  },
+      { key: 'managed_medium', name: 'Medium Sites', pages: '100',   price: 569  },
+      { key: 'managed_large',  name: 'Large Sites',  pages: '500',   price: 749  },
+      { key: 'managed_scale',  name: 'Scale',        pages: '1,000', price: 1049 }
+    ],
+    managedEnterprise: [
+      { key: 'managed_ent_s',   name: 'Enterprise S',   pages: '1,500',  price: 1319 },
+      { key: 'managed_ent_m',   name: 'Enterprise M',   pages: '2,000',  price: 1559 },
+      { key: 'managed_ent_l',   name: 'Enterprise L',   pages: '2,500',  price: 1799 },
+      { key: 'managed_ent_xl',  name: 'Enterprise XL',  pages: '5,000',  price: 2699 },
+      { key: 'managed_ent_2xl', name: 'Enterprise 2XL', pages: '7,500',  price: 3299 },
+      { key: 'managed_ent_3xl', name: 'Enterprise 3XL', pages: '10,000', price: 3899 },
+      { key: 'managed_ent_4xl', name: 'Enterprise 4XL', pages: '15,000', price: 4799 },
+      { key: 'managed_ent_5xl', name: 'Enterprise 5XL', pages: '20,000', price: 5699 },
+      { key: 'managed_ent_6xl', name: 'Enterprise 6XL', pages: '30,000', price: 7199 },
+      { key: 'managed_ent_7xl', name: 'Enterprise 7XL', pages: '50,000', price: 9599 }
+    ],
+    selfServe: [
+      { key: 'lite',    name: 'Lite',    price: 89  },
+      { key: 'starter', name: 'Starter', price: 149 },
+      { key: 'growth',  name: 'Growth',  price: 269 }
+    ]
   };
 
-  // List price by tier — used to auto-fill MRR when a tier is picked
-  const PLAN_PRICES = {
-    managed_small: 359, managed_medium: 569, managed_large: 749, managed_scale: 1049,
-    managed_ent_s: 1319, managed_ent_m: 1559, managed_ent_l: 1799,
-    managed_ent_xl: 2699, managed_ent_2xl: 3299, managed_ent_3xl: 3899,
-    managed_ent_4xl: 4799, managed_ent_5xl: 5699, managed_ent_6xl: 7199, managed_ent_7xl: 9599
-  };
+  // Long labels (used in form trigger and breakdown). Short labels are derived for badges.
+  const PLAN_LABELS = (() => {
+    const l = { unlimited: 'Platform Unlimited', managed: 'Managed Accessibility' };
+    PLAN_CATALOG.platformSingle.forEach(p => l[p.key]    = `${p.name} · Single Domain`);
+    PLAN_CATALOG.platformUnlimited.forEach(p => l[p.key] = `${p.name} · Unlimited Domains`);
+    PLAN_CATALOG.managedStandard.forEach(p => l[p.key]   = `${p.name} · ${p.pages} pages`);
+    PLAN_CATALOG.managedEnterprise.forEach(p => l[p.key] = `${p.name} · ${p.pages} pages`);
+    PLAN_CATALOG.selfServe.forEach(p => l[p.key]         = p.name);
+    return l;
+  })();
+
+  const PLAN_SHORT_LABELS = (() => {
+    const l = { unlimited: 'UL · any', managed: 'Managed' };
+    PLAN_CATALOG.platformSingle.forEach(p => l[p.key]    = p.name);
+    PLAN_CATALOG.platformUnlimited.forEach(p => l[p.key] = p.name + ' UL');
+    PLAN_CATALOG.managedStandard.forEach(p => l[p.key]   = 'Mgd · ' + p.name.replace(' Sites','').replace('Scale', 'Scale'));
+    PLAN_CATALOG.managedEnterprise.forEach(p => l[p.key] = 'Mgd · ' + p.name.replace('Enterprise', 'Ent'));
+    PLAN_CATALOG.selfServe.forEach(p => l[p.key]         = p.name);
+    return l;
+  })();
+
+  // Auto-fill prices from the catalog
+  const PLAN_PRICES = (() => {
+    const p = {};
+    Object.values(PLAN_CATALOG).forEach(group => group.forEach(item => p[item.key] = item.price));
+    return p;
+  })();
 
   // ─── Supabase + cache persistence layer ─────────────────────────────────
   const SETTINGS_ROW_KEY = 'global';
@@ -1761,38 +1941,55 @@
     }
   }
 
+  async function withSyncStatus(label, fn) {
+    if (!supa || !online) { await fn(); return; }
+    setStatus('syncing', label);
+    try {
+      await fn();
+      setStatus('online', 'Synced · Cloud');
+    } catch (e) {
+      console.error(e);
+      online = false;
+      setStatus('offline', 'Sync failed · Local only');
+    }
+  }
+
   async function persistDeal(deal) {
     await cacheLocal();
-    if (!supa || !online) return;
-    const { error } = await supa.from('deals').upsert(deal);
-    if (error) { console.error(error); online = false; setStatus('offline', 'Sync failed · Local only'); }
+    await withSyncStatus('Saving deal…', async () => {
+      const { error } = await supa.from('deals').upsert(deal);
+      if (error) throw error;
+    });
   }
 
   async function removeDealRemote(id) {
     await cacheLocal();
-    if (!supa || !online) return;
-    const { error } = await supa.from('deals').delete().eq('id', id);
-    if (error) { console.error(error); online = false; setStatus('offline', 'Sync failed · Local only'); }
+    await withSyncStatus('Deleting…', async () => {
+      const { error } = await supa.from('deals').delete().eq('id', id);
+      if (error) throw error;
+    });
   }
 
   async function removeMonthRemote(month) {
     await cacheLocal();
-    if (!supa || !online) return;
-    const start = month + '-01';
-    const end = shiftMonth(month, 1) + '-01';
-    const { error } = await supa.from('deals').delete().gte('date', start).lt('date', end);
-    if (error) { console.error(error); online = false; setStatus('offline', 'Sync failed · Local only'); }
+    await withSyncStatus('Clearing month…', async () => {
+      const start = month + '-01';
+      const end = shiftMonth(month, 1) + '-01';
+      const { error } = await supa.from('deals').delete().gte('date', start).lt('date', end);
+      if (error) throw error;
+    });
   }
 
   async function persistSettings() {
     await cacheLocal();
-    if (!supa || !online) return;
-    const { error } = await supa.from('settings').upsert({
-      key: SETTINGS_ROW_KEY,
-      value: { managedCountsTowardTarget, breakdownOpen },
-      updated_at: new Date().toISOString()
+    await withSyncStatus('Saving…', async () => {
+      const { error } = await supa.from('settings').upsert({
+        key: SETTINGS_ROW_KEY,
+        value: { managedCountsTowardTarget, breakdownOpen },
+        updated_at: new Date().toISOString()
+      });
+      if (error) throw error;
     });
-    if (error) { console.error(error); online = false; setStatus('offline', 'Sync failed · Local only'); }
   }
 
   // Back-compat shim: any leftover saveData() call writes settings-only.
@@ -1801,10 +1998,10 @@
   const fmt = (n) => Math.round(n).toLocaleString('en-US');
   const fmtExact = (n) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const isExcluded = (p) => EXCLUDED_PLANS.includes(p);
-  const isManaged = (p) => p === MANAGED_PLAN || (typeof p === 'string' && p.startsWith('managed_'));
+  const isManaged  = (p) => p === MANAGED_PLAN || (typeof p === 'string' && p.startsWith('managed_'));
   const isPlatform = (p) => !isExcluded(p) && !isManaged(p);
-  const planLabel = (p) => ddLabels.dealPlan[p] || p;
-  const planShortLabel = (p) => planShortLabels[p] || planLabel(p);
+  const planLabel       = (p) => PLAN_LABELS[p] || p;
+  const planShortLabel  = (p) => PLAN_SHORT_LABELS[p] || planLabel(p);
 
   function escapeHtml(s) {
     if (!s) return '';
@@ -1974,12 +2171,12 @@
           eligClass = 'partial';
         } else if (isExcluded(d.plan)) {
           badgeClass = 'badge-excluded';
-          badgeText = planLabel(d.plan);
+          badgeText = planShortLabel(d.plan);
           eligText = 'Excluded';
           eligClass = 'no';
         } else {
           badgeClass = 'badge-platform';
-          badgeText = planLabel(d.plan);
+          badgeText = planShortLabel(d.plan);
           eligText = 'Eligible';
           eligClass = 'yes';
         }
@@ -1998,9 +2195,9 @@
             <td data-label="ARR" class="right mono" style="color:var(--text-3)">$${fmt(arr)}</td>
             <td data-label="Status"><span class="eligibility ${eligClass}">${eligText}</span></td>
             <td data-label="Commission" class="right commission-cell ${commClass}">$${fmtExact(commission)}</td>
-            <td data-label="" class="right"><button class="btn-icon" onclick="deleteDeal('${d.id}')" title="Delete deal" aria-label="Delete deal">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
-                <path d="M3.5 3.5l7 7M10.5 3.5l-7 7"/>
+            <td data-label="" class="right"><button class="btn-icon btn-trash" onclick="deleteDeal('${d.id}')" title="Delete deal" aria-label="Delete deal">
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2.5 4h11M6 4V2.5a1 1 0 011-1h2a1 1 0 011 1V4M4.5 4l.6 8.5a1.5 1.5 0 001.5 1.4h3.8a1.5 1.5 0 001.5-1.4L12.5 4M6.5 7v4M9.5 7v4"/>
               </svg>
             </button></td>
           </tr>`;
@@ -2102,11 +2299,6 @@
         o.classList.toggle('selected', o.dataset.value === v);
       });
 
-      // Auto-fill MRR when a tier with a known list price is picked (don't clobber user input)
-      if (name === 'dealPlan' && PLAN_PRICES[v]) {
-        const mrrInput = document.getElementById('dealMRR');
-        if (mrrInput && !mrrInput.value) mrrInput.value = PLAN_PRICES[v];
-      }
     }
 
     trigger.addEventListener('click', (e) => {
@@ -2191,14 +2383,7 @@
     document.getElementById('dealName').value = '';
     document.getElementById('dealMRR').value = '';
     document.getElementById('dealRef').value = '';
-    const planDd = document.querySelector('[data-dd="dealPlan"]');
-    if (planDd) {
-      const lbl = planDd.querySelector('.selected-label');
-      lbl.textContent = 'Select plan…';
-      lbl.classList.add('placeholder');
-      planDd.querySelectorAll('.dd-option').forEach(o => o.classList.remove('selected'));
-      ddState.dealPlan = '';
-    }
+    setSelectedPlan('');
     document.getElementById('dealDate').value = new Date().toISOString().slice(0, 10);
     clearFormError();
   }
@@ -2311,11 +2496,17 @@
         else if (t.includes('lite'))    plan = 'lite';
         else if (t.includes('starter')) plan = 'starter';
         else if (t.includes('growth'))  plan = 'growth';
+        // Unlimited Domain platform tiers (must precede bare-name matchers)
+        else if (t.includes('unlimited_pro1500') || (t.includes('pro 1500') && t.includes('unlimited'))) plan = 'unlimited_pro1500';
+        else if (t.includes('unlimited_pro2000') || (t.includes('pro 2000') && t.includes('unlimited'))) plan = 'unlimited_pro2000';
+        else if (t.includes('unlimited_pro2500') || (t.includes('pro 2500') && t.includes('unlimited'))) plan = 'unlimited_pro2500';
+        else if (t.includes('unlimited_scale')   || (t.includes('scale')    && t.includes('unlimited'))) plan = 'unlimited_scale';
+        // Single Domain platform tiers
         else if (t.includes('pro 1500') || t.includes('pro1500')) plan = 'pro1500';
         else if (t.includes('pro 2000') || t.includes('pro2000')) plan = 'pro2000';
         else if (t.includes('pro 2500') || t.includes('pro2500')) plan = 'pro2500';
-        else if (t.includes('scale'))   plan = 'scale';
-        else if (t.includes('managed')) plan = 'managed';
+        else if (t.includes('scale'))     plan = 'scale';
+        else if (t.includes('managed'))   plan = 'managed';
         else if (t.includes('unlimited')) plan = 'unlimited';
 
         newDeals.push({
@@ -2443,6 +2634,149 @@
     });
   }
 
+  // ─── Plan picker modal ────────────────────────────────────────────────
+  let planPickerState = { tab: 'platform', coverage: 'single' };
+
+  function setSelectedPlan(key) {
+    ddState.dealPlan = key;
+    const label = document.getElementById('planPickLabel');
+    if (label) {
+      if (key) {
+        label.textContent = planLabel(key);
+        label.classList.remove('placeholder');
+      } else {
+        label.textContent = 'Select plan…';
+        label.classList.add('placeholder');
+      }
+    }
+    if (key && PLAN_PRICES[key]) {
+      const mrrInput = document.getElementById('dealMRR');
+      if (mrrInput && !mrrInput.value) mrrInput.value = PLAN_PRICES[key];
+    }
+  }
+
+  function planCardHTML(item, opts = {}) {
+    const selected = ddState.dealPlan === item.key;
+    const meta = item.pages ? `Up to ${item.pages} pages` : (opts.metaOverride || '');
+    const priceLabel = opts.priceLabel || '/mo';
+    return `
+      <button type="button" class="plan-card${selected ? ' selected' : ''}" data-plan-key="${item.key}">
+        <span class="plan-card-info">
+          <span class="plan-card-name">${escapeHtml(item.name)}</span>
+          ${meta ? `<span class="plan-card-meta">${escapeHtml(meta)}</span>` : ''}
+        </span>
+        <span class="plan-card-price">$${item.price.toLocaleString('en-US')}<span class="suffix">${priceLabel}</span></span>
+      </button>
+    `;
+  }
+
+  function renderPlanPickerBody() {
+    const tab = planPickerState.tab;
+    let html = `
+      <div class="plan-tabs">
+        <button class="plan-tab${tab === 'platform' ? ' active' : ''}" data-tab="platform">Platform</button>
+        <button class="plan-tab${tab === 'managed' ? ' active' : ''}" data-tab="managed">Managed</button>
+        <button class="plan-tab${tab === 'selfserve' ? ' active' : ''}" data-tab="selfserve">Self-serve</button>
+      </div>
+    `;
+
+    if (tab === 'platform') {
+      const coverage = planPickerState.coverage;
+      const tiers = coverage === 'single' ? PLAN_CATALOG.platformSingle : PLAN_CATALOG.platformUnlimited;
+      html += `
+        <div class="plan-coverage">
+          <button class="plan-coverage-btn${coverage === 'single' ? ' active' : ''}" data-coverage="single">
+            <span class="label">Single Domain</span>
+            <span class="desc">One website</span>
+          </button>
+          <button class="plan-coverage-btn${coverage === 'unlimited' ? ' active' : ''}" data-coverage="unlimited">
+            <span class="label">Unlimited Domains</span>
+            <span class="desc">Multi-site rollup</span>
+          </button>
+        </div>
+        <div class="plan-info-banner">
+          10% commission on first-year contract value (×12) for any of these tiers above the $1,000 monthly target.
+        </div>
+        <div class="plan-list">
+          ${tiers.map(t => planCardHTML(t)).join('')}
+        </div>
+      `;
+    } else if (tab === 'managed') {
+      html += `
+        <div class="plan-info-banner">
+          Flat $300 per deal regardless of tier — Managed MRR also counts toward the $1,000 monthly target.
+        </div>
+        <div class="plan-section-title">Standard</div>
+        <div class="plan-list">${PLAN_CATALOG.managedStandard.map(t => planCardHTML(t)).join('')}</div>
+        <div class="plan-section-title">Enterprise</div>
+        <div class="plan-list">${PLAN_CATALOG.managedEnterprise.map(t => planCardHTML(t)).join('')}</div>
+      `;
+    } else {
+      html += `
+        <div class="plan-info-banner warn">
+          Self-serve tiers don't earn commission — log them only if you want them in the deal history.
+        </div>
+        <div class="plan-list">${PLAN_CATALOG.selfServe.map(t => planCardHTML(t, { metaOverride: 'Self-serve · no commission' })).join('')}</div>
+      `;
+    }
+
+    return html;
+  }
+
+  function refreshPlanPickerBody() {
+    const body = document.getElementById('modalBody');
+    if (!body) return;
+    body.innerHTML = renderPlanPickerBody();
+    attachPlanPickerHandlers();
+  }
+
+  function attachPlanPickerHandlers() {
+    const body = document.getElementById('modalBody');
+    if (!body) return;
+
+    body.querySelectorAll('.plan-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        planPickerState.tab = btn.dataset.tab;
+        refreshPlanPickerBody();
+      });
+    });
+
+    body.querySelectorAll('.plan-coverage-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        planPickerState.coverage = btn.dataset.coverage;
+        refreshPlanPickerBody();
+      });
+    });
+
+    body.querySelectorAll('.plan-card').forEach(btn => {
+      btn.addEventListener('click', () => {
+        setSelectedPlan(btn.dataset.planKey);
+        closeModal();
+      });
+    });
+  }
+
+  function openPlanPickerModal() {
+    // Default tab based on current selection (so editing a Managed deal opens the Managed tab)
+    if (ddState.dealPlan) {
+      if (isManaged(ddState.dealPlan)) planPickerState.tab = 'managed';
+      else if (isExcluded(ddState.dealPlan)) planPickerState.tab = 'selfserve';
+      else {
+        planPickerState.tab = 'platform';
+        planPickerState.coverage = ddState.dealPlan.startsWith('unlimited_') ? 'unlimited' : 'single';
+      }
+    }
+
+    openModal({
+      title: 'Pick a Plan',
+      size: 'wide',
+      content: renderPlanPickerBody(),
+      buttons: [{ label: 'Cancel', variant: 'btn-ghost' }]
+    });
+
+    attachPlanPickerHandlers();
+  }
+
   // Modal close wiring (one-time)
   (function wireModal() {
     const overlay = document.getElementById('modalOverlay');
@@ -2467,9 +2801,9 @@
     await initSupabase();
     await loadData();
 
-    setupDropdown('dealPlan');
     setupDropdown('dealBilling');
     document.getElementById('rulesBtn').addEventListener('click', openRulesModal);
+    document.getElementById('planPickBtn').addEventListener('click', openPlanPickerModal);
 
     const sel = document.getElementById('monthSelector');
     sel.value = currentMonth;
