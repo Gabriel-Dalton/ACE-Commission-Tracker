@@ -1383,8 +1383,22 @@
             <div class="dd-option" data-value="pro2500"><span>Pro 2500</span><span class="meta">$599–749</span></div>
             <div class="dd-group-label">Unlimited Domains — eligible</div>
             <div class="dd-option" data-value="unlimited"><span>Platform Unlimited</span><span class="meta">any tier</span></div>
-            <div class="dd-group-label">Managed — flat $300</div>
-            <div class="dd-option" data-value="managed"><span>Managed Accessibility</span><span class="meta">+$300</span></div>
+            <div class="dd-group-label">Managed Accessibility — flat $300/deal</div>
+            <div class="dd-option" data-value="managed_small"><span>Small Sites · 25 pages</span><span class="meta">$359</span></div>
+            <div class="dd-option" data-value="managed_medium"><span>Medium Sites · 100 pages</span><span class="meta">$569</span></div>
+            <div class="dd-option" data-value="managed_large"><span>Large Sites · 500 pages</span><span class="meta">$749</span></div>
+            <div class="dd-option" data-value="managed_scale"><span>Scale · 1,000 pages</span><span class="meta">$1,049</span></div>
+            <div class="dd-group-label">Managed Enterprise — flat $300/deal</div>
+            <div class="dd-option" data-value="managed_ent_s"><span>Enterprise S · 1,500 pages</span><span class="meta">$1,319</span></div>
+            <div class="dd-option" data-value="managed_ent_m"><span>Enterprise M · 2,000 pages</span><span class="meta">$1,559</span></div>
+            <div class="dd-option" data-value="managed_ent_l"><span>Enterprise L · 2,500 pages</span><span class="meta">$1,799</span></div>
+            <div class="dd-option" data-value="managed_ent_xl"><span>Enterprise XL · 5,000 pages</span><span class="meta">$2,699</span></div>
+            <div class="dd-option" data-value="managed_ent_2xl"><span>Enterprise 2XL · 7,500 pages</span><span class="meta">$3,299</span></div>
+            <div class="dd-option" data-value="managed_ent_3xl"><span>Enterprise 3XL · 10,000 pages</span><span class="meta">$3,899</span></div>
+            <div class="dd-option" data-value="managed_ent_4xl"><span>Enterprise 4XL · 15,000 pages</span><span class="meta">$4,799</span></div>
+            <div class="dd-option" data-value="managed_ent_5xl"><span>Enterprise 5XL · 20,000 pages</span><span class="meta">$5,699</span></div>
+            <div class="dd-option" data-value="managed_ent_6xl"><span>Enterprise 6XL · 30,000 pages</span><span class="meta">$7,199</span></div>
+            <div class="dd-option" data-value="managed_ent_7xl"><span>Enterprise 7XL · 50,000 pages</span><span class="meta">$9,599</span></div>
           </div>
         </div>
       </div>
@@ -1517,9 +1531,51 @@
     dealPlan: {
       lite: 'Lite', starter: 'Starter', growth: 'Growth',
       scale: 'Scale', pro1500: 'Pro 1500', pro2000: 'Pro 2000', pro2500: 'Pro 2500',
-      unlimited: 'Platform Unlimited', managed: 'Managed Accessibility'
+      unlimited: 'Platform Unlimited',
+      managed: 'Managed Accessibility', // legacy — kept for back-compat with old rows
+      managed_small:   'Small Sites · 25 pages',
+      managed_medium:  'Medium Sites · 100 pages',
+      managed_large:   'Large Sites · 500 pages',
+      managed_scale:   'Scale · 1,000 pages',
+      managed_ent_s:   'Enterprise S · 1,500 pages',
+      managed_ent_m:   'Enterprise M · 2,000 pages',
+      managed_ent_l:   'Enterprise L · 2,500 pages',
+      managed_ent_xl:  'Enterprise XL · 5,000 pages',
+      managed_ent_2xl: 'Enterprise 2XL · 7,500 pages',
+      managed_ent_3xl: 'Enterprise 3XL · 10,000 pages',
+      managed_ent_4xl: 'Enterprise 4XL · 15,000 pages',
+      managed_ent_5xl: 'Enterprise 5XL · 20,000 pages',
+      managed_ent_6xl: 'Enterprise 6XL · 30,000 pages',
+      managed_ent_7xl: 'Enterprise 7XL · 50,000 pages'
     },
     dealBilling: { monthly: 'Monthly', annual: 'Annual upfront' }
+  };
+
+  // Short labels for table badges (the dropdown labels are too long to fit)
+  const planShortLabels = {
+    managed:         'Managed',
+    managed_small:   'Mgd · Small',
+    managed_medium:  'Mgd · Medium',
+    managed_large:   'Mgd · Large',
+    managed_scale:   'Mgd · Scale',
+    managed_ent_s:   'Mgd · Ent S',
+    managed_ent_m:   'Mgd · Ent M',
+    managed_ent_l:   'Mgd · Ent L',
+    managed_ent_xl:  'Mgd · Ent XL',
+    managed_ent_2xl: 'Mgd · Ent 2XL',
+    managed_ent_3xl: 'Mgd · Ent 3XL',
+    managed_ent_4xl: 'Mgd · Ent 4XL',
+    managed_ent_5xl: 'Mgd · Ent 5XL',
+    managed_ent_6xl: 'Mgd · Ent 6XL',
+    managed_ent_7xl: 'Mgd · Ent 7XL'
+  };
+
+  // List price by tier — used to auto-fill MRR when a tier is picked
+  const PLAN_PRICES = {
+    managed_small: 359, managed_medium: 569, managed_large: 749, managed_scale: 1049,
+    managed_ent_s: 1319, managed_ent_m: 1559, managed_ent_l: 1799,
+    managed_ent_xl: 2699, managed_ent_2xl: 3299, managed_ent_3xl: 3899,
+    managed_ent_4xl: 4799, managed_ent_5xl: 5699, managed_ent_6xl: 7199, managed_ent_7xl: 9599
   };
 
   // ─── Supabase + cache persistence layer ─────────────────────────────────
@@ -1681,9 +1737,10 @@
   const fmt = (n) => Math.round(n).toLocaleString('en-US');
   const fmtExact = (n) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const isExcluded = (p) => EXCLUDED_PLANS.includes(p);
-  const isManaged = (p) => p === MANAGED_PLAN;
+  const isManaged = (p) => p === MANAGED_PLAN || (typeof p === 'string' && p.startsWith('managed_'));
   const isPlatform = (p) => !isExcluded(p) && !isManaged(p);
   const planLabel = (p) => ddLabels.dealPlan[p] || p;
+  const planShortLabel = (p) => planShortLabels[p] || planLabel(p);
 
   function escapeHtml(s) {
     if (!s) return '';
@@ -1848,7 +1905,7 @@
 
         if (isManaged(d.plan)) {
           badgeClass = 'badge-managed';
-          badgeText = 'Managed';
+          badgeText = planShortLabel(d.plan);
           eligText = managedCountsTowardTarget === 'yes' ? 'Counts + flat $300' : 'Flat $300 only';
           eligClass = 'partial';
         } else if (isExcluded(d.plan)) {
@@ -1907,13 +1964,13 @@
       });
       if (c.managedDeals.length > 0 && managedCountsTowardTarget === 'yes') {
         c.managedDeals.forEach(d => {
-          html += `<div class="breakdown-row"><span>${escapeHtml(d.name)} <span style="color:var(--text-4)">— Managed (counts toward target)</span></span><span>$${fmt(Number(d.mrr))}/mo</span></div>`;
+          html += `<div class="breakdown-row"><span>${escapeHtml(d.name)} <span style="color:var(--text-4)">— ${planShortLabel(d.plan)} (counts toward target)</span></span><span>$${fmt(Number(d.mrr))}/mo</span></div>`;
         });
       }
       html += `<div class="breakdown-row subtotal"><span>Total eligible MRR</span><span>$${fmt(c.eligibleMRR)}</span></div>`;
     } else if (c.managedDeals.length > 0 && managedCountsTowardTarget === 'yes') {
       c.managedDeals.forEach(d => {
-        html += `<div class="breakdown-row"><span>${escapeHtml(d.name)} <span style="color:var(--text-4)">— Managed (counts toward target)</span></span><span>$${fmt(Number(d.mrr))}/mo</span></div>`;
+        html += `<div class="breakdown-row"><span>${escapeHtml(d.name)} <span style="color:var(--text-4)">— ${planShortLabel(d.plan)} (counts toward target)</span></span><span>$${fmt(Number(d.mrr))}/mo</span></div>`;
       });
       html += `<div class="breakdown-row subtotal"><span>Total eligible MRR</span><span>$${fmt(c.eligibleMRR)}</span></div>`;
     } else {
@@ -1985,6 +2042,12 @@
         managedCountsTowardTarget = v;
         persistSettings();
         render();
+      }
+
+      // Auto-fill MRR when a tier with a known list price is picked (don't clobber user input)
+      if (name === 'dealPlan' && PLAN_PRICES[v]) {
+        const mrrInput = document.getElementById('dealMRR');
+        if (mrrInput && !mrrInput.value) mrrInput.value = PLAN_PRICES[v];
       }
     }
 
@@ -2152,16 +2215,33 @@
         if (!name || !mrr || !date || isNaN(mrr)) continue;
         if (/total|eligible|above/i.test(name)) continue;
 
+        // Order matters: enterprise tiers first (else "Enterprise S" would match "scale" never,
+        // but "managed_scale" must be matched before bare "scale").
         let plan = 'unlimited';
-        if (planText.includes('lite')) plan = 'lite';
-        else if (planText.includes('starter')) plan = 'starter';
-        else if (planText.includes('growth')) plan = 'growth';
-        else if (planText.includes('scale')) plan = 'scale';
-        else if (planText.includes('pro 1500') || planText.includes('pro1500')) plan = 'pro1500';
-        else if (planText.includes('pro 2000') || planText.includes('pro2000')) plan = 'pro2000';
-        else if (planText.includes('pro 2500') || planText.includes('pro2500')) plan = 'pro2500';
-        else if (planText.includes('managed')) plan = 'managed';
-        else if (planText.includes('unlimited')) plan = 'unlimited';
+        const t = planText;
+        if (t.includes('enterprise 7xl') || t.includes('ent_7xl')) plan = 'managed_ent_7xl';
+        else if (t.includes('enterprise 6xl') || t.includes('ent_6xl')) plan = 'managed_ent_6xl';
+        else if (t.includes('enterprise 5xl') || t.includes('ent_5xl')) plan = 'managed_ent_5xl';
+        else if (t.includes('enterprise 4xl') || t.includes('ent_4xl')) plan = 'managed_ent_4xl';
+        else if (t.includes('enterprise 3xl') || t.includes('ent_3xl')) plan = 'managed_ent_3xl';
+        else if (t.includes('enterprise 2xl') || t.includes('ent_2xl')) plan = 'managed_ent_2xl';
+        else if (t.includes('enterprise xl')  || t.includes('ent_xl'))  plan = 'managed_ent_xl';
+        else if (t.includes('enterprise l')   || t.includes('ent_l'))   plan = 'managed_ent_l';
+        else if (t.includes('enterprise m')   || t.includes('ent_m'))   plan = 'managed_ent_m';
+        else if (t.includes('enterprise s')   || t.includes('ent_s'))   plan = 'managed_ent_s';
+        else if (t.includes('managed_scale') || /\bmgd\W+scale\b/.test(t)) plan = 'managed_scale';
+        else if (t.includes('small site')  || t === 'managed_small')  plan = 'managed_small';
+        else if (t.includes('medium site') || t === 'managed_medium') plan = 'managed_medium';
+        else if (t.includes('large site')  || t === 'managed_large')  plan = 'managed_large';
+        else if (t.includes('lite'))    plan = 'lite';
+        else if (t.includes('starter')) plan = 'starter';
+        else if (t.includes('growth'))  plan = 'growth';
+        else if (t.includes('pro 1500') || t.includes('pro1500')) plan = 'pro1500';
+        else if (t.includes('pro 2000') || t.includes('pro2000')) plan = 'pro2000';
+        else if (t.includes('pro 2500') || t.includes('pro2500')) plan = 'pro2500';
+        else if (t.includes('scale'))   plan = 'scale';
+        else if (t.includes('managed')) plan = 'managed';
+        else if (t.includes('unlimited')) plan = 'unlimited';
 
         newDeals.push({
           id: 'd_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7) + '_' + i,
