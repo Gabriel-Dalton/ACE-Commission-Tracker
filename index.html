@@ -1846,6 +1846,113 @@
 
   .footer-actions { display: flex; gap: 8px; }
 
+  /* VOICE INPUT */
+  .input-with-voice {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+  }
+  .input-with-voice .input { padding-right: 40px; }
+  .voice-btn {
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text-3);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.12s, color 0.12s, border-color 0.12s, transform 0.1s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .voice-btn:hover { background: var(--surface-2); color: var(--text); border-color: var(--line); }
+  .voice-btn:active { transform: translateY(-50%) scale(0.94); }
+  .voice-btn.listening {
+    background: var(--accent-soft);
+    border-color: var(--accent-line);
+    color: var(--accent-strong);
+    animation: voicePulse 1.4s ease-in-out infinite;
+  }
+  .voice-btn[hidden] { display: none; }
+  @keyframes voicePulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(196, 232, 74, 0.45); }
+    50% { box-shadow: 0 0 0 6px rgba(196, 232, 74, 0); }
+  }
+
+  /* MOBILE VOICE OVERLAY (full-screen feedback while listening) */
+  .voice-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 20, 22, 0.55);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 18px;
+    z-index: 2000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    padding: 24px;
+    text-align: center;
+  }
+  .voice-overlay.visible { opacity: 1; pointer-events: auto; }
+  .voice-overlay .voice-mic {
+    width: 92px;
+    height: 92px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--accent-fg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 0 0 rgba(196, 232, 74, 0.45);
+    animation: voicePulseLg 1.4s ease-in-out infinite;
+  }
+  @keyframes voicePulseLg {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(196, 232, 74, 0.55); }
+    50% { box-shadow: 0 0 0 22px rgba(196, 232, 74, 0); }
+  }
+  .voice-overlay .voice-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+  }
+  .voice-overlay .voice-target {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    color: #fff;
+    font-weight: 400;
+  }
+  .voice-overlay .voice-transcript {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.85);
+    max-width: 320px;
+    min-height: 22px;
+    font-family: 'Inter', sans-serif;
+  }
+  .voice-overlay .voice-cancel {
+    margin-top: 8px;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #fff;
+    padding: 9px 18px;
+    border-radius: 999px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .voice-overlay .voice-cancel:hover { background: rgba(255, 255, 255, 0.2); }
+
   /* RESPONSIVE */
   @media (max-width: 1100px) {
     .hero-grid { grid-template-columns: 1fr; gap: 24px; }
@@ -1859,24 +1966,42 @@
     .hero-amount { font-size: 48px; }
     .hero-amount .currency, .hero-amount .cents { font-size: 22px; }
     .hero { padding: 22px 20px; }
-    .form-grid { grid-template-columns: 1fr 1fr; }
+    .form-grid { grid-template-columns: 1fr 1fr; gap: 14px; }
     .stats-row { grid-template-columns: 1fr; }
     th, td { padding: 10px 12px; font-size: 12px; }
     .form-footer { flex-direction: column; align-items: stretch; }
-    .form-footer .form-actions { justify-content: flex-end; }
+    .form-footer .form-actions { justify-content: flex-end; flex-wrap: wrap; }
     .header { gap: 16px; }
+    /* Bigger touch targets on tablet/phone */
+    .input { padding: 12px 14px; font-size: 16px; }
+    .input-currency .input { padding-left: 26px; }
+    .input-with-voice .input { padding-right: 46px; }
+    .plan-pick-btn, .dd-trigger { padding: 12px 14px; font-size: 14px; }
+    .btn { padding: 12px 18px; font-size: 14px; min-height: 44px; }
+    .icon-btn, .month-stepper button { width: 44px; height: 44px; }
+    .month-stepper .month-display { height: 44px; font-size: 14px; }
   }
 
   @media (max-width: 540px) {
-    .form-grid { grid-template-columns: 1fr; }
+    body { padding: 14px 12px 80px; }
+    .form-grid { grid-template-columns: 1fr; gap: 12px; }
+    .add-deal { padding: 16px; }
+    .form-hint { display: none; } /* keyboard hints don't apply on mobile */
+    .form-footer { padding-top: 12px; margin-top: 12px; gap: 10px; }
+    .form-footer .form-actions { gap: 8px; width: 100%; }
+    .form-footer .form-actions .btn { flex: 1; }
+    .form-footer .form-actions #addBtn { flex: 1.4; }
+    .form-error { width: 100%; order: -1; }
+
     table thead { display: none; }
     table, tbody, tr, td { display: block; width: 100%; }
-    tbody tr { padding: 12px 16px; border-bottom: 1px solid var(--line); }
+    tbody tr { padding: 14px 16px; border-bottom: 1px solid var(--line); }
     td {
-      padding: 4px 0;
+      padding: 5px 0;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 14px;
     }
     td::before {
       content: attr(data-label);
@@ -1885,8 +2010,43 @@
       color: var(--text-4);
       text-transform: uppercase;
       letter-spacing: 0.14em;
+      flex-shrink: 0;
     }
-    .month-stepper .month-display { min-width: 100px; padding: 0 12px; }
+    .month-stepper .month-display { min-width: 110px; padding: 0 12px; }
+
+    /* Modals slide up like an iOS sheet on small screens */
+    .modal-overlay { padding: 0; align-items: flex-end; }
+    .modal {
+      max-width: 100%;
+      max-height: 92vh;
+      border-radius: 16px 16px 0 0;
+      transform: translateY(100%);
+    }
+    .modal-overlay.visible .modal { transform: translateY(0); }
+    .modal-header { padding: 16px 18px; }
+    .modal-body { padding: 16px 18px; }
+    .modal-footer { padding: 12px 18px; padding-bottom: max(12px, env(safe-area-inset-bottom, 12px)); }
+
+    /* Plan picker tweaks for thumb-reach */
+    .plan-tabs { padding: 3px; }
+    .plan-tab { padding: 10px 8px; font-size: 13px; }
+    .plan-coverage-btn { padding: 12px 14px; }
+    .plan-coverage-btn .label { font-size: 14px; }
+    .plan-card { padding: 14px 14px; }
+    .plan-card-name { font-size: 15px; }
+    .plan-card-price { font-size: 15px; }
+
+    /* Keep header buttons tidy when name + actions wrap */
+    .header { flex-direction: column; align-items: stretch; }
+    .header-actions { justify-content: space-between; }
+    .month-stepper { flex: 1; }
+    .month-stepper .month-display { flex: 1; }
+
+    .hero { padding: 18px 16px; }
+    .hero-amount { font-size: 42px; }
+
+    .footer-actions { flex-wrap: wrap; }
+    .footer-actions .btn { flex: 1 1 calc(50% - 4px); }
   }
 </style>
 </head>
@@ -1989,12 +2149,26 @@
     <div class="form-grid">
       <div class="field">
         <label class="field-label" for="dealName">Client name</label>
-        <input type="text" id="dealName" class="input" placeholder="e.g. Lift Box Inc." autocomplete="off">
+        <div class="input-with-voice">
+          <input type="text" id="dealName" class="input" placeholder="e.g. Lift Box Inc." autocomplete="off" autocapitalize="words" spellcheck="false">
+          <button type="button" class="voice-btn" data-voice-target="dealName" data-voice-mode="text" hidden aria-label="Dictate client name" title="Dictate client name">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="6" y="2" width="4" height="8" rx="2"/>
+              <path d="M3.5 7.5a4.5 4.5 0 009 0M8 12v2.5M5.5 14.5h5"/>
+            </svg>
+          </button>
+        </div>
       </div>
       <div class="field">
         <label class="field-label" for="dealMRR">MRR</label>
-        <div class="input-currency">
-          <input type="number" id="dealMRR" class="input" placeholder="599" step="1" min="0">
+        <div class="input-currency input-with-voice">
+          <input type="number" id="dealMRR" class="input" placeholder="599" step="1" min="0" inputmode="numeric" pattern="[0-9]*">
+          <button type="button" class="voice-btn" data-voice-target="dealMRR" data-voice-mode="number" hidden aria-label="Dictate MRR" title="Dictate MRR">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="6" y="2" width="4" height="8" rx="2"/>
+              <path d="M3.5 7.5a4.5 4.5 0 009 0M8 12v2.5M5.5 14.5h5"/>
+            </svg>
+          </button>
         </div>
       </div>
       <div class="field">
@@ -2027,7 +2201,15 @@
       </div>
       <div class="field">
         <label class="field-label" for="dealRef">Reference</label>
-        <input type="text" id="dealRef" class="input" placeholder="ACE-2404-…" autocomplete="off">
+        <div class="input-with-voice">
+          <input type="text" id="dealRef" class="input" placeholder="ACE-2404-…" autocomplete="off" autocapitalize="characters" spellcheck="false">
+          <button type="button" class="voice-btn" data-voice-target="dealRef" data-voice-mode="reference" hidden aria-label="Dictate reference" title="Dictate reference">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="6" y="2" width="4" height="8" rx="2"/>
+              <path d="M3.5 7.5a4.5 4.5 0 009 0M8 12v2.5M5.5 14.5h5"/>
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
     <div class="form-footer">
@@ -2143,6 +2325,19 @@
 
 <div class="toast" id="toast"></div>
 
+<div class="voice-overlay" id="voiceOverlay" hidden>
+  <div class="voice-mic">
+    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="9" y="3" width="6" height="12" rx="3"/>
+      <path d="M5 11.5a7 7 0 0014 0M12 18.5V22M8 22h8"/>
+    </svg>
+  </div>
+  <div class="voice-label">Listening</div>
+  <div class="voice-target" id="voiceTargetLabel">—</div>
+  <div class="voice-transcript" id="voiceTranscript">Speak now…</div>
+  <button type="button" class="voice-cancel" id="voiceCancel">Cancel</button>
+</div>
+
 <div class="modal-overlay" id="modalOverlay" hidden>
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div class="modal-header">
@@ -2185,16 +2380,32 @@
   // long & short labels, and the categorization (platform/managed/excluded).
   const PLAN_CATALOG = {
     platformSingle: [
-      { key: 'scale',    name: 'Scale',    pages: '1,000', price: 359 },
-      { key: 'pro1500',  name: 'Pro 1500', pages: '1,500', price: 439 },
-      { key: 'pro2000',  name: 'Pro 2000', pages: '2,000', price: 519 },
-      { key: 'pro2500',  name: 'Pro 2500', pages: '2,500', price: 599 }
+      { key: 'scale',     name: 'Scale',     pages: '1,000',  price: 329 },
+      { key: 'pro1500',   name: 'Pro 1500',  pages: '1,500',  price: 349 },
+      { key: 'pro2000',   name: 'Pro 2000',  pages: '2,000',  price: 399 },
+      { key: 'pro2500',   name: 'Pro 2500',  pages: '2,500',  price: 429 },
+      { key: 'pro3000',   name: 'Pro 3000',  pages: '3,000',  price: 449 },
+      { key: 'pro4000',   name: 'Pro 4000',  pages: '4,000',  price: 499 },
+      { key: 'pro5000',   name: 'Pro 5000',  pages: '5,000',  price: 429 },
+      { key: 'pro6000',   name: 'Pro 6000',  pages: '6,000',  price: 549 },
+      { key: 'pro7000',   name: 'Pro 7000',  pages: '7,000',  price: 599 },
+      { key: 'pro8000',   name: 'Pro 8000',  pages: '8,000',  price: 649 },
+      { key: 'pro9000',   name: 'Pro 9000',  pages: '9,000',  price: 699 },
+      { key: 'pro10000',  name: 'Pro 10000', pages: '10,000', price: 729 }
     ],
     platformUnlimited: [
-      { key: 'unlimited_scale',   name: 'Scale',    pages: '1,000', price: 449 },
-      { key: 'unlimited_pro1500', name: 'Pro 1500', pages: '1,500', price: 549 },
-      { key: 'unlimited_pro2000', name: 'Pro 2000', pages: '2,000', price: 649 },
-      { key: 'unlimited_pro2500', name: 'Pro 2500', pages: '2,500', price: 749 }
+      { key: 'unlimited_500',     name: '500 Pages',       pages: '500',       price: 359  },
+      { key: 'unlimited_scale',   name: '1,000 Pages',     pages: '1,000',     price: 479  },
+      { key: 'unlimited_pro2500', name: '2,500 Pages',     pages: '2,500',     price: 599  },
+      { key: 'unlimited_5000',    name: '5,000 Pages',     pages: '5,000',     price: 799  },
+      { key: 'unlimited_10000',   name: '10,000 Pages',    pages: '10,000',    price: 1099 },
+      { key: 'unlimited_20000',   name: '20,000 Pages',    pages: '20,000',    price: 1499 },
+      { key: 'unlimited_50000',   name: '50,000 Pages',    pages: '50,000',    price: 2149 },
+      { key: 'unlimited_100000',  name: '100,000 Pages',   pages: '100,000',   price: 2799 },
+      { key: 'unlimited_200000',  name: '200,000 Pages',   pages: '200,000',   price: 3999 },
+      { key: 'unlimited_300000',  name: '300,000 Pages',   pages: '300,000',   price: 4799 },
+      { key: 'unlimited_500000',  name: '500,000 Pages',   pages: '500,000',   price: 6399 },
+      { key: 'unlimited_1000000', name: '1,000,000 Pages', pages: '1,000,000', price: 9599 }
     ],
     managedStandard: [
       { key: 'managed_small',  name: 'Small Sites',  pages: '25',    price: 359  },
@@ -2215,15 +2426,26 @@
       { key: 'managed_ent_7xl', name: 'Enterprise 7XL', pages: '50,000', price: 9599 }
     ],
     selfServe: [
-      { key: 'lite',    name: 'Lite',    price: 89  },
-      { key: 'starter', name: 'Starter', price: 149 },
-      { key: 'growth',  name: 'Growth',  price: 269 }
+      { key: 'lite',    name: 'Lite',    pages: '25',  price: 89  },
+      { key: 'starter', name: 'Starter', pages: '100', price: 149 },
+      { key: 'growth',  name: 'Growth',  pages: '500', price: 299 }
     ]
+  };
+
+  // Legacy plan keys — kept so deals saved before the catalog was reshuffled
+  // still render readable labels even though the keys are no longer pickable.
+  const LEGACY_PLAN_LABELS = {
+    unlimited_pro1500: 'Pro 1500 · Unlimited Domains',
+    unlimited_pro2000: 'Pro 2000 · Unlimited Domains'
+  };
+  const LEGACY_PLAN_SHORT = {
+    unlimited_pro1500: 'Pro 1500 UL',
+    unlimited_pro2000: 'Pro 2000 UL'
   };
 
   // Long labels (used in form trigger and breakdown). Short labels are derived for badges.
   const PLAN_LABELS = (() => {
-    const l = { unlimited: 'Platform Unlimited', managed: 'Managed Accessibility' };
+    const l = { unlimited: 'Platform Unlimited', managed: 'Managed Accessibility', ...LEGACY_PLAN_LABELS };
     PLAN_CATALOG.platformSingle.forEach(p => l[p.key]    = `${p.name} · Single Domain`);
     PLAN_CATALOG.platformUnlimited.forEach(p => l[p.key] = `${p.name} · Unlimited Domains`);
     PLAN_CATALOG.managedStandard.forEach(p => l[p.key]   = `${p.name} · ${p.pages} pages`);
@@ -2233,7 +2455,7 @@
   })();
 
   const PLAN_SHORT_LABELS = (() => {
-    const l = { unlimited: 'UL · any', managed: 'Managed' };
+    const l = { unlimited: 'UL · any', managed: 'Managed', ...LEGACY_PLAN_SHORT };
     PLAN_CATALOG.platformSingle.forEach(p => l[p.key]    = p.name);
     PLAN_CATALOG.platformUnlimited.forEach(p => l[p.key] = p.name + ' UL');
     PLAN_CATALOG.managedStandard.forEach(p => l[p.key]   = 'Mgd · ' + p.name.replace(' Sites','').replace('Scale', 'Scale'));
@@ -3447,15 +3669,34 @@
         else if (t.includes('lite'))    plan = 'lite';
         else if (t.includes('starter')) plan = 'starter';
         else if (t.includes('growth'))  plan = 'growth';
-        // Unlimited Domain platform tiers (must precede bare-name matchers)
-        else if (t.includes('unlimited_pro1500') || (t.includes('pro 1500') && t.includes('unlimited'))) plan = 'unlimited_pro1500';
+        // Unlimited Domain platform tiers (must precede bare-name matchers).
+        // Match newer page-count keys first (e.g. "1,000,000 pages"), then legacy Pro/Scale labels.
+        else if (t.includes('unlimited_1000000') || (/(1[,.]?000[,.]?000|1m)\s*pages?/.test(t) && t.includes('unlimited'))) plan = 'unlimited_1000000';
+        else if (t.includes('unlimited_500000')  || (/500[,.]?000\s*pages?/.test(t) && t.includes('unlimited'))) plan = 'unlimited_500000';
+        else if (t.includes('unlimited_300000')  || (/300[,.]?000\s*pages?/.test(t) && t.includes('unlimited'))) plan = 'unlimited_300000';
+        else if (t.includes('unlimited_200000')  || (/200[,.]?000\s*pages?/.test(t) && t.includes('unlimited'))) plan = 'unlimited_200000';
+        else if (t.includes('unlimited_100000')  || (/100[,.]?000\s*pages?/.test(t) && t.includes('unlimited'))) plan = 'unlimited_100000';
+        else if (t.includes('unlimited_50000')   || (/50[,.]?000\s*pages?/.test(t)  && t.includes('unlimited'))) plan = 'unlimited_50000';
+        else if (t.includes('unlimited_20000')   || (/20[,.]?000\s*pages?/.test(t)  && t.includes('unlimited'))) plan = 'unlimited_20000';
+        else if (t.includes('unlimited_10000')   || (/10[,.]?000\s*pages?/.test(t)  && t.includes('unlimited'))) plan = 'unlimited_10000';
+        else if (t.includes('unlimited_5000')    || (/5[,.]?000\s*pages?/.test(t)   && t.includes('unlimited'))) plan = 'unlimited_5000';
+        else if (t.includes('unlimited_pro2500') || ((t.includes('pro 2500') || /2[,.]?500\s*pages?/.test(t)) && t.includes('unlimited'))) plan = 'unlimited_pro2500';
         else if (t.includes('unlimited_pro2000') || (t.includes('pro 2000') && t.includes('unlimited'))) plan = 'unlimited_pro2000';
-        else if (t.includes('unlimited_pro2500') || (t.includes('pro 2500') && t.includes('unlimited'))) plan = 'unlimited_pro2500';
-        else if (t.includes('unlimited_scale')   || (t.includes('scale')    && t.includes('unlimited'))) plan = 'unlimited_scale';
+        else if (t.includes('unlimited_pro1500') || (t.includes('pro 1500') && t.includes('unlimited'))) plan = 'unlimited_pro1500';
+        else if (t.includes('unlimited_500')     || (/(^|\D)500\s*pages?/.test(t)   && t.includes('unlimited'))) plan = 'unlimited_500';
+        else if (t.includes('unlimited_scale')   || ((t.includes('scale') || /1[,.]?000\s*pages?/.test(t)) && t.includes('unlimited'))) plan = 'unlimited_scale';
         // Single Domain platform tiers
-        else if (t.includes('pro 1500') || t.includes('pro1500')) plan = 'pro1500';
-        else if (t.includes('pro 2000') || t.includes('pro2000')) plan = 'pro2000';
-        else if (t.includes('pro 2500') || t.includes('pro2500')) plan = 'pro2500';
+        else if (t.includes('pro 10000') || t.includes('pro10000')) plan = 'pro10000';
+        else if (t.includes('pro 9000')  || t.includes('pro9000'))  plan = 'pro9000';
+        else if (t.includes('pro 8000')  || t.includes('pro8000'))  plan = 'pro8000';
+        else if (t.includes('pro 7000')  || t.includes('pro7000'))  plan = 'pro7000';
+        else if (t.includes('pro 6000')  || t.includes('pro6000'))  plan = 'pro6000';
+        else if (t.includes('pro 5000')  || t.includes('pro5000'))  plan = 'pro5000';
+        else if (t.includes('pro 4000')  || t.includes('pro4000'))  plan = 'pro4000';
+        else if (t.includes('pro 3000')  || t.includes('pro3000'))  plan = 'pro3000';
+        else if (t.includes('pro 2500')  || t.includes('pro2500'))  plan = 'pro2500';
+        else if (t.includes('pro 2000')  || t.includes('pro2000'))  plan = 'pro2000';
+        else if (t.includes('pro 1500')  || t.includes('pro1500'))  plan = 'pro1500';
         else if (t.includes('scale'))     plan = 'scale';
         else if (t.includes('managed'))   plan = 'managed';
         else if (t.includes('unlimited')) plan = 'unlimited';
@@ -3608,7 +3849,7 @@
 
   function planCardHTML(item, opts = {}) {
     const selected = ddState.dealPlan === item.key;
-    const meta = item.pages ? `Up to ${item.pages} pages` : (opts.metaOverride || '');
+    const meta = opts.metaOverride || (item.pages ? `Up to ${item.pages} pages` : '');
     const priceLabel = opts.priceLabel || '/mo';
     return `
       <button type="button" class="plan-card${selected ? ' selected' : ''}" data-plan-key="${item.key}">
@@ -3739,6 +3980,180 @@
     });
   })();
 
+  // ─── Voice input (Web Speech API) ─────────────────────────────────────
+  // Reveals the mic icons and binds tap-to-dictate when the browser supports it.
+  // Tested fields: client name, MRR (numbers only), reference (alphanumeric).
+  const VoiceInput = (() => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const supported = !!SR;
+    let recog = null;
+    let activeBtn = null;
+    let activeInput = null;
+    let activeMode = 'text';
+    let lastTranscript = '';
+
+    const labels = {
+      dealName: 'Client name',
+      dealMRR:  'MRR',
+      dealRef:  'Reference'
+    };
+
+    // Spoken-form → digits (covers "five hundred ninety nine", "599", "five 99")
+    const NUM_WORDS = {
+      zero:0, oh:0, one:1, two:2, to:2, too:2, three:3, four:4, for:4, five:5,
+      six:6, seven:7, eight:8, ate:8, nine:9, ten:10, eleven:11, twelve:12,
+      thirteen:13, fourteen:14, fifteen:15, sixteen:16, seventeen:17,
+      eighteen:18, nineteen:19, twenty:20, thirty:30, forty:40, fifty:50,
+      sixty:60, seventy:70, eighty:80, ninety:90
+    };
+    const SCALES = { hundred:100, thousand:1000, million:1000000 };
+
+    function spokenNumberToDigits(text) {
+      // Already-digit input wins
+      const direct = text.replace(/[^\d.]/g, '');
+      if (direct && /^\d+(\.\d+)?$/.test(direct)) return direct;
+
+      const tokens = text.toLowerCase().replace(/[,.\-]/g, ' ').split(/\s+/).filter(Boolean);
+      let total = 0, current = 0, sawAnyWord = false;
+      for (const tok of tokens) {
+        if (tok in NUM_WORDS) { current += NUM_WORDS[tok]; sawAnyWord = true; }
+        else if (tok === 'hundred') { current = (current || 1) * 100; sawAnyWord = true; }
+        else if (tok in SCALES)     { total += (current || 1) * SCALES[tok]; current = 0; sawAnyWord = true; }
+        else if (/^\d+$/.test(tok)) { current += parseInt(tok, 10); sawAnyWord = true; }
+      }
+      const result = total + current;
+      return (sawAnyWord && result > 0) ? String(result) : '';
+    }
+
+    function normalizeReference(text) {
+      // "ace dash 2404 dash 12" → "ACE-2404-12"
+      return text
+        .toUpperCase()
+        .replace(/\s+DASH\s+/g, '-')
+        .replace(/\s+HYPHEN\s+/g, '-')
+        .replace(/\s+UNDERSCORE\s+/g, '_')
+        .replace(/\s+/g, '')
+        .replace(/[^\w\-]/g, '');
+    }
+
+    function applyTranscript(text) {
+      if (!activeInput) return;
+      let value = text.trim();
+      if (activeMode === 'number')         value = spokenNumberToDigits(value);
+      else if (activeMode === 'reference') value = normalizeReference(value);
+      else                                 value = value.replace(/\s+/g, ' '); // tidy whitespace
+
+      if (!value) return;
+      activeInput.value = value;
+      activeInput.dispatchEvent(new Event('input',  { bubbles: true }));
+      activeInput.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    function showOverlay(targetId) {
+      const overlay = document.getElementById('voiceOverlay');
+      const targetLabel = document.getElementById('voiceTargetLabel');
+      const transcript  = document.getElementById('voiceTranscript');
+      if (!overlay) return;
+      targetLabel.textContent = labels[targetId] || 'Field';
+      transcript.textContent = 'Speak now…';
+      overlay.hidden = false;
+      requestAnimationFrame(() => overlay.classList.add('visible'));
+    }
+
+    function hideOverlay() {
+      const overlay = document.getElementById('voiceOverlay');
+      if (!overlay) return;
+      overlay.classList.remove('visible');
+      setTimeout(() => { overlay.hidden = true; }, 200);
+    }
+
+    function stop() {
+      if (recog) { try { recog.stop(); } catch(e) {} }
+    }
+
+    function start(btn) {
+      if (!supported) {
+        showToast('Voice input not supported on this browser', 'error');
+        return;
+      }
+      if (activeBtn) { stop(); return; } // toggle off if already running
+
+      const targetId = btn.dataset.voiceTarget;
+      activeInput = document.getElementById(targetId);
+      activeMode = btn.dataset.voiceMode || 'text';
+      activeBtn = btn;
+      lastTranscript = '';
+
+      recog = new SR();
+      recog.lang = navigator.language || 'en-US';
+      recog.interimResults = true;
+      recog.continuous = false;
+      recog.maxAlternatives = 1;
+
+      btn.classList.add('listening');
+      showOverlay(targetId);
+
+      recog.onresult = (e) => {
+        let interim = '', final = '';
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          const r = e.results[i];
+          if (r.isFinal) final += r[0].transcript;
+          else           interim += r[0].transcript;
+        }
+        lastTranscript = (final || interim).trim();
+        const transcript = document.getElementById('voiceTranscript');
+        if (transcript) transcript.textContent = lastTranscript || 'Speak now…';
+      };
+
+      recog.onerror = (e) => {
+        if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+          showToast('Microphone access blocked — enable it in browser settings', 'error');
+        } else if (e.error === 'no-speech') {
+          showToast('No speech detected', 'error');
+        } else if (e.error !== 'aborted') {
+          showToast('Voice error: ' + e.error, 'error');
+        }
+      };
+
+      recog.onend = () => {
+        if (lastTranscript) applyTranscript(lastTranscript);
+        if (activeBtn) activeBtn.classList.remove('listening');
+        hideOverlay();
+        activeBtn = null; activeInput = null; recog = null;
+      };
+
+      try { recog.start(); }
+      catch(e) {
+        showToast('Could not start voice — try again', 'error');
+        if (activeBtn) activeBtn.classList.remove('listening');
+        hideOverlay();
+        activeBtn = null; activeInput = null; recog = null;
+      }
+    }
+
+    function init() {
+      if (!supported) return; // leave the buttons hidden
+      document.querySelectorAll('.voice-btn').forEach(btn => {
+        btn.hidden = false;
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          start(btn);
+        });
+      });
+      const cancelBtn = document.getElementById('voiceCancel');
+      if (cancelBtn) cancelBtn.addEventListener('click', () => {
+        lastTranscript = ''; // discard whatever was captured
+        stop();
+      });
+      const overlay = document.getElementById('voiceOverlay');
+      if (overlay) overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) { lastTranscript = ''; stop(); }
+      });
+    }
+
+    return { init, supported };
+  })();
+
   function applyBreakdownState() {
     const breakdown = document.getElementById('breakdown');
     const toggle = document.getElementById('breakdownToggle');
@@ -3753,6 +4168,7 @@
     await loadData();
 
     setupDropdown('dealBilling');
+    VoiceInput.init();
     document.getElementById('rulesBtn').addEventListener('click', openRulesModal);
     document.getElementById('planPickBtn').addEventListener('click', openPlanPickerModal);
 
