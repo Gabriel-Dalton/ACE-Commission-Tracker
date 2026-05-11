@@ -629,6 +629,30 @@
     cursor: pointer;
   }
 
+  /* iOS Safari renders <input type="date"> with a default min-width that
+     doesn't honor width:100%, so the value text ("May 11, 2026") overflows
+     its column on narrow screens. Reset appearance and clamp width. */
+  input[type="date"].input,
+  input[type="month"].input {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+    /* Stop the inner value box from imposing its own width on Safari. */
+  }
+  input[type="date"].input::-webkit-date-and-time-value {
+    text-align: left;
+    min-height: 1.3em;
+    max-width: 100%;
+  }
+  input[type="date"].input::-webkit-datetime-edit {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+
   .input-currency { position: relative; }
   .input-currency::before {
     content: '$';
@@ -2613,10 +2637,9 @@
     <div class="stat">
       <div class="stat-label">
         <span>Avg MRR / Deal</span>
-        <span class="stat-flag" id="avgMrrFlag">TARGET $600</span>
       </div>
       <div class="stat-value"><span class="currency">$</span><span id="avgMrrValue">0</span></div>
-      <div class="stat-meta" id="avgMrrNote">Goal: $600/deal (Yotam)</div>
+      <div class="stat-meta" id="avgMrrNote">Across deals closed this month</div>
     </div>
     <div class="stat">
       <div class="stat-label"><span>Largest Deal</span></div>
@@ -2950,36 +2973,39 @@
       if (dealsRes.error) throw dealsRes.error;
       if (settingsRes.error && settingsRes.error.code !== 'PGRST116') throw settingsRes.error;
 
-      const remoteDeals = (dealsRes.data || []).map(d => ({
-        id: d.id, name: d.name, mrr: Number(d.mrr), plan: d.plan,
-        date: d.date, billing: d.billing || 'monthly', ref: d.ref || ''
-      }));
+      // Read both the core fields and the new payment-tracking columns.
+      // Older databases (pre-migration) won't return the payment fields; we
+      // detect missing values and fall back to the v2→v3 default heuristic.
+      const remoteDeals = (dealsRes.data || []).map(fromRemoteDeal);
 
       // First-time migration: empty cloud, local has data → upload it once
       if (remoteDeals.length === 0 && deals.length > 0) {
         setStatus('syncing', 'Migrating local data…');
-        const { error } = await supa.from('deals').upsert(deals.map(stripLocalOnlyFields));
-        if (error) throw error;
+        await upsertDealsRemote(deals);
       } else {
-        // Merge: keep locally-tracked payment state (not synced to cloud yet — Supabase
-        // schema only has the core deal columns). Local cache is the source of truth
-        // for paymentsCollected/cancelled/etc; cloud is source of truth for the core deal.
-        const localById = new Map(deals.map(d => [d.id, d]));
+        // Cloud is the source of truth for both core + payment-tracking
+        // state. Merge in any locally-only deals (offline edits) that haven't
+        // been synced yet.
+        const remoteIds = new Set(remoteDeals.map(r => r.id));
+        const offlineExtras = deals.filter(d => !remoteIds.has(d.id));
         deals = remoteDeals.map(r => {
-          const local = localById.get(r.id);
-          if (local) {
-            r.paymentsCollected = local.paymentsCollected;
-            r.cancelled = local.cancelled;
-            r.cancelledDate = local.cancelledDate;
-            r.firstPaymentDate = local.firstPaymentDate;
-          } else {
-            // Cloud has a deal we've never seen locally: seed payment defaults
-            // (matches the v2→v3 migration heuristic).
-            if (isManaged(r.plan) || r.billing === 'annual') r.paymentsCollected = 1;
-            else r.paymentsCollected = 0;
+          // If cloud has no payment fields (pre-migration schema), seed from
+          // the local cache when possible, else from the v2→v3 heuristic.
+          if (r.paymentsCollected == null) {
+            const local = deals.find(x => x.id === r.id);
+            if (local && typeof local.paymentsCollected === 'number') {
+              r.paymentsCollected = local.paymentsCollected;
+              r.cancelled = local.cancelled;
+              r.cancelledDate = local.cancelledDate;
+              r.firstPaymentDate = local.firstPaymentDate;
+            } else if (isManaged(r.plan) || r.billing === 'annual') {
+              r.paymentsCollected = 1;
+            } else {
+              r.paymentsCollected = 0;
+            }
           }
           return normalizeDeal(r);
-        });
+        }).concat(offlineExtras.map(normalizeDeal));
       }
 
       if (settingsRes.data?.value) {
@@ -3010,25 +3036,107 @@
     }
   }
 
-  // Payment-tracking fields live only in the local cache (Supabase schema
-  // doesn't include them yet). Strip them before upserting to the cloud so
-  // PostgREST doesn't reject the row for unknown columns.
-  function stripLocalOnlyFields(deal) {
-    const { paymentsCollected, cancelled, cancelledDate, firstPaymentDate, ...remote } = deal;
-    return remote;
+  // ── Supabase field mapping ────────────────────────────────────────────
+  // Postgres folds unquoted identifiers to lowercase, so we serialize the
+  // camelCase JS deal to snake_case columns and vice versa.
+  function toRemoteDeal(d) {
+    return {
+      id: d.id,
+      name: d.name,
+      mrr: d.mrr,
+      plan: d.plan,
+      date: d.date,
+      billing: d.billing || 'monthly',
+      ref: d.ref || '',
+      payments_collected: d.paymentsCollected ?? 0,
+      cancelled: !!d.cancelled,
+      cancelled_date: d.cancelledDate || null,
+      first_payment_date: d.firstPaymentDate || null
+    };
+  }
+
+  function fromRemoteDeal(r) {
+    return {
+      id: r.id,
+      name: r.name,
+      mrr: Number(r.mrr),
+      plan: r.plan,
+      date: r.date,
+      billing: r.billing || 'monthly',
+      ref: r.ref || '',
+      // null means "schema doesn't have this column yet" — caller fills in.
+      paymentsCollected: r.payments_collected == null ? null : Number(r.payments_collected),
+      cancelled: r.cancelled === null ? false : !!r.cancelled,
+      cancelledDate: r.cancelled_date || null,
+      firstPaymentDate: r.first_payment_date || null
+    };
+  }
+
+  // Detect "column does not exist" errors from PostgREST so we can fall
+  // back gracefully when the schema migration hasn't been applied yet.
+  function isSchemaMissingError(err) {
+    if (!err) return false;
+    const msg = (err.message || err.hint || JSON.stringify(err)).toLowerCase();
+    return msg.includes('column') &&
+      (msg.includes('payments_collected') || msg.includes('cancelled_date') ||
+       msg.includes('first_payment_date') || msg.includes('does not exist') ||
+       msg.includes('schema cache'));
+  }
+
+  let _schemaWarned = false;
+  function warnSchemaMissing() {
+    if (_schemaWarned) return;
+    _schemaWarned = true;
+    console.warn(
+      '[ACE Commission Tracker] Payment-tracking columns are missing from your ' +
+      'Supabase `deals` table. Run the ALTER TABLE statements in supabase-schema.sql ' +
+      'to enable cloud sync of paymentsCollected/cancelled state. Until then, ' +
+      'payment state is cached locally only.'
+    );
+    showToast('Run supabase-schema.sql for full cloud sync — see console', 'error');
+  }
+
+  // Upsert a single deal, retrying without payment-tracking fields if the
+  // schema migration hasn't been applied.
+  async function upsertDealRemote(deal) {
+    let { error } = await supa.from('deals').upsert(toRemoteDeal(deal));
+    if (error && isSchemaMissingError(error)) {
+      warnSchemaMissing();
+      const { payments_collected, cancelled, cancelled_date, first_payment_date,
+              ...legacy } = toRemoteDeal(deal);
+      ({ error } = await supa.from('deals').upsert(legacy));
+    }
+    if (error) throw error;
+  }
+
+  async function upsertDealsRemote(dealsArr) {
+    let { error } = await supa.from('deals').upsert(dealsArr.map(toRemoteDeal));
+    if (error && isSchemaMissingError(error)) {
+      warnSchemaMissing();
+      const legacy = dealsArr.map(d => {
+        const { payments_collected, cancelled, cancelled_date, first_payment_date,
+                ...rest } = toRemoteDeal(d);
+        return rest;
+      });
+      ({ error } = await supa.from('deals').upsert(legacy));
+    }
+    if (error) throw error;
   }
 
   async function persistDeal(deal) {
     await cacheLocal();
     await withSyncStatus('Saving deal…', async () => {
-      const { error } = await supa.from('deals').upsert(stripLocalOnlyFields(deal));
-      if (error) throw error;
+      await upsertDealRemote(deal);
     });
   }
 
-  // For changes to payment-tracking fields only — cache locally; no cloud round-trip needed.
-  async function persistPaymentsLocal() {
+  // Push payment-state changes (markPaid, cancel, etc.) to Supabase too.
+  async function persistPayments(deal) {
     await cacheLocal();
+    if (!supa || !online) return;
+    await withSyncStatus('Syncing payments…', async () => {
+      await upsertDealRemote(deal);
+    });
   }
 
   async function removeDealRemote(id) {
@@ -3523,8 +3631,7 @@
         </div>`;
     } else {
       // Monthly platform
-      const remaining = Math.max(0, max - collected);
-      const futurePotential = d.cancelled ? 0 : monthlyShare * remaining;
+      const belowTarget = monthlyShare === 0 && !d.cancelled;
       commissionCell = `
         <div class="commission-stack">
           <span class="${earnedCls}"><span class="label">Earned</span>$${fmtExact(earned)}</span>
@@ -3536,6 +3643,10 @@
             $${fmtExact(d.cancelled ? earned : potential)}
             ${monthlyShare > 0 && !d.cancelled ? `· $${fmtExact(monthlyShare)}/mo × ${max}` : ''}
           </span>
+          ${belowTarget
+            ? `<span class="potential" style="color:var(--amber);max-width:200px;text-align:right;white-space:normal;line-height:1.3">
+                 Below $1,000 close-month target — payments mark history, but no commission accrues unless the close-month hits target.
+               </span>` : ''}
         </div>`;
     }
 
@@ -3571,8 +3682,8 @@
     if ((d.paymentsCollected || 0) >= max) return;
     if (d.cancelled) return;
     d.paymentsCollected = (d.paymentsCollected || 0) + 1;
-    persistPaymentsLocal();
     render();
+    persistPayments(d);
   };
 
   window.unmarkPaid = function(id) {
@@ -3580,8 +3691,8 @@
     if (!d) return;
     if ((d.paymentsCollected || 0) <= 0) return;
     d.paymentsCollected = (d.paymentsCollected || 0) - 1;
-    persistPaymentsLocal();
     render();
+    persistPayments(d);
   };
 
   window.toggleOneshot = function(id) {
@@ -3589,8 +3700,8 @@
     if (!d) return;
     if (d.cancelled) return;
     d.paymentsCollected = (d.paymentsCollected || 0) > 0 ? 0 : 1;
-    persistPaymentsLocal();
     render();
+    persistPayments(d);
   };
 
   window.toggleCancel = async function(id) {
@@ -3611,12 +3722,9 @@
       d.cancelled = true;
       d.cancelledDate = new Date().toISOString().slice(0, 10);
     }
-    persistPaymentsLocal();
     render();
+    persistPayments(d);
   };
-
-  // Yotam's stated benchmark for the pricing-form / lawyer-referral funnel
-  const AVG_MRR_TARGET = 600;
 
   function renderStats(c) {
     const all = c.monthDeals;
@@ -3625,26 +3733,12 @@
     const avgMRR = all.length > 0 ? totalMRR / all.length : 0;
 
     const avgValue = document.getElementById('avgMrrValue');
-    const avgFlag  = document.getElementById('avgMrrFlag');
     const avgNote  = document.getElementById('avgMrrNote');
     avgValue.textContent = fmt(avgMRR);
-
-    if (all.length === 0) {
-      avgFlag.textContent = 'TARGET $600';
-      avgFlag.className = 'stat-flag';
-      avgNote.textContent = 'Goal: $600/deal (Yotam)';
-      avgNote.className = 'stat-meta';
-    } else if (avgMRR >= AVG_MRR_TARGET) {
-      avgFlag.textContent = 'ON TRACK';
-      avgFlag.className = 'stat-flag flag-good';
-      avgNote.textContent = `+$${fmt(avgMRR - AVG_MRR_TARGET)} above $${AVG_MRR_TARGET} goal`;
-      avgNote.className = 'stat-meta good';
-    } else {
-      avgFlag.textContent = 'BELOW';
-      avgFlag.className = 'stat-flag flag-warn';
-      avgNote.textContent = `$${fmt(AVG_MRR_TARGET - avgMRR)} below $${AVG_MRR_TARGET} goal`;
-      avgNote.className = 'stat-meta warn';
-    }
+    avgNote.textContent = all.length === 0
+      ? 'Across deals closed this month'
+      : `${all.length} deal${all.length !== 1 ? 's' : ''} closed this month`;
+    avgNote.className = 'stat-meta';
 
     let largest = null;
     all.forEach(d => { if (!largest || Number(d.mrr) > Number(largest.mrr)) largest = d; });
