@@ -14,6 +14,13 @@ create table if not exists deals (
 
 create index if not exists deals_date_idx on deals(date);
 
+-- Payment-tracking columns (added with the "paid as the client pays" rewrite).
+-- These store per-deal collection state so the tracker syncs across devices.
+alter table deals add column if not exists payments_collected  int     default 0;
+alter table deals add column if not exists cancelled           boolean default false;
+alter table deals add column if not exists cancelled_date      date;
+alter table deals add column if not exists first_payment_date  date;
+
 create table if not exists settings (
   key         text primary key,
   value       jsonb,
