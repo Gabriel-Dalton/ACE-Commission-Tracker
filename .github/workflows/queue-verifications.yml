@@ -1,0 +1,38 @@
+name: Queue subscription verifications
+
+# Runs on the 1st of every month (09:00 UTC) and any time you click
+# "Run workflow" in the Actions tab. Populates the pending_verifications
+# table in Supabase — the dashboard then surfaces a "Is this client still
+# with us?" modal per row on next load.
+#
+# Required GitHub secrets (Settings → Secrets and variables → Actions):
+#   SUPABASE_URL              — same value as Vercel env var
+#   SUPABASE_PUBLISHABLE_KEY  — same value as Vercel env var
+
+on:
+  schedule:
+    - cron: '0 9 1 * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: queue-verifications
+  cancel-in-progress: false
+
+jobs:
+  queue:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Queue pending verifications
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+        run: node scripts/queue-verifications.mjs

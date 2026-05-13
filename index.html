@@ -1767,6 +1767,177 @@
   .modal-body .popover-row:last-child   { padding-bottom: 0; }
   .modal-body .popover-setting:first-child { padding-top: 0; }
 
+  /* VERIFICATION BANNER — surfaces queued "is this client still with us?" checks
+     at the top of the dashboard so Gabriel sees them the moment he opens the page. */
+  .verify-banner {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--amber-soft);
+    border: 1px solid #f1d3a0;
+    border-radius: var(--radius-lg);
+    padding: 14px 18px;
+    margin: 0 0 20px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .verify-banner[hidden] { display: none; }
+
+  .verify-banner-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: #fff;
+    border: 1px solid #f1d3a0;
+    color: var(--amber);
+    display: inline-flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .verify-banner-body { flex: 1; min-width: 0; }
+  .verify-banner-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--amber);
+    margin-bottom: 3px;
+  }
+  .verify-banner-message {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.45;
+  }
+  .verify-banner-message strong { font-weight: 600; }
+
+  /* VERIFICATION MODAL — the per-client "Is this client still with us?" prompt */
+  .verify-modal .deal-snapshot {
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 14px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 6px 14px;
+    font-size: 13px;
+  }
+  .verify-modal .deal-snapshot dt {
+    color: var(--text-3);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .verify-modal .deal-snapshot dd { color: var(--text); margin: 0; font-variant-numeric: tabular-nums; }
+  .verify-modal .deal-snapshot dd strong { font-weight: 600; }
+
+  .verify-modal .verify-prompt {
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.5;
+    margin: 4px 0 14px;
+  }
+  .verify-modal .verify-prompt strong { font-weight: 600; }
+
+  .verify-modal .chartmogul-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+    border: 1px solid var(--line-2);
+    color: var(--text);
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+  }
+  .verify-modal .chartmogul-link:hover {
+    border-color: var(--accent-line);
+    box-shadow: 0 4px 10px rgba(196, 232, 74, 0.18);
+    transform: translateY(-1px);
+  }
+  .verify-modal .chartmogul-hint {
+    font-size: 12px;
+    color: var(--text-3);
+    margin-top: 10px;
+    line-height: 1.5;
+  }
+  .verify-modal .verify-counter {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--text-3);
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--line);
+  }
+
+  .btn-success-solid {
+    background: var(--green);
+    color: #fff;
+    font-weight: 600;
+    box-shadow: 0 1px 2px rgba(21, 128, 61, 0.25);
+  }
+  .btn-success-solid:hover {
+    background: #11663a;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(21, 128, 61, 0.3);
+  }
+
+  /* VERIFICATION HISTORY — collapsible audit-log panel */
+  .verify-history {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 0;
+    overflow: hidden;
+  }
+  .verify-history-empty {
+    padding: 20px 22px;
+    font-size: 13px;
+    color: var(--text-3);
+    text-align: center;
+  }
+  .verify-history-list {
+    list-style: none;
+    padding: 4px 0;
+    margin: 0;
+    max-height: 340px;
+    overflow-y: auto;
+  }
+  .verify-history-item {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 18px;
+    border-bottom: 1px solid var(--line);
+    font-size: 13px;
+  }
+  .verify-history-item:last-child { border-bottom: none; }
+  .verify-history-decision {
+    width: 22px; height: 22px;
+    border-radius: 6px;
+    display: inline-flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .verify-history-decision.confirmed_active { background: var(--green-soft); color: var(--green); }
+  .verify-history-decision.marked_cancelled { background: #fef2f2; color: var(--red); }
+  .verify-history-decision.skipped { background: var(--amber-soft); color: var(--amber); }
+  .verify-history-name { color: var(--text); font-weight: 500; }
+  .verify-history-meta { color: var(--text-3); font-size: 12px; }
+  .verify-history-when {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+  }
+
   /* PLAN PICKER (button looks like input) */
   .plan-pick-btn {
     display: flex;
@@ -2959,6 +3130,20 @@
     </div>
   </header>
 
+  <div class="verify-banner" id="verifyBanner" role="status" hidden>
+    <span class="verify-banner-icon" aria-hidden="true">
+      <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M8 1.5L1.5 4v4.5c0 3.5 2.7 5.4 6.5 6 3.8-.6 6.5-2.5 6.5-6V4L8 1.5z"/>
+        <path d="M5.5 8L7 9.5l3.5-3.5"/>
+      </svg>
+    </span>
+    <div class="verify-banner-body">
+      <div class="verify-banner-title">Verifications pending</div>
+      <div class="verify-banner-message" id="verifyBannerMessage">—</div>
+    </div>
+    <button type="button" class="btn btn-primary" id="verifyBannerBtn">Review now</button>
+  </div>
+
   <div class="activity-banner muted" id="activityBanner" hidden>
     <div class="activity-banner-icon" id="activityBannerIcon">✦</div>
     <div class="activity-banner-body">
@@ -3268,6 +3453,22 @@
     </div>
   </div>
 
+  <div class="section-head">
+    <div class="section-title"><span class="num">06</span><span>Verification history · audit trail</span></div>
+    <button type="button" class="breakdown-toggle" id="verifyHistoryToggle">
+      <svg class="chev" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6">
+        <path d="M4.5 3L8 6l-3.5 3"/>
+      </svg>
+      <span id="verifyHistoryToggleLabel">Show</span>
+    </button>
+  </div>
+  <div class="verify-history" id="verifyHistory" hidden>
+    <div class="verify-history-empty" id="verifyHistoryEmpty">
+      No verifications recorded yet — they'll appear here once you confirm or cancel a client.
+    </div>
+    <ul class="verify-history-list" id="verifyHistoryList" hidden></ul>
+  </div>
+
   <footer class="footer">
     <div class="footer-text" id="syncStatus">
       <span class="save-dot syncing"></span>
@@ -3330,6 +3531,15 @@
   // so an additional subscription for the same client can be logged quickly.
   // Cleared on submit or via the cancel button in the sub-banner.
   let addingSubFor = null;
+
+  // Verification queue + audit log — populated from Supabase on load.
+  // pendingVerifications: queued by the monthly GitHub Action; the dashboard
+  // prompts a "Is this client still with us?" modal per row, then deletes
+  // the row after Gabriel decides. verificationLog: append-only history.
+  let pendingVerifications = [];
+  let verificationLog = [];
+  let verifyHistoryOpen = false;
+  const CHARTMOGUL_URL = 'https://app.chartmogul.com/';
 
   const TARGET = 1000;
   const COMMISSION_RATE = 0.10;
@@ -3653,10 +3863,105 @@
       online = true;
       await cacheLocal();
       setStatus('online', 'Synced · Cloud');
+
+      // Pull the verification queue + audit log alongside the main load.
+      // Failures here are non-fatal — the dashboard still renders deals.
+      await loadVerifications();
     } catch(e) {
       console.error('Supabase load failed:', e);
       online = false;
       setStatus('offline', 'Offline · Local only');
+    }
+  }
+
+  // ── Verification queue + audit log ────────────────────────────────────
+  // Two tables, both populated and consumed by this app:
+  //   pending_verifications — queued by .github/workflows/queue-verifications.yml
+  //   verification_log      — append-only proof of every confirm/cancel decision
+  let _verifyWarned = false;
+  function warnVerifyMissing() {
+    if (_verifyWarned) return;
+    _verifyWarned = true;
+    console.warn(
+      '[ACE Commission Tracker] verification_log / pending_verifications tables ' +
+      'are missing. Re-run supabase-schema.sql to enable monthly verification prompts.'
+    );
+  }
+
+  async function loadVerifications() {
+    if (!supa || !online) return;
+    try {
+      const [pendRes, logRes] = await Promise.all([
+        supa.from('pending_verifications').select('*').order('queued_at', { ascending: true }),
+        supa.from('verification_log').select('*').order('verified_at', { ascending: false }).limit(200)
+      ]);
+      if (pendRes.error) throw pendRes.error;
+      if (logRes.error) throw logRes.error;
+      pendingVerifications = pendRes.data || [];
+      verificationLog = logRes.data || [];
+    } catch (e) {
+      const msg = (e?.message || '').toLowerCase();
+      if (msg.includes('relation') || msg.includes('does not exist') ||
+          msg.includes('schema cache') || msg.includes('table')) {
+        warnVerifyMissing();
+        pendingVerifications = [];
+        verificationLog = [];
+      } else {
+        console.error('Failed to load verifications:', e);
+      }
+    }
+  }
+
+  // Resolve a queued verification: remove from pending and append to the log.
+  // Decision: 'confirmed_active' | 'marked_cancelled' | 'skipped'.
+  async function recordVerification(deal, periodMonth, decision) {
+    if (!supa || !online) {
+      showToast('Offline — verification not saved', 'error');
+      return false;
+    }
+
+    const logEntry = {
+      deal_id: deal.id,
+      deal_name: deal.name,
+      decision,
+      period_month: periodMonth,
+      verified_at: new Date().toISOString()
+    };
+
+    try {
+      const { data: inserted, error: logErr } = await supa
+        .from('verification_log').insert(logEntry).select().single();
+      if (logErr) throw logErr;
+
+      const { error: delErr } = await supa
+        .from('pending_verifications')
+        .delete()
+        .eq('deal_id', deal.id)
+        .eq('period_month', periodMonth);
+      if (delErr) throw delErr;
+
+      pendingVerifications = pendingVerifications.filter(
+        p => !(p.deal_id === deal.id && p.period_month === periodMonth)
+      );
+      if (inserted) verificationLog = [inserted, ...verificationLog];
+      return true;
+    } catch (e) {
+      console.error('recordVerification failed:', e);
+      showToast('Failed to save verification', 'error');
+      return false;
+    }
+  }
+
+  // When the user marks a client cancelled in the verification modal, also
+  // clear every other pending verification for that deal — they're moot.
+  async function purgePendingForDeal(dealId) {
+    if (!supa || !online) return;
+    try {
+      const { error } = await supa.from('pending_verifications').delete().eq('deal_id', dealId);
+      if (error) throw error;
+      pendingVerifications = pendingVerifications.filter(p => p.deal_id !== dealId);
+    } catch (e) {
+      console.error('purgePendingForDeal failed:', e);
     }
   }
 
@@ -3691,6 +3996,7 @@
       cancelled_date: d.cancelledDate || null,
       first_payment_date: d.firstPaymentDate || null,
       last_paid_out_date: d.lastPaidOutDate || null,
+      last_verified_at: d.lastVerifiedAt || null,
       // parent_id is legacy; keep writing nulls so old rows can be cleaned up.
       parent_id: d.parentId || null
     };
@@ -3712,6 +4018,7 @@
       cancelledDate: r.cancelled_date || null,
       firstPaymentDate: r.first_payment_date || null,
       lastPaidOutDate: r.last_paid_out_date || null,
+      lastVerifiedAt: r.last_verified_at || null,
       parentId: r.parent_id || null
     };
   }
@@ -3724,7 +4031,8 @@
     return msg.includes('column') &&
       (msg.includes('payments_collected') || msg.includes('payments_paid_out') ||
        msg.includes('cancelled_date') || msg.includes('first_payment_date') ||
-       msg.includes('last_paid_out_date') || msg.includes('parent_id') ||
+       msg.includes('last_paid_out_date') || msg.includes('last_verified_at') ||
+       msg.includes('parent_id') ||
        msg.includes('does not exist') || msg.includes('schema cache'));
   }
 
@@ -3748,7 +4056,7 @@
     if (error && isSchemaMissingError(error)) {
       warnSchemaMissing();
       const { payments_collected, payments_paid_out, cancelled, cancelled_date,
-              first_payment_date, last_paid_out_date, parent_id,
+              first_payment_date, last_paid_out_date, last_verified_at, parent_id,
               ...legacy } = toRemoteDeal(deal);
       ({ error } = await supa.from('deals').upsert(legacy));
     }
@@ -3761,7 +4069,7 @@
       warnSchemaMissing();
       const legacy = dealsArr.map(d => {
         const { payments_collected, payments_paid_out, cancelled, cancelled_date,
-                first_payment_date, last_paid_out_date, parent_id,
+                first_payment_date, last_paid_out_date, last_verified_at, parent_id,
                 ...rest } = toRemoteDeal(d);
         return rest;
       });
@@ -4438,6 +4746,197 @@
 
     renderStats(c);
     renderBreakdown(c);
+    renderVerificationBanner();
+    renderVerificationHistory();
+  }
+
+  // ── Verification UI ──────────────────────────────────────────────────
+  // Pending rows reference deals by id. Drop orphans (deal deleted while
+  // a verification was still queued) so the banner count stays honest.
+  function activePendingVerifications() {
+    return pendingVerifications.filter(p => deals.some(d => d.id === p.deal_id && !d.cancelled));
+  }
+
+  function renderVerificationBanner() {
+    const banner = document.getElementById('verifyBanner');
+    if (!banner) return;
+    const active = activePendingVerifications();
+    if (active.length === 0) {
+      banner.hidden = true;
+      return;
+    }
+    banner.hidden = false;
+    const uniqueClients = new Set(active.map(p => {
+      const d = deals.find(x => x.id === p.deal_id);
+      return d ? d.name.toLowerCase() : p.deal_id;
+    })).size;
+    const msg = document.getElementById('verifyBannerMessage');
+    msg.innerHTML = `<strong>${active.length}</strong> month${active.length === 1 ? '' : 's'} ` +
+      `across <strong>${uniqueClients}</strong> client${uniqueClients === 1 ? '' : 's'} ` +
+      `need a "still with us?" check before the payment-collected box ticks.`;
+  }
+
+  function startVerificationFlow() {
+    const queue = activePendingVerifications();
+    if (queue.length === 0) {
+      showToast('No verifications pending', 'success');
+      return;
+    }
+    openVerificationModal(queue, 0);
+  }
+
+  function openVerificationModal(queue, index) {
+    if (index >= queue.length) {
+      render();
+      showToast('Verifications complete', 'success');
+      return;
+    }
+    const pending = queue[index];
+    const deal = deals.find(d => d.id === pending.deal_id);
+    if (!deal) {
+      // Orphaned row — skip and advance.
+      openVerificationModal(queue, index + 1);
+      return;
+    }
+
+    const periodLabel = formatMonthLabel(pending.period_month);
+    const nameEsc = escapeHtml(deal.name);
+    const planEsc = escapeHtml(planLabel(deal.plan));
+    const chartMogulSearch = CHARTMOGUL_URL + '#/customers?q=' + encodeURIComponent(deal.name);
+
+    const wrap = document.createElement('div');
+    wrap.className = 'verify-modal';
+    wrap.innerHTML = `
+      <p class="verify-prompt">Is <strong>${nameEsc}</strong> still with us for <strong>${escapeHtml(periodLabel)}</strong>?</p>
+      <dl class="deal-snapshot">
+        <dt>Plan</dt><dd>${planEsc}${deal.billing === 'annual' ? ' · annual' : ''}</dd>
+        <dt>MRR</dt><dd>$${fmt(Number(deal.mrr) || 0)}</dd>
+        <dt>Collected</dt><dd>${deal.paymentsCollected || 0} / ${dealMaxUnits(deal)} months</dd>
+        <dt>Started</dt><dd>${escapeHtml(formatDate(deal.firstPaymentDate || deal.date))}</dd>
+      </dl>
+      <a class="chartmogul-link" href="${chartMogulSearch}" target="_blank" rel="noopener noreferrer">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 2.5H3a.5.5 0 00-.5.5v10a.5.5 0 00.5.5h10a.5.5 0 00.5-.5V10"/>
+          <path d="M9.5 2.5h4v4M13.5 2.5L7 9"/>
+        </svg>
+        <span>Open ${escapeHtml(deal.name)} in ChartMogul</span>
+      </a>
+      <p class="chartmogul-hint">
+        Verifies the payment landed and the customer is still active. ChartMogul will open in a new tab
+        — your answer here is the record either way.
+      </p>
+      <div class="verify-counter">Verification ${index + 1} of ${queue.length}</div>
+    `;
+
+    openModal({
+      title: 'Verify subscription',
+      size: 'wide',
+      content: wrap,
+      buttons: [
+        {
+          label: 'No · they cancelled',
+          variant: 'btn-danger-solid',
+          closeOnClick: false,
+          onClick: async () => {
+            const ok = await confirmModal({
+              title: 'Mark cancelled',
+              message: `This will stop further commission for ${deal.name} from ${periodLabel} onward, and skip every remaining verification for them. Continue?`,
+              confirmText: 'Yes, mark cancelled',
+              cancelText: 'Go back',
+              danger: true
+            });
+            if (!ok) {
+              // Re-open this same verification — confirmModal closed the parent modal.
+              openVerificationModal(queue, index);
+              return;
+            }
+            deal.cancelled = true;
+            deal.cancelledDate = new Date().toISOString().slice(0, 10);
+            deal.lastVerifiedAt = new Date().toISOString();
+            await persistPayments(deal);
+            await recordVerification(deal, pending.period_month, 'marked_cancelled');
+            await purgePendingForDeal(deal.id);
+            const next = queue.filter(q => q.deal_id !== deal.id);
+            const newIndex = next.findIndex(q => q === queue[index + 1]);
+            openVerificationModal(next, newIndex === -1 ? next.length : newIndex);
+          }
+        },
+        {
+          label: 'Skip for now',
+          variant: 'btn-ghost',
+          closeOnClick: false,
+          onClick: async () => {
+            await recordVerification(deal, pending.period_month, 'skipped');
+            openVerificationModal(queue, index + 1);
+          }
+        },
+        {
+          label: 'Yes · still with us',
+          variant: 'btn-success-solid',
+          closeOnClick: false,
+          onClick: async () => {
+            const max = dealMaxUnits(deal);
+            if ((deal.paymentsCollected || 0) < max) {
+              deal.paymentsCollected = (deal.paymentsCollected || 0) + 1;
+            }
+            deal.lastVerifiedAt = new Date().toISOString();
+            await persistPayments(deal);
+            await recordVerification(deal, pending.period_month, 'confirmed_active');
+            openVerificationModal(queue, index + 1);
+          }
+        }
+      ]
+    });
+  }
+
+  function renderVerificationHistory() {
+    const list  = document.getElementById('verifyHistoryList');
+    const empty = document.getElementById('verifyHistoryEmpty');
+    if (!list || !empty) return;
+
+    if (verificationLog.length === 0) {
+      list.hidden = true;
+      list.innerHTML = '';
+      empty.hidden = false;
+      return;
+    }
+
+    empty.hidden = true;
+    list.hidden = false;
+    list.innerHTML = verificationLog.map(entry => {
+      const icon = entry.decision === 'confirmed_active' ?
+          '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6L5 8.5l4.5-5"/></svg>'
+        : entry.decision === 'marked_cancelled' ?
+          '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 3l6 6M9 3l-6 6"/></svg>'
+        : '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h6"/></svg>';
+
+      const decisionLabel = entry.decision === 'confirmed_active' ? 'Confirmed active'
+                          : entry.decision === 'marked_cancelled' ? 'Marked cancelled'
+                          : 'Skipped';
+
+      const when = new Date(entry.verified_at);
+      const whenLabel = when.toLocaleString('en-US', {
+        month: 'short', day: 'numeric', year: 'numeric',
+        hour: 'numeric', minute: '2-digit'
+      });
+
+      return `
+        <li class="verify-history-item">
+          <span class="verify-history-decision ${entry.decision}" title="${escapeHtml(decisionLabel)}">${icon}</span>
+          <div>
+            <div class="verify-history-name">${escapeHtml(entry.deal_name)}</div>
+            <div class="verify-history-meta">${escapeHtml(decisionLabel)} · ${escapeHtml(formatMonthLabel(entry.period_month))}</div>
+          </div>
+          <span class="verify-history-when">${escapeHtml(whenLabel)}</span>
+        </li>`;
+    }).join('');
+  }
+
+  function toggleVerificationHistory() {
+    verifyHistoryOpen = !verifyHistoryOpen;
+    document.getElementById('verifyHistory').hidden = !verifyHistoryOpen;
+    document.getElementById('verifyHistoryToggleLabel').textContent = verifyHistoryOpen ? 'Hide' : 'Show';
+    document.getElementById('verifyHistoryToggle').classList.toggle('open', verifyHistoryOpen);
   }
 
   // Order an array of deals so subscriptions sharing the same client name
@@ -6574,6 +7073,9 @@
       applyBreakdownState();
       persistSettings();
     });
+
+    document.getElementById('verifyBannerBtn').addEventListener('click', startVerificationFlow);
+    document.getElementById('verifyHistoryToggle').addEventListener('click', toggleVerificationHistory);
 
     document.getElementById('activityBannerDismiss').addEventListener('click', () => {
       _activityBannerData = null;
