@@ -2658,6 +2658,27 @@
   .voice-form-btn svg { flex-shrink: 0; }
   .voice-form-btn .label { letter-spacing: 0.02em; }
 
+  .voice-form-controls {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .voice-type-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-3);
+    font-size: 12px;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 6px;
+    text-decoration: underline;
+    text-decoration-color: var(--line-2);
+    text-underline-offset: 3px;
+    transition: color 0.12s, background 0.12s;
+  }
+  .voice-type-btn:hover { color: var(--text); background: var(--surface-2); text-decoration-color: var(--line-3); }
+
   .voice-review {
     margin-top: 14px;
     padding: 14px 16px;
@@ -2957,13 +2978,18 @@
 
   <div class="section-head">
     <div class="section-title"><span class="num">01</span><span>Log a Deal</span></div>
-    <button type="button" class="voice-form-btn" id="voiceFormBtn" hidden aria-label="Dictate the whole deal" title="Say the deal in one sentence — client, MRR, plan, billing, date">
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="6" y="2" width="4" height="8" rx="2"/>
-        <path d="M3.5 7.5a4.5 4.5 0 009 0M8 12v2.5M5.5 14.5h5"/>
-      </svg>
-      <span class="label">Voice fill</span>
-    </button>
+    <div class="voice-form-controls">
+      <button type="button" class="voice-form-btn" id="voiceFormBtn" hidden aria-label="Dictate the whole deal" title="Say the deal in one sentence — client, MRR, plan, billing, date">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="6" y="2" width="4" height="8" rx="2"/>
+          <path d="M3.5 7.5a4.5 4.5 0 009 0M8 12v2.5M5.5 14.5h5"/>
+        </svg>
+        <span class="label">Voice fill</span>
+      </button>
+      <button type="button" class="voice-type-btn" id="voiceTypeBtn" title="Type or paste a sentence to parse (works without microphone access)">
+        Type instead
+      </button>
+    </div>
   </div>
   <div class="add-deal">
     <div class="sub-banner" id="subBanner" hidden>
@@ -6639,6 +6665,65 @@
 
     function stop() { if (recog) { try { recog.stop(); } catch(e) {} } }
 
+    // Shared between voice and the typed fallback: parse, fill the form,
+    // show the review banner, and toast a quick summary.
+    function parseAndApply(text) {
+      const parsed = parse(text);
+      applyToForm(parsed);
+      showReview(parsed);
+      const filled = ['name','mrr','plan','date'].filter(k => parsed[k] != null && parsed[k] !== '').length;
+      showToast(`Voice fill — ${filled}/4 fields detected`);
+    }
+
+    // Fallback for browsers/networks where webkitSpeechRecognition can't
+    // reach Google's speech service: type or paste the sentence, parse it
+    // with the same deterministic algorithm.
+    function openTypeFallback(prefill = '') {
+      const safe = String(prefill || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      const wrap = document.createElement('div');
+      wrap.innerHTML = `
+        <p class="modal-message" style="margin-bottom: 12px;">
+          Type or paste a sentence describing the deal. Same parser as the voice button —
+          client name, MRR, plan, billing, and close date all in one go.
+        </p>
+        <textarea id="voiceTypeInput" class="input" rows="4"
+                  placeholder="e.g. The Richland Group, $359 MRR, unlimited domains 500 pages, monthly, April 21st."
+                  style="width: 100%; resize: vertical; min-height: 96px; font-size: 14px; line-height: 1.5;">${safe}</textarea>
+        <div style="margin-top: 8px; font-size: 12px; color: var(--text-3); line-height: 1.45;">
+          Works with anything: phone keyboard dictation, a copy from your notes, or typed text.
+        </div>
+      `;
+      openModal({
+        title: 'Voice fill — type a sentence',
+        content: wrap,
+        size: 'wide',
+        buttons: [
+          { label: 'Cancel', variant: 'btn-ghost' },
+          { label: 'Parse', variant: 'btn-primary', closeOnClick: false, onClick: () => {
+              const ta = document.getElementById('voiceTypeInput');
+              const value = (ta?.value || '').trim();
+              if (!value) { ta?.focus(); return; }
+              closeModal();
+              parseAndApply(value);
+            }}
+        ]
+      });
+      setTimeout(() => {
+        const ta = document.getElementById('voiceTypeInput');
+        ta?.focus();
+        // Enter to parse, Shift+Enter for newline
+        ta?.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            const value = ta.value.trim();
+            if (!value) return;
+            closeModal();
+            parseAndApply(value);
+          }
+        });
+      }, 20);
+    }
+
     function start() {
       if (!supported) {
         showToast('Voice input not supported on this browser', 'error');
@@ -6656,8 +6741,12 @@
       recog = new SR();
       recog.lang = navigator.language || 'en-US';
       recog.interimResults = true;
-      // Allow long sentences — the platform engine returns final results when the user pauses.
-      recog.continuous = true;
+      // `continuous = false` matches the per-field voice and avoids the extra
+      // network round-trips that trigger 'network' errors in some Chromium
+      // builds. The recognizer still listens until the user pauses for a
+      // beat, so multi-clause sentences like "Acme Corp, $599 MRR, monthly,
+      // April 21st" go through fine.
+      recog.continuous = false;
       recog.maxAlternatives = 1;
 
       recog.onresult = (e) => {
@@ -6677,8 +6766,14 @@
           showToast('Microphone access blocked — enable it in browser settings', 'error');
         } else if (e.error === 'no-speech') {
           showToast('No speech detected', 'error');
+        } else if (e.error === 'network') {
+          // Chrome's webkitSpeechRecognition streams audio to Google's speech
+          // service — a 'network' error means that service is unreachable from
+          // here. The "Type instead" fallback works without it.
+          showToast('Speech service unreachable — use "Type instead"', 'error');
+          lastTranscript = ''; // don't try to parse a partial result
         } else if (e.error !== 'aborted') {
-          showToast('Voice error: ' + e.error, 'error');
+          showToast('Voice error: ' + e.error + ' — use "Type instead"', 'error');
         }
       };
 
@@ -6688,11 +6783,7 @@
         hideOverlay();
         listening = false;
         if (lastTranscript) {
-          const parsed = parse(lastTranscript);
-          applyToForm(parsed);
-          showReview(parsed);
-          const filled = ['name','mrr','plan','date'].filter(k => parsed[k] != null && parsed[k] !== '').length;
-          showToast(`Voice fill — ${filled}/4 fields detected`);
+          parseAndApply(lastTranscript);
         }
         recog = null;
       };
@@ -6710,10 +6801,16 @@
 
     function init() {
       const btn = document.getElementById('voiceFormBtn');
-      if (!btn) return;
-      if (!supported) return; // keep hidden when the browser can't do speech recognition
-      btn.hidden = false;
-      btn.addEventListener('click', (e) => { e.preventDefault(); start(); });
+      // Voice button only appears when the browser exposes a recognizer at all.
+      if (supported && btn) {
+        btn.hidden = false;
+        btn.addEventListener('click', (e) => { e.preventDefault(); start(); });
+      }
+
+      // "Type instead" always shows — it's the fallback when the speech
+      // service can't be reached (or simply when the user prefers typing).
+      const typeBtn = document.getElementById('voiceTypeBtn');
+      if (typeBtn) typeBtn.addEventListener('click', (e) => { e.preventDefault(); openTypeFallback(); });
 
       const closeBtn = document.getElementById('voiceReviewClose');
       if (closeBtn) closeBtn.addEventListener('click', hideReview);
@@ -6731,7 +6828,7 @@
       });
     }
 
-    return { init, supported, parse };
+    return { init, supported, parse, openTypeFallback };
   })();
 
   function applyBreakdownState() {
