@@ -21,11 +21,18 @@ alter table deals add column if not exists cancelled           boolean default f
 alter table deals add column if not exists cancelled_date      date;
 alter table deals add column if not exists first_payment_date  date;
 
--- Sub-subscriptions: a client can carry multiple subscriptions. The primary
--- deal has parent_id = null; additional subs for the same client store the
--- primary's id here. Cascade on delete so removing the primary drops its subs.
-alter table deals add column if not exists parent_id text references deals(id) on delete cascade;
+-- Legacy: a previous version linked extra subscriptions to a "primary" deal
+-- via parent_id. Subscriptions are now equal peers grouped by client name,
+-- so the column is unused going forward. Kept here (nullable) for old rows.
+alter table deals add column if not exists parent_id text;
 create index if not exists deals_parent_id_idx on deals(parent_id);
+
+-- Money received: count of commission payouts Gabriel has personally collected
+-- from his employer. Mirrors payments_collected (which tracks what the client
+-- paid ACE). A simple counter lets monthly deals be checked off as each
+-- monthly commission lands; one-shot deals just toggle 0 ↔ 1.
+alter table deals add column if not exists payments_paid_out int default 0;
+alter table deals add column if not exists last_paid_out_date date;
 
 create table if not exists settings (
   key         text primary key,
