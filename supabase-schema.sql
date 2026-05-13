@@ -21,6 +21,12 @@ alter table deals add column if not exists cancelled           boolean default f
 alter table deals add column if not exists cancelled_date      date;
 alter table deals add column if not exists first_payment_date  date;
 
+-- Sub-subscriptions: a client can carry multiple subscriptions. The primary
+-- deal has parent_id = null; additional subs for the same client store the
+-- primary's id here. Cascade on delete so removing the primary drops its subs.
+alter table deals add column if not exists parent_id text references deals(id) on delete cascade;
+create index if not exists deals_parent_id_idx on deals(parent_id);
+
 create table if not exists settings (
   key         text primary key,
   value       jsonb,

@@ -623,6 +623,12 @@
     box-shadow: 0 0 0 3px rgba(196, 232, 74, 0.18);
     background: var(--surface);
   }
+  .input.locked,
+  .input[readonly] {
+    background: var(--surface-2);
+    color: var(--text-2);
+    cursor: not-allowed;
+  }
 
   .input::-webkit-calendar-picker-indicator {
     filter: invert(0.4);
@@ -1722,6 +1728,210 @@
     border-color: rgba(180, 83, 9, 0.18);
   }
 
+  /* CUSTOM PLAN FORM (Custom tab in plan picker modal) */
+  .custom-plan-form { display: flex; flex-direction: column; gap: 16px; }
+
+  .custom-plan-field { display: flex; flex-direction: column; gap: 8px; }
+
+  .custom-plan-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+  }
+
+  .custom-plan-choices {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .custom-plan-choice {
+    background: var(--surface);
+    border: 1px solid var(--line-2);
+    padding: 12px 14px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    color: var(--text-2);
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    transition: border-color 0.12s, background 0.12s, color 0.12s;
+  }
+  .custom-plan-choice:hover { border-color: var(--line-3); }
+  .custom-plan-choice.active {
+    border-color: var(--accent-line);
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+  }
+  .custom-plan-choice .title { font-weight: 600; font-size: 13px; }
+  .custom-plan-choice .desc {
+    font-size: 11px;
+    color: var(--text-3);
+    font-family: 'JetBrains Mono', monospace;
+    line-height: 1.4;
+  }
+  .custom-plan-choice.active .desc { color: var(--accent-strong); opacity: 0.75; }
+
+  .custom-plan-mrr {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface);
+    border: 1px solid var(--line-2);
+    border-radius: var(--radius);
+    padding: 0 12px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .custom-plan-mrr:focus-within {
+    border-color: var(--accent-line);
+    box-shadow: 0 0 0 3px rgba(196, 232, 74, 0.18);
+  }
+  .custom-plan-mrr .currency,
+  .custom-plan-mrr .suffix {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--text-3);
+    flex-shrink: 0;
+  }
+  .custom-plan-mrr input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    padding: 10px 0;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    min-width: 0;
+  }
+  .custom-plan-mrr input::-webkit-outer-spin-button,
+  .custom-plan-mrr input::-webkit-inner-spin-button {
+    -webkit-appearance: none; margin: 0;
+  }
+
+  .custom-plan-hint {
+    font-size: 11px;
+    color: var(--text-3);
+    line-height: 1.4;
+    font-style: italic;
+  }
+
+  .custom-plan-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+    margin-top: 4px;
+  }
+  .custom-plan-error {
+    color: var(--red);
+    font-size: 12px;
+    flex: 1;
+  }
+
+  /* SUB-SUBSCRIPTION INDICATORS (deal table rows for child subscriptions) */
+  .deal-row-sub td {
+    background: linear-gradient(
+      90deg,
+      rgba(196, 232, 74, 0.05) 0%,
+      rgba(196, 232, 74, 0.02) 60%,
+      transparent 100%
+    );
+  }
+  .deal-row-sub td:first-child { border-left: 3px solid var(--accent-line); }
+
+  .sub-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--accent-strong);
+    background: var(--accent-soft);
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-bottom: 4px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .sub-tag::before { content: '↳'; font-size: 11px; }
+
+  .deal-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-end;
+  }
+  .add-sub-btn {
+    background: transparent;
+    border: 1px dashed var(--line-2);
+    color: var(--text-3);
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: border-color 0.12s, background 0.12s, color 0.12s;
+    white-space: nowrap;
+  }
+  .add-sub-btn:hover {
+    border-color: var(--accent-line);
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+  }
+
+  /* Sub-subscription banner above the add-deal form */
+  .sub-banner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--accent-soft);
+    border: 1px solid var(--accent-line);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    margin-bottom: 14px;
+    font-size: 13px;
+    color: var(--accent-strong);
+  }
+  .sub-banner .sub-banner-icon {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--accent-fg);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .sub-banner .sub-banner-text { flex: 1; line-height: 1.4; }
+  .sub-banner .sub-banner-text strong { font-weight: 700; }
+  .sub-banner .sub-banner-cancel {
+    background: transparent;
+    border: 1px solid rgba(107, 138, 20, 0.35);
+    color: var(--accent-strong);
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: background 0.12s, border-color 0.12s;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .sub-banner .sub-banner-cancel:hover {
+    background: rgba(196, 232, 74, 0.35);
+    border-color: var(--accent-strong);
+  }
+
   /* PDF DOCUMENT (rendered off-screen, captured by html2pdf) */
   .pdf-doc {
     width: 760px;
@@ -2467,6 +2677,13 @@
     <div class="section-title"><span class="num">01</span><span>Log a Deal</span></div>
   </div>
   <div class="add-deal">
+    <div class="sub-banner" id="subBanner" hidden>
+      <span class="sub-banner-icon">↳</span>
+      <span class="sub-banner-text">
+        Adding subscription to <strong id="subBannerName">—</strong> · this will be linked to the parent deal and share its client name.
+      </span>
+      <button type="button" class="sub-banner-cancel" id="subBannerCancel">Cancel</button>
+    </div>
     <div class="form-grid">
       <div class="field">
         <label class="field-label" for="dealName">Client name</label>
@@ -2726,12 +2943,20 @@
   // Hardcoded policy: Managed deals always count toward the $1,000 target alongside their flat $300 bonus.
   const managedCountsTowardTarget = 'yes';
   let breakdownOpen = true;
+  // When set, the "Add Deal" form creates a child subscription whose
+  // parentId points at this deal id. Cleared on submit or via the cancel
+  // button in the sub-banner.
+  let addingSubFor = null;
 
   const TARGET = 1000;
   const COMMISSION_RATE = 0.10;
   const MANAGED_FLAT = 300;
   const EXCLUDED_PLANS = ['lite', 'starter', 'growth'];
   const MANAGED_PLAN = 'managed';
+  // Custom plan keys — chosen at the plan picker's "Custom" tab, where the
+  // MRR/billing are entered directly rather than picked from the catalog.
+  const CUSTOM_PLATFORM = 'custom_platform';
+  const CUSTOM_MANAGED = 'custom_managed';
 
   const ddState = {
     managedCounts: 'yes',
@@ -2812,7 +3037,13 @@
 
   // Long labels (used in form trigger and breakdown). Short labels are derived for badges.
   const PLAN_LABELS = (() => {
-    const l = { unlimited: 'Platform Unlimited', managed: 'Managed Accessibility', ...LEGACY_PLAN_LABELS };
+    const l = {
+      unlimited: 'Platform Unlimited',
+      managed: 'Managed Accessibility',
+      [CUSTOM_PLATFORM]: 'Custom · Platform Only',
+      [CUSTOM_MANAGED]: 'Custom · Managed Accessibility',
+      ...LEGACY_PLAN_LABELS
+    };
     PLAN_CATALOG.platformSingle.forEach(p => l[p.key]    = `${p.name} · Single Domain`);
     PLAN_CATALOG.platformUnlimited.forEach(p => l[p.key] = `${p.name} · Unlimited Domains`);
     PLAN_CATALOG.managedStandard.forEach(p => l[p.key]   = `${p.name} · ${p.pages} pages`);
@@ -2822,7 +3053,13 @@
   })();
 
   const PLAN_SHORT_LABELS = (() => {
-    const l = { unlimited: 'UL · any', managed: 'Managed', ...LEGACY_PLAN_SHORT };
+    const l = {
+      unlimited: 'UL · any',
+      managed: 'Managed',
+      [CUSTOM_PLATFORM]: 'Custom Platform',
+      [CUSTOM_MANAGED]: 'Custom Mgd',
+      ...LEGACY_PLAN_SHORT
+    };
     PLAN_CATALOG.platformSingle.forEach(p => l[p.key]    = p.name);
     PLAN_CATALOG.platformUnlimited.forEach(p => l[p.key] = p.name + ' UL');
     PLAN_CATALOG.managedStandard.forEach(p => l[p.key]   = 'Mgd · ' + p.name.replace(' Sites','').replace('Scale', 'Scale'));
@@ -2898,6 +3135,7 @@
     if (typeof d.cancelled !== 'boolean') d.cancelled = false;
     if (d.cancelledDate === undefined) d.cancelledDate = null;
     if (d.firstPaymentDate === undefined) d.firstPaymentDate = null;
+    if (d.parentId === undefined) d.parentId = null;
     // Clamp to max units
     const max = dealMaxUnits(d);
     if (d.paymentsCollected > max) d.paymentsCollected = max;
@@ -3004,6 +3242,12 @@
               r.paymentsCollected = 0;
             }
           }
+          // parentId may not exist on the cloud row if the schema migration
+          // hasn't been applied — preserve from local cache when present.
+          if (r.parentId == null) {
+            const local = deals.find(x => x.id === r.id);
+            if (local && local.parentId) r.parentId = local.parentId;
+          }
           return normalizeDeal(r);
         }).concat(offlineExtras.map(normalizeDeal));
       }
@@ -3051,7 +3295,8 @@
       payments_collected: d.paymentsCollected ?? 0,
       cancelled: !!d.cancelled,
       cancelled_date: d.cancelledDate || null,
-      first_payment_date: d.firstPaymentDate || null
+      first_payment_date: d.firstPaymentDate || null,
+      parent_id: d.parentId || null
     };
   }
 
@@ -3068,7 +3313,8 @@
       paymentsCollected: r.payments_collected == null ? null : Number(r.payments_collected),
       cancelled: r.cancelled === null ? false : !!r.cancelled,
       cancelledDate: r.cancelled_date || null,
-      firstPaymentDate: r.first_payment_date || null
+      firstPaymentDate: r.first_payment_date || null,
+      parentId: r.parent_id || null
     };
   }
 
@@ -3079,8 +3325,8 @@
     const msg = (err.message || err.hint || JSON.stringify(err)).toLowerCase();
     return msg.includes('column') &&
       (msg.includes('payments_collected') || msg.includes('cancelled_date') ||
-       msg.includes('first_payment_date') || msg.includes('does not exist') ||
-       msg.includes('schema cache'));
+       msg.includes('first_payment_date') || msg.includes('parent_id') ||
+       msg.includes('does not exist') || msg.includes('schema cache'));
   }
 
   let _schemaWarned = false;
@@ -3103,7 +3349,7 @@
     if (error && isSchemaMissingError(error)) {
       warnSchemaMissing();
       const { payments_collected, cancelled, cancelled_date, first_payment_date,
-              ...legacy } = toRemoteDeal(deal);
+              parent_id, ...legacy } = toRemoteDeal(deal);
       ({ error } = await supa.from('deals').upsert(legacy));
     }
     if (error) throw error;
@@ -3115,7 +3361,7 @@
       warnSchemaMissing();
       const legacy = dealsArr.map(d => {
         const { payments_collected, cancelled, cancelled_date, first_payment_date,
-                ...rest } = toRemoteDeal(d);
+                parent_id, ...rest } = toRemoteDeal(d);
         return rest;
       });
       ({ error } = await supa.from('deals').upsert(legacy));
@@ -3175,8 +3421,10 @@
   const fmt = (n) => Math.round(n).toLocaleString('en-US');
   const fmtExact = (n) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const isExcluded = (p) => EXCLUDED_PLANS.includes(p);
-  const isManaged  = (p) => p === MANAGED_PLAN || (typeof p === 'string' && p.startsWith('managed_'));
+  const isManaged  = (p) => p === MANAGED_PLAN || p === CUSTOM_MANAGED ||
+                            (typeof p === 'string' && p.startsWith('managed_'));
   const isPlatform = (p) => !isExcluded(p) && !isManaged(p);
+  const isCustomPlan = (p) => p === CUSTOM_PLATFORM || p === CUSTOM_MANAGED;
   const planLabel       = (p) => PLAN_LABELS[p] || p;
   const planShortLabel  = (p) => PLAN_SHORT_LABELS[p] || planLabel(p);
 
@@ -3501,8 +3749,8 @@
         <p>Add your first deal above to start tracking commission.</p>
       </td></tr>`;
     } else {
-      const sorted = [...c.monthDeals].sort((a, b) => a.date.localeCompare(b.date));
-      tbody.innerHTML = sorted.map(d => renderDealRow(d)).join('');
+      tbody.innerHTML = groupByParent(c.monthDeals)
+        .map(d => renderDealRow(d)).join('');
     }
 
     // Carry-over: monthly platform deals from PRIOR months that are still
@@ -3517,7 +3765,7 @@
       if (d.cancelled) return false;
       if ((d.paymentsCollected || 0) >= dealMaxUnits(d)) return false; // fully paid out
       return true;
-    }).sort((a, b) => a.date.localeCompare(b.date));
+    });
 
     const carrySection = document.getElementById('carryoverSection');
     const carryWrap = document.getElementById('carryoverWrap');
@@ -3527,7 +3775,8 @@
       carrySection.hidden = false;
       carryWrap.hidden = false;
       carryNote.hidden = false;
-      carryBody.innerHTML = carryDeals.map(d => renderDealRow(d)).join('');
+      carryBody.innerHTML = groupByParent(carryDeals)
+        .map(d => renderDealRow(d)).join('');
     } else {
       carrySection.hidden = true;
       carryWrap.hidden = true;
@@ -3537,6 +3786,48 @@
 
     renderStats(c);
     renderBreakdown(c);
+  }
+
+  // Order an array of deals so each primary deal is immediately followed
+  // by its sub-subscriptions (children). Primaries are sorted by close date,
+  // sub-subs within a parent are sorted by their own close date.
+  function groupByParent(arr) {
+    const byParent = new Map();
+    const primaries = [];
+    for (const d of arr) {
+      if (d.parentId) {
+        if (!byParent.has(d.parentId)) byParent.set(d.parentId, []);
+        byParent.get(d.parentId).push(d);
+      } else {
+        primaries.push(d);
+      }
+    }
+    primaries.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+    // Orphans (sub-sub whose parent is not in this slice) get treated as
+    // primaries so they remain visible — happens when the parent closed in
+    // a different month than the sub.
+    const presentIds = new Set(primaries.map(d => d.id));
+    const orphans = [];
+    for (const [pid, subs] of byParent.entries()) {
+      if (!presentIds.has(pid)) orphans.push(...subs);
+    }
+    orphans.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+
+    const out = [];
+    for (const p of primaries) {
+      out.push(p);
+      const subs = byParent.get(p.id) || [];
+      subs.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+      for (const s of subs) out.push(s);
+    }
+    for (const o of orphans) out.push(o);
+    return out;
+  }
+
+  function dealSubCount(id) {
+    let n = 0;
+    for (const d of deals) if (d.parentId === id) n++;
+    return n;
   }
 
   // Single-row renderer for the deals table — extracted so payment-tracking
@@ -3550,6 +3841,8 @@
     const pending = dealPendingNow(d);
     const potential = dealTotalPotential(d);
     const status = dealStatus(d);
+    const isSub = !!d.parentId;
+    const subCount = isSub ? 0 : dealSubCount(d.id);
 
     // Plan badge
     let badgeClass, badgeText;
@@ -3650,27 +3943,40 @@
         </div>`;
     }
 
+    const clientCell = isSub
+      ? `<span class="sub-tag">Sub-subscription</span>
+         <div class="deal-name">${escapeHtml(d.name)}</div>
+         ${d.ref ? `<div class="deal-ref">${escapeHtml(d.ref)}</div>` : ''}`
+      : `<div class="deal-name">${escapeHtml(d.name)}${subCount > 0 ? ` <span class="deal-ref" style="display:inline">· ${subCount} sub${subCount !== 1 ? 's' : ''}</span>` : ''}</div>
+         ${d.ref ? `<div class="deal-ref">${escapeHtml(d.ref)}</div>` : ''}`;
+
+    // Only primaries get an "Add subscription" affordance — chains stop at one level.
+    const addSubBtn = isSub ? '' : `
+      <button class="add-sub-btn" type="button" onclick="addSubscription('${d.id}')" title="Add another subscription for this client">+ Sub</button>`;
+
     return `
-      <tr data-id="${d.id}">
-        <td data-label="Client">
-          <div class="deal-name">${escapeHtml(d.name)}</div>
-          ${d.ref ? `<div class="deal-ref">${escapeHtml(d.ref)}</div>` : ''}
-        </td>
+      <tr data-id="${d.id}" class="${isSub ? 'deal-row-sub' : ''}">
+        <td data-label="Client">${clientCell}</td>
         <td data-label="Date" class="mono">${formatDate(d.date)}</td>
         <td data-label="Plan"><span class="badge ${badgeClass}">${badgeText}</span></td>
         <td data-label="MRR" class="right mono">$${fmt(mrr)}</td>
         <td data-label="Status"><span class="deal-status ${status}">${STATUS_TEXT[status] || status}</span></td>
         <td data-label="Payments">${paymentsCell}</td>
         <td data-label="Commission" class="right">${commissionCell}</td>
-        <td data-label="" class="right"><button class="btn-icon btn-trash" onclick="deleteDeal('${d.id}')" title="Delete deal" aria-label="Delete deal">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 6h18"/>
-            <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-            <line x1="10" y1="11" x2="10" y2="17"/>
-            <line x1="14" y1="11" x2="14" y2="17"/>
-          </svg>
-        </button></td>
+        <td data-label="" class="right">
+          <div class="deal-actions">
+            <button class="btn-icon btn-trash" onclick="deleteDeal('${d.id}')" title="Delete deal" aria-label="Delete deal">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 6h18"/>
+                <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                <line x1="10" y1="11" x2="10" y2="17"/>
+                <line x1="14" y1="11" x2="14" y2="17"/>
+              </svg>
+            </button>
+            ${addSubBtn}
+          </div>
+        </td>
       </tr>`;
   }
 
@@ -3969,6 +4275,9 @@
     if (!plan) { showFormError('Select a plan tier'); return; }
     if (!date) { showFormError('Close date is required'); document.getElementById('dealDate').focus(); return; }
 
+    // If we're adding a sub-subscription, link it to its parent.
+    const parentId = addingSubFor && deals.some(d => d.id === addingSubFor) ? addingSubFor : null;
+
     const newDeal = normalizeDeal({
       id: 'd_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
       name, mrr, plan, date, billing, ref,
@@ -3976,16 +4285,21 @@
       paymentsCollected: 0,
       cancelled: false,
       cancelledDate: null,
-      firstPaymentDate: null
+      firstPaymentDate: null,
+      parentId
     });
     deals.push(newDeal);
+
+    const toastMsg = parentId
+      ? `Added subscription to ${name}`
+      : `Added ${name}`;
 
     clearFormError();
     clearForm();
     _invalidateMonthContext();
     render();
     persistDeal(newDeal);
-    showToast(`Added ${name}`);
+    showToast(toastMsg);
     document.getElementById('dealName').focus();
   }
 
@@ -3995,23 +4309,87 @@
     document.getElementById('dealRef').value = '';
     setSelectedPlan('');
     document.getElementById('dealDate').value = new Date().toISOString().slice(0, 10);
+    exitSubMode();
     clearFormError();
   }
+
+  // Enter "Add subscription" mode: pre-fill the form with the parent's
+  // client name, lock the name field, and show the banner. Form scrolls
+  // into view so it's obvious the form has switched modes.
+  function enterSubMode(parentId) {
+    const parent = deals.find(d => d.id === parentId);
+    if (!parent) return;
+    // Walk up the chain — sub-subs always link to the primary so we don't
+    // end up with grandparent chains.
+    let rootId = parent.id;
+    let root = parent;
+    while (root.parentId) {
+      const above = deals.find(d => d.id === root.parentId);
+      if (!above) break;
+      root = above;
+      rootId = root.id;
+    }
+    addingSubFor = rootId;
+
+    const nameInput = document.getElementById('dealName');
+    nameInput.value = root.name;
+    nameInput.readOnly = true;
+    nameInput.classList.add('locked');
+
+    const banner = document.getElementById('subBanner');
+    document.getElementById('subBannerName').textContent = root.name;
+    banner.hidden = false;
+
+    document.getElementById('dealMRR').value = '';
+    document.getElementById('dealRef').value = '';
+    setSelectedPlan('');
+    document.getElementById('dealDate').value = new Date().toISOString().slice(0, 10);
+    clearFormError();
+
+    document.querySelector('.add-deal')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setTimeout(() => document.getElementById('dealMRR')?.focus(), 250);
+  }
+
+  function exitSubMode() {
+    addingSubFor = null;
+    const nameInput = document.getElementById('dealName');
+    if (nameInput) {
+      nameInput.readOnly = false;
+      nameInput.classList.remove('locked');
+    }
+    const banner = document.getElementById('subBanner');
+    if (banner) banner.hidden = true;
+  }
+
+  window.addSubscription = function(id) {
+    enterSubMode(id);
+  };
 
   window.deleteDeal = async function(id) {
     const target = deals.find(d => d.id === id);
     if (!target) return;
+
+    const subs = deals.filter(d => d.parentId === id);
+    const subWarning = subs.length > 0
+      ? ` This will also delete ${subs.length} linked sub-subscription${subs.length !== 1 ? 's' : ''}.`
+      : '';
+
     const ok = await confirmModal({
       title: 'Delete deal',
-      message: `Remove "${target.name}"? This will also delete it from Supabase.`,
+      message: `Remove "${target.name}"? This will also delete it from Supabase.${subWarning}`,
       confirmText: 'Delete',
       danger: true
     });
     if (!ok) return;
-    deals = deals.filter(d => d.id !== id);
+
+    const idsToRemove = new Set([id, ...subs.map(s => s.id)]);
+    deals = deals.filter(d => !idsToRemove.has(d.id));
     _invalidateMonthContext();
     render();
-    removeDealRemote(id);
+    // Cascade delete in cloud too — schema's ON DELETE CASCADE handles the
+    // parent_id → children cleanup, but we explicitly call out the children
+    // here so the legacy-schema branch (no FK cascade) still works.
+    for (const remId of idsToRemove) removeDealRemote(remId);
     showToast(`Removed ${target.name}`);
   };
 
@@ -4832,9 +5210,18 @@
   }
 
   // ─── Plan picker modal ────────────────────────────────────────────────
-  let planPickerState = { tab: 'platform', coverage: 'single' };
+  // customDraft holds in-progress values for the Custom tab so switching
+  // tabs and re-rendering doesn't wipe the user's typed inputs.
+  let planPickerState = {
+    tab: 'platform',
+    coverage: 'single',
+    customDraft: { billing: 'monthly', mrr: '', category: 'platform' }
+  };
+  // Captured at init() so the Custom plan apply can keep the billing dropdown
+  // in sync with the user's choice.
+  let dealBillingDropdown = null;
 
-  function setSelectedPlan(key) {
+  function setSelectedPlan(key, opts = {}) {
     ddState.dealPlan = key;
     const label = document.getElementById('planPickLabel');
     if (label) {
@@ -4846,9 +5233,14 @@
         label.classList.add('placeholder');
       }
     }
-    if (key && PLAN_PRICES[key]) {
-      const mrrInput = document.getElementById('dealMRR');
-      if (mrrInput && !mrrInput.value) mrrInput.value = PLAN_PRICES[key];
+    const mrrInput = document.getElementById('dealMRR');
+    if (mrrInput) {
+      if (opts.mrrOverride != null) {
+        // Custom plan: force the entered MRR into the form input
+        mrrInput.value = opts.mrrOverride;
+      } else if (key && PLAN_PRICES[key]) {
+        if (!mrrInput.value) mrrInput.value = PLAN_PRICES[key];
+      }
     }
   }
 
@@ -4874,6 +5266,7 @@
         <button class="plan-tab${tab === 'platform' ? ' active' : ''}" data-tab="platform">Platform</button>
         <button class="plan-tab${tab === 'managed' ? ' active' : ''}" data-tab="managed">Managed</button>
         <button class="plan-tab${tab === 'selfserve' ? ' active' : ''}" data-tab="selfserve">Self-serve</button>
+        <button class="plan-tab${tab === 'custom' ? ' active' : ''}" data-tab="custom">Custom</button>
       </div>
     `;
 
@@ -4908,12 +5301,64 @@
         <div class="plan-section-title">Enterprise</div>
         <div class="plan-list">${PLAN_CATALOG.managedEnterprise.map(t => planCardHTML(t)).join('')}</div>
       `;
-    } else {
+    } else if (tab === 'selfserve') {
       html += `
         <div class="plan-info-banner warn">
           Self-serve tiers don't earn commission — log them only if you want them in the deal history.
         </div>
         <div class="plan-list">${PLAN_CATALOG.selfServe.map(t => planCardHTML(t, { metaOverride: 'Self-serve · no commission' })).join('')}</div>
+      `;
+    } else {
+      // Custom tab: ask billing / MRR / category, then write into the form
+      // on apply (so the deal uses the same logic as a catalog plan).
+      const c = planPickerState.customDraft;
+      html += `
+        <div class="plan-info-banner">
+          Off-catalog deal? Set the billing, MRR, and category below. Managed plans pay flat $${MANAGED_FLAT}; platform plans earn 10% above the $${TARGET} target.
+        </div>
+        <div class="custom-plan-form">
+          <div class="custom-plan-field">
+            <label class="custom-plan-label">Billing cycle</label>
+            <div class="custom-plan-choices" data-custom-group="billing">
+              <button type="button" class="custom-plan-choice${c.billing === 'monthly' ? ' active' : ''}" data-value="monthly">
+                <span class="title">Monthly</span>
+                <span class="desc">Recurring · paid each month</span>
+              </button>
+              <button type="button" class="custom-plan-choice${c.billing === 'annual' ? ' active' : ''}" data-value="annual">
+                <span class="title">Yearly</span>
+                <span class="desc">Annual upfront · single payment</span>
+              </button>
+            </div>
+          </div>
+          <div class="custom-plan-field">
+            <label class="custom-plan-label" for="customPlanMrr">MRR</label>
+            <div class="custom-plan-mrr">
+              <span class="currency">$</span>
+              <input type="number" id="customPlanMrr" class="input" placeholder="e.g. 599"
+                     step="1" min="0" inputmode="numeric" pattern="[0-9]*"
+                     value="${c.mrr !== '' && c.mrr != null ? escapeHtml(String(c.mrr)) : ''}">
+              <span class="suffix">/mo</span>
+            </div>
+            <div class="custom-plan-hint">For yearly upfront, enter the monthly equivalent — the annual lump sum is MRR × 12.</div>
+          </div>
+          <div class="custom-plan-field">
+            <label class="custom-plan-label">Category</label>
+            <div class="custom-plan-choices" data-custom-group="category">
+              <button type="button" class="custom-plan-choice${c.category === 'platform' ? ' active' : ''}" data-value="platform">
+                <span class="title">Platform Only</span>
+                <span class="desc">10% commission on first-year value above target</span>
+              </button>
+              <button type="button" class="custom-plan-choice${c.category === 'managed' ? ' active' : ''}" data-value="managed">
+                <span class="title">Managed Accessibility</span>
+                <span class="desc">Flat $${MANAGED_FLAT}/deal + MRR counts toward target</span>
+              </button>
+            </div>
+          </div>
+          <div class="custom-plan-actions">
+            <span class="custom-plan-error" id="customPlanError"></span>
+            <button type="button" class="btn btn-primary" id="customPlanApply">Use Custom Plan</button>
+          </div>
+        </div>
       `;
     }
 
@@ -4933,6 +5378,8 @@
 
     body.querySelectorAll('.plan-tab').forEach(btn => {
       btn.addEventListener('click', () => {
+        // Preserve in-progress custom form input before re-rendering
+        captureCustomDraftFromDom();
         planPickerState.tab = btn.dataset.tab;
         refreshPlanPickerBody();
       });
@@ -4951,12 +5398,74 @@
         closeModal();
       });
     });
+
+    // ── Custom plan form ────────────────────────────────────────────────
+    body.querySelectorAll('[data-custom-group] .custom-plan-choice').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const group = btn.closest('[data-custom-group]').dataset.customGroup;
+        planPickerState.customDraft[group] = btn.dataset.value;
+        captureCustomDraftFromDom(); // also persist the MRR input
+        refreshPlanPickerBody();
+        // Keep focus where it makes sense after re-render
+        if (group === 'billing' || group === 'category') {
+          const next = document.getElementById('customPlanMrr');
+          if (next && !next.value) next.focus();
+        }
+      });
+    });
+
+    const mrrInput = body.querySelector('#customPlanMrr');
+    if (mrrInput) {
+      mrrInput.addEventListener('input', () => {
+        planPickerState.customDraft.mrr = mrrInput.value;
+      });
+      mrrInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); applyCustomPlan(); }
+      });
+    }
+
+    const applyBtn = body.querySelector('#customPlanApply');
+    if (applyBtn) applyBtn.addEventListener('click', applyCustomPlan);
+  }
+
+  function captureCustomDraftFromDom() {
+    const mrrInput = document.getElementById('customPlanMrr');
+    if (mrrInput) planPickerState.customDraft.mrr = mrrInput.value;
+  }
+
+  function applyCustomPlan() {
+    captureCustomDraftFromDom();
+    const { billing, mrr, category } = planPickerState.customDraft;
+    const errEl = document.getElementById('customPlanError');
+    const mrrNum = parseFloat(mrr);
+    if (!mrrNum || isNaN(mrrNum) || mrrNum <= 0) {
+      if (errEl) errEl.textContent = 'Enter a valid MRR.';
+      document.getElementById('customPlanMrr')?.focus();
+      return;
+    }
+    if (errEl) errEl.textContent = '';
+
+    // Persist the picked billing into the form's billing dropdown and write
+    // the MRR into the form input.
+    const planKey = category === 'managed' ? CUSTOM_MANAGED : CUSTOM_PLATFORM;
+    setSelectedPlan(planKey, { mrrOverride: mrrNum });
+
+    if (dealBillingDropdown) dealBillingDropdown.setValue(billing);
+    else ddState.dealBilling = billing;
+
+    closeModal();
   }
 
   function openPlanPickerModal() {
     // Default tab based on current selection (so editing a Managed deal opens the Managed tab)
     if (ddState.dealPlan) {
-      if (isManaged(ddState.dealPlan)) planPickerState.tab = 'managed';
+      if (isCustomPlan(ddState.dealPlan)) {
+        planPickerState.tab = 'custom';
+        planPickerState.customDraft.category = ddState.dealPlan === CUSTOM_MANAGED ? 'managed' : 'platform';
+        planPickerState.customDraft.billing = ddState.dealBilling || 'monthly';
+        const mrrInput = document.getElementById('dealMRR');
+        if (mrrInput && mrrInput.value) planPickerState.customDraft.mrr = mrrInput.value;
+      } else if (isManaged(ddState.dealPlan)) planPickerState.tab = 'managed';
       else if (isExcluded(ddState.dealPlan)) planPickerState.tab = 'selfserve';
       else {
         planPickerState.tab = 'platform';
@@ -5172,7 +5681,7 @@
     await initSupabase();
     await loadData();
 
-    setupDropdown('dealBilling');
+    dealBillingDropdown = setupDropdown('dealBilling');
     VoiceInput.init();
     document.getElementById('rulesBtn').addEventListener('click', openRulesModal);
     document.getElementById('planPickBtn').addEventListener('click', openPlanPickerModal);
@@ -5188,6 +5697,11 @@
 
     document.getElementById('addBtn').addEventListener('click', addDeal);
     document.getElementById('clearFormBtn').addEventListener('click', clearForm);
+    document.getElementById('subBannerCancel').addEventListener('click', () => {
+      exitSubMode();
+      document.getElementById('dealName').value = '';
+      document.getElementById('dealName').focus();
+    });
     document.getElementById('exportBtn').addEventListener('click', exportCSV);
     document.getElementById('exportPdfBtn').addEventListener('click', exportPDF);
     document.getElementById('clearMonthBtn').addEventListener('click', clearMonth);
