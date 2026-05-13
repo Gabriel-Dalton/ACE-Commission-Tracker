@@ -6,7 +6,7 @@
 <title>ACE Commission Tracker — Gabriel Dalton</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.10/pdfmake.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.10/vfs_fonts.js"></script>
@@ -44,6 +44,13 @@
     --radius: 8px;
     --radius-lg: 12px;
     --radius-xl: 16px;
+
+    /* Typography stacks — productivity / fintech feel. Inter for body,
+       Inter Tight for headlines & big numbers, JetBrains Mono for tabular
+       numerics and labels. No serif/italic display anywhere. */
+    --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --font-display: 'Inter Tight', 'Inter', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -51,9 +58,10 @@
   html, body {
     background: var(--bg);
     color: var(--text);
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: var(--font-sans);
     line-height: 1.5;
     min-height: 100vh;
+    font-feature-settings: 'cv11', 'ss01', 'ss03';
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -102,18 +110,18 @@
   }
 
   .brand h1 {
-    font-family: 'Fraunces', serif;
-    font-weight: 400;
-    font-size: 36px;
-    letter-spacing: -0.025em;
-    line-height: 1.05;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 28px;
+    letter-spacing: -0.022em;
+    line-height: 1.1;
     color: var(--text);
   }
 
   .brand h1 em {
-    font-style: italic;
-    color: var(--text-2);
-    font-weight: 300;
+    font-style: normal;
+    color: var(--text-3);
+    font-weight: 500;
   }
 
   .brand .meta {
@@ -325,28 +333,30 @@
   }
 
   .hero-amount {
-    font-family: 'Fraunces', serif;
-    font-weight: 300;
-    font-size: 64px;
-    letter-spacing: -0.03em;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 52px;
+    letter-spacing: -0.035em;
     line-height: 1;
     color: var(--text);
     font-variant-numeric: tabular-nums;
     display: flex;
     align-items: baseline;
-    gap: 8px;
+    gap: 6px;
   }
 
   .hero-amount .currency {
-    font-size: 28px;
+    font-size: 24px;
     color: var(--text-3);
-    font-weight: 300;
+    font-weight: 500;
+    letter-spacing: -0.02em;
   }
 
   .hero-amount .cents {
-    font-size: 28px;
+    font-size: 24px;
     color: var(--text-3);
-    font-weight: 300;
+    font-weight: 500;
+    letter-spacing: -0.02em;
   }
 
   .hero-summary {
@@ -410,11 +420,11 @@
     display: flex;
     align-items: baseline;
     gap: 8px;
-    font-family: 'Fraunces', serif;
-    font-size: 26px;
-    font-weight: 400;
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: 600;
     color: var(--text);
-    letter-spacing: -0.02em;
+    letter-spacing: -0.025em;
     font-variant-numeric: tabular-nums;
   }
 
@@ -484,20 +494,28 @@
   }
 
   .stat-value {
-    font-family: 'Fraunces', serif;
-    font-weight: 400;
-    font-size: 28px;
-    letter-spacing: -0.02em;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 26px;
+    letter-spacing: -0.025em;
     line-height: 1;
     color: var(--text);
     font-variant-numeric: tabular-nums;
   }
 
   .stat-value .currency {
-    font-size: 16px;
+    font-size: 15px;
     color: var(--text-3);
-    font-weight: 300;
+    font-weight: 500;
     margin-right: 1px;
+    letter-spacing: -0.01em;
+  }
+
+  .stat-value .stat-divider {
+    font-size: 20px;
+    color: var(--text-4);
+    margin: 0 6px;
+    font-weight: 400;
   }
 
   .stat-meta {
@@ -1098,17 +1116,18 @@
   }
 
   .cancel-btn {
-    background: transparent;
+    background: var(--surface-2);
     border: 1px solid var(--line);
     color: var(--text-3);
     border-radius: 999px;
-    padding: 2px 9px;
+    padding: 3px 10px;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
+    font-size: 9px;
+    font-weight: 500;
     cursor: pointer;
     transition: background 0.1s, border-color 0.1s, color 0.1s;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.08em;
   }
 
   .cancel-btn:hover { background: var(--amber-soft); border-color: rgba(180, 83, 9, 0.3); color: var(--amber); }
@@ -1136,11 +1155,29 @@
     background: currentColor;
   }
 
-  .deal-status.active   { background: var(--green-soft); color: var(--green); }
-  .deal-status.complete { background: var(--accent-soft); color: var(--accent-strong); }
-  .deal-status.cancelled{ background: var(--amber-soft); color: var(--amber); }
-  .deal-status.pending  { background: var(--surface-2); color: var(--text-3); border: 1px dashed var(--line-2); }
-  .deal-status.excluded { background: var(--surface-3); color: var(--text-3); }
+  .deal-status.active    { background: var(--green-soft); color: var(--green); }
+  .deal-status.complete  { background: var(--accent-soft); color: var(--accent-strong); }
+  .deal-status.cancelled { background: var(--amber-soft); color: var(--amber); }
+  .deal-status.pending   { background: var(--blue-soft);   color: var(--blue); }
+  .deal-status.excluded  { background: var(--surface-3);   color: var(--text-3); }
+  .deal-status.below-target {
+    background: var(--amber-soft);
+    color: var(--amber);
+    border: 1px solid rgba(180, 83, 9, 0.18);
+  }
+  .deal-status.below-target::before { background: var(--amber); opacity: 0.85; }
+
+  /* Below-target footnote — sits beside the status badge, not inside it */
+  .status-note {
+    display: block;
+    margin-top: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--amber);
+    letter-spacing: 0.04em;
+    max-width: 180px;
+    line-height: 1.4;
+  }
 
   /* Three-value commission cell */
   .commission-stack {
@@ -1233,22 +1270,21 @@
   }
 
   .forecast-value {
-    font-family: 'Fraunces', serif;
-    font-size: 28px;
-    font-weight: 300;
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 600;
     color: var(--text-2);
-    letter-spacing: -0.02em;
+    letter-spacing: -0.025em;
     line-height: 1.05;
     font-variant-numeric: tabular-nums;
   }
 
-  .forecast-value .currency { font-size: 14px; color: var(--text-3); }
+  .forecast-value .currency { font-size: 14px; color: var(--text-3); font-weight: 500; }
 
   .forecast-note {
     margin-top: 6px;
     font-size: 11px;
     color: var(--text-3);
-    font-style: italic;
     line-height: 1.5;
   }
 
@@ -1300,12 +1336,12 @@
   }
 
   .empty-state h3 {
-    font-family: 'Fraunces', serif;
-    font-weight: 400;
-    font-size: 22px;
-    margin-bottom: 8px;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 18px;
+    margin-bottom: 6px;
     color: var(--text);
-    letter-spacing: -0.01em;
+    letter-spacing: -0.015em;
   }
 
   .empty-state p { color: var(--text-3); font-size: 13px; }
@@ -1394,7 +1430,7 @@
     font-weight: 600;
   }
 
-  .breakdown-row.calculation { color: var(--text-3); font-style: italic; }
+  .breakdown-row.calculation { color: var(--text-3); }
   .breakdown-row .value-positive { color: var(--green); }
 
   .breakdown-total {
@@ -1417,11 +1453,11 @@
   }
 
   .breakdown-total .value {
-    font-family: 'Fraunces', serif;
-    font-size: 30px;
+    font-family: var(--font-display);
+    font-size: 26px;
     color: var(--text);
-    font-weight: 400;
-    letter-spacing: -0.02em;
+    font-weight: 600;
+    letter-spacing: -0.025em;
     font-variant-numeric: tabular-nums;
   }
 
@@ -1817,7 +1853,6 @@
     font-size: 11px;
     color: var(--text-3);
     line-height: 1.4;
-    font-style: italic;
   }
 
   .custom-plan-actions {
@@ -1833,60 +1868,73 @@
     flex: 1;
   }
 
-  /* SUB-SUBSCRIPTION INDICATORS (deal table rows for child subscriptions) */
-  .deal-row-sub td {
+  /* MULTIPLE-SUBSCRIPTION GROUPING (rows with the same client name are
+     visually grouped together but treated as equal peers) */
+  .deal-row-grouped td:first-child { border-left: 3px solid var(--accent-line); }
+  .deal-row-grouped td {
     background: linear-gradient(
       90deg,
-      rgba(196, 232, 74, 0.05) 0%,
-      rgba(196, 232, 74, 0.02) 60%,
+      rgba(196, 232, 74, 0.045) 0%,
+      rgba(196, 232, 74, 0.015) 50%,
       transparent 100%
     );
   }
-  .deal-row-sub td:first-child { border-left: 3px solid var(--accent-line); }
 
-  .sub-tag {
+  .sub-index {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    gap: 5px;
     font-family: 'JetBrains Mono', monospace;
     font-size: 9px;
     color: var(--accent-strong);
     background: var(--accent-soft);
-    padding: 2px 6px;
-    border-radius: 4px;
+    padding: 2px 7px;
+    border-radius: 999px;
     margin-bottom: 4px;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     font-weight: 600;
+    border: 1px solid var(--accent-line);
   }
-  .sub-tag::before { content: '↳'; font-size: 11px; }
+  .sub-index .sub-index-num { font-weight: 700; }
 
   .deal-actions {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
     align-items: flex-end;
   }
   .add-sub-btn {
-    background: transparent;
-    border: 1px dashed var(--line-2);
+    background: var(--surface-2);
+    border: 1px solid var(--line);
     color: var(--text-3);
-    padding: 4px 8px;
-    border-radius: 6px;
+    padding: 5px 10px;
+    border-radius: 999px;
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-weight: 500;
     cursor: pointer;
     transition: border-color 0.12s, background 0.12s, color 0.12s;
     white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
   }
   .add-sub-btn:hover {
     border-color: var(--accent-line);
     background: var(--accent-soft);
     color: var(--accent-strong);
   }
+  .add-sub-btn::before {
+    content: '+';
+    font-weight: 700;
+    font-size: 12px;
+    line-height: 1;
+  }
 
-  /* Sub-subscription banner above the add-deal form */
+  /* "Add another subscription" banner above the add-deal form */
   .sub-banner {
     display: flex;
     align-items: center;
@@ -1931,6 +1979,114 @@
     background: rgba(196, 232, 74, 0.35);
     border-color: var(--accent-strong);
   }
+
+  /* MONEY-RECEIVED TRACKER (per-deal: have you been paid the commission yet?) */
+  .payout-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px dashed var(--line);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-3);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .payout-row .payout-label {
+    font-size: 9px;
+    color: var(--text-4);
+    letter-spacing: 0.08em;
+  }
+  .payout-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-3);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    font-weight: 500;
+    transition: background 0.1s, color 0.1s, border-color 0.1s;
+    user-select: none;
+    white-space: nowrap;
+  }
+  .payout-toggle:hover:not(:disabled) {
+    background: var(--green-soft);
+    color: var(--green);
+    border-color: rgba(21, 128, 61, 0.2);
+  }
+  .payout-toggle:disabled { opacity: 0.4; cursor: not-allowed; }
+  .payout-toggle.received {
+    background: var(--green-soft);
+    color: var(--green);
+    border-color: rgba(21, 128, 61, 0.25);
+  }
+  .payout-toggle .check {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    border: 1.5px solid currentColor;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .payout-toggle.received .check {
+    background: currentColor;
+    border-color: currentColor;
+  }
+  .payout-toggle.received .check::after {
+    content: '';
+    width: 5px;
+    height: 3px;
+    border-left: 1.5px solid var(--green-soft);
+    border-bottom: 1.5px solid var(--green-soft);
+    transform: rotate(-45deg) translate(0.5px, -1px);
+  }
+  .payout-counter {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .payout-counter .payout-btn {
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    color: var(--text-2);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 12px;
+    line-height: 1;
+    padding: 0;
+    transition: background 0.1s, border-color 0.1s, color 0.1s;
+  }
+  .payout-counter .payout-btn:hover:not(:disabled) {
+    background: var(--green-soft);
+    border-color: rgba(21, 128, 61, 0.2);
+    color: var(--green);
+  }
+  .payout-counter .payout-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .payout-counter .payout-count {
+    min-width: 56px;
+    text-align: center;
+    font-size: 10px;
+    color: var(--text-3);
+    letter-spacing: 0.04em;
+  }
+  .payout-counter.complete .payout-count { color: var(--green); font-weight: 700; }
 
   /* PDF DOCUMENT (rendered off-screen, captured by html2pdf) */
   .pdf-doc {
@@ -2449,10 +2605,11 @@
     letter-spacing: 0.18em;
   }
   .voice-overlay .voice-target {
-    font-family: 'Fraunces', serif;
-    font-size: 22px;
+    font-family: var(--font-display);
+    font-size: 20px;
     color: #fff;
-    font-weight: 400;
+    font-weight: 600;
+    letter-spacing: -0.02em;
   }
   .voice-overlay .voice-transcript {
     font-size: 14px;
@@ -2565,6 +2722,18 @@
     .hero { padding: 18px 16px; }
     .hero-amount { font-size: 42px; }
 
+    /* The Earned-vs-Received stat has two numbers; let the smaller font breathe on phones */
+    .stat-value .stat-divider { margin: 0 4px; font-size: 18px; }
+    .stat-value { font-size: 22px; }
+
+    /* Inline payout controls wrap onto their own line on narrow screens */
+    .payout-row {
+      margin-top: 10px;
+      padding-top: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
     .footer-actions { flex-wrap: wrap; }
     .footer-actions .btn { flex: 1 1 calc(50% - 4px); }
   }
@@ -2579,7 +2748,7 @@
         <span class="dot"></span>
         <span>ACE · Commission Tracker</span>
       </div>
-      <h1>Performance, <em>tracked.</em></h1>
+      <h1>Commission dashboard</h1>
       <div class="meta">Gabriel Dalton · accessibilitychecker.org</div>
     </div>
     <div class="header-actions">
@@ -2624,6 +2793,7 @@
         <div class="hero-summary">
           <span class="chip"><strong id="paymentsThisPeriodChip">0</strong> payment(s) this period</span>
           <span class="chip"><strong id="totalEarnedChip">$0</strong> earned all-time</span>
+          <span class="chip"><strong id="totalReceivedChip">$0</strong> received in pocket</span>
           <span class="chip"><strong id="dealCountChip">0</strong> deals closed</span>
         </div>
         <div class="hero-secondary">
@@ -2667,9 +2837,16 @@
       <div class="stat-meta good" id="earnedThisPeriodNote">No payments yet</div>
     </div>
     <div class="stat">
-      <div class="stat-label"><span>Total Commission Earned to Date</span></div>
-      <div class="stat-value"><span class="currency">$</span><span id="totalEarnedToDate">0</span></div>
-      <div class="stat-meta" id="totalEarnedToDateNote">Across all deals, all-time</div>
+      <div class="stat-label">
+        <span>Earned vs. Received</span>
+        <span class="stat-flag flag-good" id="receivedFlag" hidden>UP TO DATE</span>
+      </div>
+      <div class="stat-value">
+        <span class="currency">$</span><span id="totalReceivedToDate">0</span>
+        <span class="stat-divider" aria-hidden="true">/</span>
+        <span class="currency">$</span><span id="totalEarnedToDate">0</span>
+      </div>
+      <div class="stat-meta" id="totalEarnedToDateNote">Received in pocket vs. earned all-time</div>
     </div>
   </div>
 
@@ -2678,9 +2855,9 @@
   </div>
   <div class="add-deal">
     <div class="sub-banner" id="subBanner" hidden>
-      <span class="sub-banner-icon">↳</span>
+      <span class="sub-banner-icon">+</span>
       <span class="sub-banner-text">
-        Adding subscription to <strong id="subBannerName">—</strong> · this will be linked to the parent deal and share its client name.
+        Adding another subscription for <strong id="subBannerName">—</strong>. It'll appear alongside their existing subscription(s) — each one tracks its own MRR, plan, and commission.
       </span>
       <button type="button" class="sub-banner-cancel" id="subBannerCancel">Cancel</button>
     </div>
@@ -2781,8 +2958,8 @@
           <th class="right">MRR</th>
           <th>Status</th>
           <th>Payments collected</th>
-          <th class="right">Commission · earned / pending / potential</th>
-          <th class="right" style="width: 60px;">Delete</th>
+          <th class="right">Commission · earned / pending / forecast</th>
+          <th class="right" style="width: 130px;">Actions</th>
         </tr>
       </thead>
       <tbody id="dealsBody">
@@ -2816,8 +2993,8 @@
           <th class="right">MRR</th>
           <th>Status</th>
           <th>Payments collected</th>
-          <th class="right">Commission · earned / pending / potential</th>
-          <th class="right" style="width: 60px;">Delete</th>
+          <th class="right">Commission · earned / pending / forecast</th>
+          <th class="right" style="width: 130px;">Actions</th>
         </tr>
       </thead>
       <tbody id="carryoverBody"></tbody>
@@ -2943,9 +3120,9 @@
   // Hardcoded policy: Managed deals always count toward the $1,000 target alongside their flat $300 bonus.
   const managedCountsTowardTarget = 'yes';
   let breakdownOpen = true;
-  // When set, the "Add Deal" form creates a child subscription whose
-  // parentId points at this deal id. Cleared on submit or via the cancel
-  // button in the sub-banner.
+  // When set, the "Add Deal" form pre-fills the client name with this string
+  // so an additional subscription for the same client can be logged quickly.
+  // Cleared on submit or via the cancel button in the sub-banner.
   let addingSubFor = null;
 
   const TARGET = 1000;
@@ -3132,14 +3309,20 @@
     d.billing = d.billing || 'monthly';
     d.ref = d.ref || '';
     if (typeof d.paymentsCollected !== 'number' || isNaN(d.paymentsCollected)) d.paymentsCollected = 0;
+    if (typeof d.paymentsPaidOut !== 'number' || isNaN(d.paymentsPaidOut)) d.paymentsPaidOut = 0;
     if (typeof d.cancelled !== 'boolean') d.cancelled = false;
     if (d.cancelledDate === undefined) d.cancelledDate = null;
     if (d.firstPaymentDate === undefined) d.firstPaymentDate = null;
+    if (d.lastPaidOutDate === undefined) d.lastPaidOutDate = null;
+    // parentId is legacy — older deals may carry it but new ones never do.
     if (d.parentId === undefined) d.parentId = null;
     // Clamp to max units
     const max = dealMaxUnits(d);
     if (d.paymentsCollected > max) d.paymentsCollected = max;
     if (d.paymentsCollected < 0) d.paymentsCollected = 0;
+    // You can't receive a commission the client hasn't paid yet.
+    if (d.paymentsPaidOut > d.paymentsCollected) d.paymentsPaidOut = d.paymentsCollected;
+    if (d.paymentsPaidOut < 0) d.paymentsPaidOut = 0;
     return d;
   }
 
@@ -3242,11 +3425,15 @@
               r.paymentsCollected = 0;
             }
           }
-          // parentId may not exist on the cloud row if the schema migration
-          // hasn't been applied — preserve from local cache when present.
-          if (r.parentId == null) {
+          // paymentsPaidOut: cloud may not have the column yet — fall back to
+          // local cache (so it survives offline reloads) or default to 0.
+          if (r.paymentsPaidOut == null) {
             const local = deals.find(x => x.id === r.id);
-            if (local && local.parentId) r.parentId = local.parentId;
+            r.paymentsPaidOut = (local && typeof local.paymentsPaidOut === 'number')
+              ? local.paymentsPaidOut : 0;
+            if (r.lastPaidOutDate == null && local && local.lastPaidOutDate) {
+              r.lastPaidOutDate = local.lastPaidOutDate;
+            }
           }
           return normalizeDeal(r);
         }).concat(offlineExtras.map(normalizeDeal));
@@ -3293,9 +3480,12 @@
       billing: d.billing || 'monthly',
       ref: d.ref || '',
       payments_collected: d.paymentsCollected ?? 0,
+      payments_paid_out: d.paymentsPaidOut ?? 0,
       cancelled: !!d.cancelled,
       cancelled_date: d.cancelledDate || null,
       first_payment_date: d.firstPaymentDate || null,
+      last_paid_out_date: d.lastPaidOutDate || null,
+      // parent_id is legacy; keep writing nulls so old rows can be cleaned up.
       parent_id: d.parentId || null
     };
   }
@@ -3311,9 +3501,11 @@
       ref: r.ref || '',
       // null means "schema doesn't have this column yet" — caller fills in.
       paymentsCollected: r.payments_collected == null ? null : Number(r.payments_collected),
+      paymentsPaidOut: r.payments_paid_out == null ? null : Number(r.payments_paid_out),
       cancelled: r.cancelled === null ? false : !!r.cancelled,
       cancelledDate: r.cancelled_date || null,
       firstPaymentDate: r.first_payment_date || null,
+      lastPaidOutDate: r.last_paid_out_date || null,
       parentId: r.parent_id || null
     };
   }
@@ -3324,8 +3516,9 @@
     if (!err) return false;
     const msg = (err.message || err.hint || JSON.stringify(err)).toLowerCase();
     return msg.includes('column') &&
-      (msg.includes('payments_collected') || msg.includes('cancelled_date') ||
-       msg.includes('first_payment_date') || msg.includes('parent_id') ||
+      (msg.includes('payments_collected') || msg.includes('payments_paid_out') ||
+       msg.includes('cancelled_date') || msg.includes('first_payment_date') ||
+       msg.includes('last_paid_out_date') || msg.includes('parent_id') ||
        msg.includes('does not exist') || msg.includes('schema cache'));
   }
 
@@ -3348,8 +3541,9 @@
     let { error } = await supa.from('deals').upsert(toRemoteDeal(deal));
     if (error && isSchemaMissingError(error)) {
       warnSchemaMissing();
-      const { payments_collected, cancelled, cancelled_date, first_payment_date,
-              parent_id, ...legacy } = toRemoteDeal(deal);
+      const { payments_collected, payments_paid_out, cancelled, cancelled_date,
+              first_payment_date, last_paid_out_date, parent_id,
+              ...legacy } = toRemoteDeal(deal);
       ({ error } = await supa.from('deals').upsert(legacy));
     }
     if (error) throw error;
@@ -3360,8 +3554,9 @@
     if (error && isSchemaMissingError(error)) {
       warnSchemaMissing();
       const legacy = dealsArr.map(d => {
-        const { payments_collected, cancelled, cancelled_date, first_payment_date,
-                parent_id, ...rest } = toRemoteDeal(d);
+        const { payments_collected, payments_paid_out, cancelled, cancelled_date,
+                first_payment_date, last_paid_out_date, parent_id,
+                ...rest } = toRemoteDeal(d);
         return rest;
       });
       ({ error } = await supa.from('deals').upsert(legacy));
@@ -3594,6 +3789,21 @@
     return total;
   }
 
+  // Per-deal: how much commission has Gabriel actually been paid by his
+  // employer? Equals (monthlyShare × paymentsPaidOut), capped at earned.
+  function dealReceivedToDate(d) {
+    const max = dealMaxUnits(d);
+    if (max === 0) return 0;
+    const received = Math.min(d.paymentsPaidOut || 0, d.paymentsCollected || 0, max);
+    return dealMonthlyShare(d) * received;
+  }
+
+  function totalReceivedAllTime() {
+    let total = 0;
+    for (const d of deals) total += dealReceivedToDate(d);
+    return total;
+  }
+
   function dealStatus(d) {
     if (!d) return 'none';
     if (isExcluded(d.plan)) return 'excluded';
@@ -3658,6 +3868,8 @@
 
     // All-time earned across every deal
     const totalEarnedToDate = totalCommissionEarnedAllTime();
+    const totalReceivedToDate = totalReceivedAllTime();
+    const totalOutstanding = Math.max(0, totalEarnedToDate - totalReceivedToDate);
 
     return {
       monthDeals, platformDeals, managedDeals, excludedDeals,
@@ -3667,6 +3879,8 @@
       earnedThisPeriod: earnedHere.total,
       earnedThisPeriodDeals: earnedHere.dealsHit,
       totalEarnedToDate,
+      totalReceivedToDate,
+      totalOutstanding,
       dealPotentials
     };
   }
@@ -3716,6 +3930,7 @@
 
     document.getElementById('paymentsThisPeriodChip').textContent = String(c.earnedThisPeriodDeals.length);
     document.getElementById('totalEarnedChip').textContent = '$' + fmtExact(c.totalEarnedToDate);
+    document.getElementById('totalReceivedChip').textContent = '$' + fmtExact(c.totalReceivedToDate);
     document.getElementById('dealCountChip').textContent = String(c.monthDeals.length);
 
     document.getElementById('earnedThisPeriod').textContent = fmt(earned);
@@ -3729,10 +3944,20 @@
     }
 
     document.getElementById('totalEarnedToDate').textContent = fmt(c.totalEarnedToDate);
-    document.getElementById('totalEarnedToDateNote').textContent =
-      c.totalEarnedToDate === 0
-        ? 'Mark client payments as they come in'
-        : `Across ${deals.filter(d => (d.paymentsCollected||0) > 0).length} paying deal${deals.filter(d => (d.paymentsCollected||0) > 0).length !== 1 ? 's' : ''}, all-time`;
+    document.getElementById('totalReceivedToDate').textContent = fmt(c.totalReceivedToDate);
+
+    const earnedNote = document.getElementById('totalEarnedToDateNote');
+    const receivedFlag = document.getElementById('receivedFlag');
+    if (c.totalEarnedToDate === 0) {
+      earnedNote.textContent = 'Mark client payments as they come in';
+      receivedFlag.hidden = true;
+    } else if (c.totalOutstanding === 0) {
+      earnedNote.textContent = `All $${fmt(c.totalReceivedToDate)} earned has hit your pocket`;
+      receivedFlag.hidden = false;
+    } else {
+      earnedNote.textContent = `$${fmt(c.totalOutstanding)} earned but not yet received`;
+      receivedFlag.hidden = true;
+    }
 
     document.getElementById('forecastTotal').textContent = fmt(c.totalPotential);
 
@@ -3749,7 +3974,7 @@
         <p>Add your first deal above to start tracking commission.</p>
       </td></tr>`;
     } else {
-      tbody.innerHTML = groupByParent(c.monthDeals)
+      tbody.innerHTML = groupByClient(c.monthDeals)
         .map(d => renderDealRow(d)).join('');
     }
 
@@ -3775,7 +4000,7 @@
       carrySection.hidden = false;
       carryWrap.hidden = false;
       carryNote.hidden = false;
-      carryBody.innerHTML = groupByParent(carryDeals)
+      carryBody.innerHTML = groupByClient(carryDeals)
         .map(d => renderDealRow(d)).join('');
     } else {
       carrySection.hidden = true;
@@ -3788,46 +4013,36 @@
     renderBreakdown(c);
   }
 
-  // Order an array of deals so each primary deal is immediately followed
-  // by its sub-subscriptions (children). Primaries are sorted by close date,
-  // sub-subs within a parent are sorted by their own close date.
-  function groupByParent(arr) {
-    const byParent = new Map();
-    const primaries = [];
+  // Order an array of deals so subscriptions sharing the same client name
+  // appear adjacent — they're equal peers, not parent/child. Groups are
+  // sorted by the earliest close-date in each group; within a group, by
+  // each sub's own close-date.
+  function groupByClient(arr) {
+    const groups = new Map();
     for (const d of arr) {
-      if (d.parentId) {
-        if (!byParent.has(d.parentId)) byParent.set(d.parentId, []);
-        byParent.get(d.parentId).push(d);
-      } else {
-        primaries.push(d);
-      }
+      const key = clientKey(d.name);
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(d);
     }
-    primaries.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
-    // Orphans (sub-sub whose parent is not in this slice) get treated as
-    // primaries so they remain visible — happens when the parent closed in
-    // a different month than the sub.
-    const presentIds = new Set(primaries.map(d => d.id));
-    const orphans = [];
-    for (const [pid, subs] of byParent.entries()) {
-      if (!presentIds.has(pid)) orphans.push(...subs);
-    }
-    orphans.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
-
-    const out = [];
-    for (const p of primaries) {
-      out.push(p);
-      const subs = byParent.get(p.id) || [];
-      subs.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
-      for (const s of subs) out.push(s);
-    }
-    for (const o of orphans) out.push(o);
-    return out;
+    const ordered = Array.from(groups.values()).map(g => {
+      g.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+      return g;
+    });
+    ordered.sort((a, b) => (a[0].date || '').localeCompare(b[0].date || ''));
+    return ordered.flat();
   }
 
-  function dealSubCount(id) {
-    let n = 0;
-    for (const d of deals) if (d.parentId === id) n++;
-    return n;
+  // Canonical-ish form of a client name so "True North Custom" and
+  // "true north custom " group together.
+  function clientKey(name) {
+    return String(name || '').trim().toLowerCase().replace(/\s+/g, ' ');
+  }
+
+  // How many subscriptions share the given client name across ALL deals
+  // (not just the currently-viewed slice). Used to badge multi-sub rows.
+  function dealsForClient(name) {
+    const key = clientKey(name);
+    return deals.filter(d => clientKey(d.name) === key);
   }
 
   // Single-row renderer for the deals table — extracted so payment-tracking
@@ -3836,13 +4051,20 @@
     const mrr = Number(d.mrr);
     const max = dealMaxUnits(d);
     const collected = Math.min(d.paymentsCollected || 0, max);
+    const paidOut = Math.min(d.paymentsPaidOut || 0, collected);
     const monthlyShare = dealMonthlyShare(d);
     const earned = dealEarnedToDate(d);
     const pending = dealPendingNow(d);
     const potential = dealTotalPotential(d);
     const status = dealStatus(d);
-    const isSub = !!d.parentId;
-    const subCount = isSub ? 0 : dealSubCount(d.id);
+
+    // Subscription grouping: rank within the client's roster of subscriptions.
+    const siblings = dealsForClient(d.name)
+      .slice()
+      .sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+    const totalSubs = siblings.length;
+    const subIndex = totalSubs > 1 ? siblings.findIndex(s => s.id === d.id) + 1 : 0;
+    const isGroupedRow = totalSubs > 1;
 
     // Plan badge
     let badgeClass, badgeText;
@@ -3850,17 +4072,20 @@
     else if (isExcluded(d.plan)){ badgeClass = 'badge-excluded'; badgeText = planShortLabel(d.plan); }
     else                        { badgeClass = 'badge-platform'; badgeText = planShortLabel(d.plan); }
 
-    // Status badge — surface the "complete but $0 earned" case explicitly so a
-    // below-target deal that was already collected doesn't read as a real payout.
+    // Status badge. "Below target" is its own state visually so the
+    // long-form footnote can live alongside the badge instead of stuffed
+    // into the commission column.
+    const belowTarget = status === 'active' && earned === 0 && monthlyShare === 0;
+    const displayStatus = belowTarget ? 'below-target' : status;
     const STATUS_TEXT = {
-      active:    'Active',
-      complete:  'Fully paid out',
-      cancelled: 'Cancelled',
-      pending:   'Pending first payment',
-      excluded:  'Excluded'
+      active:        'Active',
+      complete:      'Fully paid out',
+      cancelled:     'Cancelled',
+      pending:       'Awaiting first payment',
+      excluded:      'Excluded',
+      'below-target':'Below target'
     };
     if (status === 'complete' && earned === 0) STATUS_TEXT.complete = 'Resolved · no commission';
-    if (status === 'active'   && earned === 0 && monthlyShare === 0) STATUS_TEXT.active = 'Active · below target';
 
     // Payments cell: 12 boxes for monthly, single toggle for annual/managed/excluded
     let paymentsCell = '';
@@ -3924,7 +4149,6 @@
         </div>`;
     } else {
       // Monthly platform
-      const belowTarget = monthlyShare === 0 && !d.cancelled;
       commissionCell = `
         <div class="commission-stack">
           <span class="${earnedCls}"><span class="label">Earned</span>$${fmtExact(earned)}</span>
@@ -3936,31 +4160,42 @@
             $${fmtExact(d.cancelled ? earned : potential)}
             ${monthlyShare > 0 && !d.cancelled ? `· $${fmtExact(monthlyShare)}/mo × ${max}` : ''}
           </span>
-          ${belowTarget
-            ? `<span class="potential" style="color:var(--amber);max-width:200px;text-align:right;white-space:normal;line-height:1.3">
-                 Below $1,000 close-month target — payments mark history, but no commission accrues unless the close-month hits target.
-               </span>` : ''}
+          ${renderPayoutControl(d, max, collected, paidOut, earned)}
         </div>`;
     }
+    // For one-shot and excluded, the payout control needs to attach too.
+    if (max === 1) {
+      commissionCell = commissionCell.replace(
+        '</div>',
+        `${renderPayoutControl(d, max, collected, paidOut, earned)}</div>`
+      );
+    }
 
-    const clientCell = isSub
-      ? `<span class="sub-tag">Sub-subscription</span>
-         <div class="deal-name">${escapeHtml(d.name)}</div>
-         ${d.ref ? `<div class="deal-ref">${escapeHtml(d.ref)}</div>` : ''}`
-      : `<div class="deal-name">${escapeHtml(d.name)}${subCount > 0 ? ` <span class="deal-ref" style="display:inline">· ${subCount} sub${subCount !== 1 ? 's' : ''}</span>` : ''}</div>
-         ${d.ref ? `<div class="deal-ref">${escapeHtml(d.ref)}</div>` : ''}`;
+    // Client cell: name + (if part of a multi-sub set) a small index badge.
+    const subBadge = totalSubs > 1
+      ? `<span class="sub-index" title="${totalSubs} subscriptions for this client">
+           Subscription <span class="sub-index-num">${subIndex}</span> / ${totalSubs}
+         </span>` : '';
+    const clientCell = `${subBadge}
+      <div class="deal-name">${escapeHtml(d.name)}</div>
+      ${d.ref ? `<div class="deal-ref">${escapeHtml(d.ref)}</div>` : ''}`;
 
-    // Only primaries get an "Add subscription" affordance — chains stop at one level.
-    const addSubBtn = isSub ? '' : `
-      <button class="add-sub-btn" type="button" onclick="addSubscription('${d.id}')" title="Add another subscription for this client">+ Sub</button>`;
+    // Status footnote: long-form below-target explainer lives alongside the
+    // status badge, not jammed into the commission column.
+    const statusNote = (displayStatus === 'below-target' && !d.cancelled)
+      ? `<span class="status-note">No commission accrues until the close-month MRR clears $1,000. Payments still mark history.</span>`
+      : '';
 
     return `
-      <tr data-id="${d.id}" class="${isSub ? 'deal-row-sub' : ''}">
+      <tr data-id="${d.id}" class="${isGroupedRow ? 'deal-row-grouped' : ''}">
         <td data-label="Client">${clientCell}</td>
         <td data-label="Date" class="mono">${formatDate(d.date)}</td>
         <td data-label="Plan"><span class="badge ${badgeClass}">${badgeText}</span></td>
         <td data-label="MRR" class="right mono">$${fmt(mrr)}</td>
-        <td data-label="Status"><span class="deal-status ${status}">${STATUS_TEXT[status] || status}</span></td>
+        <td data-label="Status">
+          <span class="deal-status ${displayStatus}">${STATUS_TEXT[displayStatus] || displayStatus}</span>
+          ${statusNote}
+        </td>
         <td data-label="Payments">${paymentsCell}</td>
         <td data-label="Commission" class="right">${commissionCell}</td>
         <td data-label="" class="right">
@@ -3974,10 +4209,50 @@
                 <line x1="14" y1="11" x2="14" y2="17"/>
               </svg>
             </button>
-            ${addSubBtn}
+            <button class="add-sub-btn" type="button" onclick="addSubscription('${d.id}')" title="Add another subscription for this client">Add subscription</button>
           </div>
         </td>
       </tr>`;
+  }
+
+  // Per-deal "money received" control. Hidden when there's nothing to mark
+  // (excluded plans, $0 earned). For one-shot deals it's a single toggle;
+  // for monthly deals it's a counter that mirrors paymentsCollected.
+  function renderPayoutControl(d, max, collected, paidOut, earned) {
+    if (max === 0) return '';
+    if (earned === 0 && paidOut === 0) return '';
+
+    if (max === 1) {
+      const isReceived = paidOut >= 1;
+      return `
+        <div class="payout-row">
+          <button type="button"
+                  class="payout-toggle${isReceived ? ' received' : ''}"
+                  onclick="togglePayoutReceived('${d.id}')"
+                  ${collected === 0 ? 'disabled' : ''}
+                  title="${collected === 0 ? 'Mark the client payment first' : (isReceived ? 'Unmark — money not yet received' : 'Mark commission as received')}">
+            <span class="check"></span>
+            <span>${isReceived ? 'Received' : 'Mark received'}</span>
+          </button>
+        </div>`;
+    }
+
+    const allReceived = paidOut >= collected && collected > 0;
+    return `
+      <div class="payout-row">
+        <span class="payout-label">Received</span>
+        <div class="payout-counter${allReceived ? ' complete' : ''}">
+          <button type="button" class="payout-btn"
+                  onclick="unmarkPayout('${d.id}')"
+                  ${paidOut === 0 ? 'disabled' : ''}
+                  title="Undo last received payment">−</button>
+          <span class="payout-count">${paidOut}/${collected} mo</span>
+          <button type="button" class="payout-btn"
+                  onclick="markPayout('${d.id}')"
+                  ${paidOut >= collected ? 'disabled' : ''}
+                  title="Mark next month's commission as received">+</button>
+        </div>
+      </div>`;
   }
 
   // Payment-tracking event handlers (window-scoped so inline onclick works).
@@ -3997,6 +4272,11 @@
     if (!d) return;
     if ((d.paymentsCollected || 0) <= 0) return;
     d.paymentsCollected = (d.paymentsCollected || 0) - 1;
+    // Clamp paidOut: we can't have received commission for a month the
+    // client never paid for.
+    if ((d.paymentsPaidOut || 0) > d.paymentsCollected) {
+      d.paymentsPaidOut = d.paymentsCollected;
+    }
     render();
     persistPayments(d);
   };
@@ -4006,6 +4286,48 @@
     if (!d) return;
     if (d.cancelled) return;
     d.paymentsCollected = (d.paymentsCollected || 0) > 0 ? 0 : 1;
+    // Resetting the client payment also resets the received-from-employer flag.
+    if (d.paymentsCollected === 0) d.paymentsPaidOut = 0;
+    render();
+    persistPayments(d);
+  };
+
+  // Money-received-by-Gabriel handlers. Counts how many of the client's
+  // paid months Gabriel has personally been paid commission for.
+  window.markPayout = function(id) {
+    const d = deals.find(x => x.id === id);
+    if (!d) return;
+    const collected = d.paymentsCollected || 0;
+    if ((d.paymentsPaidOut || 0) >= collected) return;
+    d.paymentsPaidOut = (d.paymentsPaidOut || 0) + 1;
+    d.lastPaidOutDate = new Date().toISOString().slice(0, 10);
+    render();
+    persistPayments(d);
+  };
+
+  window.unmarkPayout = function(id) {
+    const d = deals.find(x => x.id === id);
+    if (!d) return;
+    if ((d.paymentsPaidOut || 0) <= 0) return;
+    d.paymentsPaidOut = (d.paymentsPaidOut || 0) - 1;
+    if (d.paymentsPaidOut === 0) d.lastPaidOutDate = null;
+    render();
+    persistPayments(d);
+  };
+
+  // One-shot received toggle (managed / annual): 0 ↔ 1.
+  window.togglePayoutReceived = function(id) {
+    const d = deals.find(x => x.id === id);
+    if (!d) return;
+    const collected = d.paymentsCollected || 0;
+    if (collected === 0) return;
+    if ((d.paymentsPaidOut || 0) > 0) {
+      d.paymentsPaidOut = 0;
+      d.lastPaidOutDate = null;
+    } else {
+      d.paymentsPaidOut = 1;
+      d.lastPaidOutDate = new Date().toISOString().slice(0, 10);
+    }
     render();
     persistPayments(d);
   };
@@ -4132,6 +4454,44 @@
                  <span>Total earned, all-time</span>
                  <span class="value-positive">$${fmtExact(c.totalEarnedToDate)}</span>
                </div>`;
+    }
+    html += `</div>`;
+
+    // ── SECTION B-2: Money received in pocket ──────────────────────────────
+    html += `<div class="breakdown-section">`;
+    html += `<div class="breakdown-section-title">Money received in your pocket (all-time)</div>`;
+    const receivedDeals = deals.filter(d => (d.paymentsPaidOut || 0) > 0);
+    if (receivedDeals.length === 0) {
+      html += `<div class="breakdown-row" style="color:var(--text-4)">
+                 <span>Nothing marked as received yet.</span><span>$0.00</span>
+               </div>
+               <div class="breakdown-row calculation">
+                 <span>Tap "Mark received" or use the +/− under each deal's commission once payment hits your account.</span><span></span>
+               </div>`;
+    } else {
+      receivedDeals
+        .slice()
+        .sort((a, b) => (a.lastPaidOutDate || '').localeCompare(b.lastPaidOutDate || ''))
+        .forEach(d => {
+          const r = dealReceivedToDate(d);
+          const max = dealMaxUnits(d);
+          const received = Math.min(d.paymentsPaidOut || 0, d.paymentsCollected || 0, max);
+          const tail = d.lastPaidOutDate ? ` · last ${formatDate(d.lastPaidOutDate)}` : '';
+          html += `<div class="breakdown-row">
+                     <span>${escapeHtml(d.name)} <span style="color:var(--text-4)">— ${received}/${max} ${max === 1 ? 'payment' : 'months'} received${tail}</span></span>
+                     <span class="value-positive">$${fmtExact(r)}</span>
+                   </div>`;
+        });
+      html += `<div class="breakdown-row subtotal">
+                 <span>Total received, all-time</span>
+                 <span class="value-positive">$${fmtExact(c.totalReceivedToDate)}</span>
+               </div>`;
+      if (c.totalOutstanding > 0) {
+        html += `<div class="breakdown-row calculation" style="color:var(--amber)">
+                   <span>Outstanding (earned but not yet received)</span>
+                   <span>$${fmtExact(c.totalOutstanding)}</span>
+                 </div>`;
+      }
     }
     html += `</div>`;
 
@@ -4275,23 +4635,27 @@
     if (!plan) { showFormError('Select a plan tier'); return; }
     if (!date) { showFormError('Close date is required'); document.getElementById('dealDate').focus(); return; }
 
-    // If we're adding a sub-subscription, link it to its parent.
-    const parentId = addingSubFor && deals.some(d => d.id === addingSubFor) ? addingSubFor : null;
+    // Track whether this was an "add another subscription" flow so we can
+    // tailor the toast — but the new deal is a peer, not a child.
+    const isExtraSubscription = !!addingSubFor;
 
     const newDeal = normalizeDeal({
       id: 'd_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
       name, mrr, plan, date, billing, ref,
       // New deals default to 0 payments collected; Gabriel marks them as the client pays.
       paymentsCollected: 0,
+      paymentsPaidOut: 0,
       cancelled: false,
       cancelledDate: null,
       firstPaymentDate: null,
-      parentId
+      lastPaidOutDate: null,
+      parentId: null
     });
     deals.push(newDeal);
 
-    const toastMsg = parentId
-      ? `Added subscription to ${name}`
+    const existingForClient = dealsForClient(name).length;
+    const toastMsg = (isExtraSubscription || existingForClient > 1)
+      ? `Added subscription #${existingForClient} for ${name}`
       : `Added ${name}`;
 
     clearFormError();
@@ -4313,31 +4677,21 @@
     clearFormError();
   }
 
-  // Enter "Add subscription" mode: pre-fill the form with the parent's
-  // client name, lock the name field, and show the banner. Form scrolls
-  // into view so it's obvious the form has switched modes.
-  function enterSubMode(parentId) {
-    const parent = deals.find(d => d.id === parentId);
-    if (!parent) return;
-    // Walk up the chain — sub-subs always link to the primary so we don't
-    // end up with grandparent chains.
-    let rootId = parent.id;
-    let root = parent;
-    while (root.parentId) {
-      const above = deals.find(d => d.id === root.parentId);
-      if (!above) break;
-      root = above;
-      rootId = root.id;
-    }
-    addingSubFor = rootId;
+  // Enter "Add another subscription" mode: pre-fill the form with the
+  // source deal's client name, lock the name field, and show the banner.
+  // The new subscription is a peer — they're just grouped by name.
+  function enterSubMode(sourceId) {
+    const source = deals.find(d => d.id === sourceId);
+    if (!source) return;
+    addingSubFor = source.name;
 
     const nameInput = document.getElementById('dealName');
-    nameInput.value = root.name;
+    nameInput.value = source.name;
     nameInput.readOnly = true;
     nameInput.classList.add('locked');
 
     const banner = document.getElementById('subBanner');
-    document.getElementById('subBannerName').textContent = root.name;
+    document.getElementById('subBannerName').textContent = source.name;
     banner.hidden = false;
 
     document.getElementById('dealMRR').value = '';
@@ -4369,27 +4723,18 @@
     const target = deals.find(d => d.id === id);
     if (!target) return;
 
-    const subs = deals.filter(d => d.parentId === id);
-    const subWarning = subs.length > 0
-      ? ` This will also delete ${subs.length} linked sub-subscription${subs.length !== 1 ? 's' : ''}.`
-      : '';
-
     const ok = await confirmModal({
-      title: 'Delete deal',
-      message: `Remove "${target.name}"? This will also delete it from Supabase.${subWarning}`,
+      title: 'Delete subscription',
+      message: `Remove "${target.name}"? This deletes only this single subscription — any other subscriptions for the same client stay put.`,
       confirmText: 'Delete',
       danger: true
     });
     if (!ok) return;
 
-    const idsToRemove = new Set([id, ...subs.map(s => s.id)]);
-    deals = deals.filter(d => !idsToRemove.has(d.id));
+    deals = deals.filter(d => d.id !== id);
     _invalidateMonthContext();
     render();
-    // Cascade delete in cloud too — schema's ON DELETE CASCADE handles the
-    // parent_id → children cleanup, but we explicitly call out the children
-    // here so the legacy-schema branch (no FK cascade) still works.
-    for (const remId of idsToRemove) removeDealRemote(remId);
+    removeDealRemote(id);
     showToast(`Removed ${target.name}`);
   };
 
@@ -4422,6 +4767,8 @@
 
     const summary = [
       ['Total Commission Earned to Date (all-time)', c.totalEarnedToDate.toFixed(2)],
+      ['Total Received in Pocket (all-time)', c.totalReceivedToDate.toFixed(2)],
+      ['Outstanding (earned but not received)', c.totalOutstanding.toFixed(2)],
       [`Commission Earned This Pay Period (${formatMonthLabelShort(currentMonth)})`, c.earnedThisPeriod.toFixed(2)],
       ['Eligible MRR (this close-month)', c.eligibleMRR.toFixed(2)],
       ['Above Target', c.overage.toFixed(2)],
@@ -4430,8 +4777,8 @@
 
     const header = [
       'Client', 'Reference', 'Close Date', 'Plan', 'MRR', 'Billing',
-      'Status', 'Months Paid', 'Max Units',
-      'Earned to Date', 'Pending', '12mo Potential (forecast)'
+      'Status', 'Months Paid By Client', 'Months Received By Me', 'Max Units',
+      'Earned to Date', 'Received to Date', 'Pending', '12mo Potential (forecast)'
     ];
 
     const rows = [...c.monthDeals]
@@ -4442,8 +4789,11 @@
           d.name, d.ref || '', d.date, planLabel(d.plan),
           Number(d.mrr), d.billing || 'monthly',
           dealStatus(d),
-          d.paymentsCollected || 0, max,
+          d.paymentsCollected || 0,
+          d.paymentsPaidOut || 0,
+          max,
           dealEarnedToDate(d).toFixed(2),
+          dealReceivedToDate(d).toFixed(2),
           dealPendingNow(d).toFixed(2),
           dealTotalPotential(d).toFixed(2)
         ];
@@ -5084,9 +5434,11 @@
           name, mrr, plan, date,
           billing, ref,
           paymentsCollected: 0,
+          paymentsPaidOut: 0,
           cancelled: false,
           cancelledDate: null,
-          firstPaymentDate: null
+          firstPaymentDate: null,
+          lastPaidOutDate: null
         }));
       }
       deals.push(...newDeals);
@@ -5094,8 +5446,8 @@
       render();
       await cacheLocal();
       if (supa && online && newDeals.length) {
-        const { error } = await supa.from('deals').upsert(newDeals);
-        if (error) { console.error(error); online = false; setStatus('offline', 'Sync failed · Local only'); }
+        try { await upsertDealsRemote(newDeals); }
+        catch (err) { console.error(err); online = false; setStatus('offline', 'Sync failed · Local only'); }
       }
       showToast(`Imported ${newDeals.length} deal${newDeals.length !== 1 ? 's' : ''}`);
     };
