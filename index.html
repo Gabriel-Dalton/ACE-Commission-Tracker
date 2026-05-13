@@ -1322,6 +1322,188 @@
     .stats-row.four { grid-template-columns: 1fr; }
   }
 
+  /* "Since your last visit" activity banner */
+  .activity-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    background: linear-gradient(135deg, var(--accent-soft), var(--surface));
+    border: 1px solid var(--accent-line);
+    border-radius: var(--radius-lg);
+    padding: 16px 18px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-sm);
+  }
+  .activity-banner.muted {
+    background: var(--surface);
+    border-color: var(--line);
+  }
+  .activity-banner-icon {
+    flex: 0 0 32px;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--accent-fg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-family: var(--font-display);
+  }
+  .activity-banner.muted .activity-banner-icon {
+    background: var(--surface-2);
+    color: var(--text-3);
+  }
+  .activity-banner-body { flex: 1; min-width: 0; }
+  .activity-banner-title {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .activity-banner-since {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 8px;
+  }
+  .activity-banner-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 13px;
+    color: var(--text-2);
+  }
+  .activity-banner-list strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+  .activity-banner-dismiss {
+    background: transparent;
+    border: 1px solid var(--line-2);
+    border-radius: var(--radius);
+    padding: 6px 10px;
+    font-size: 12px;
+    color: var(--text-3);
+    cursor: pointer;
+    transition: background 0.12s, color 0.12s, border-color 0.12s;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.05em;
+  }
+  .activity-banner-dismiss:hover {
+    background: var(--surface-2);
+    color: var(--text);
+    border-color: var(--line-3);
+  }
+
+  /* Subscription revenue strip — runs alongside commission stats so deals
+     below the $1K target still show a non-zero "client paid" number. */
+  .sub-revenue-strip {
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
+    gap: 18px;
+    align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-sm);
+  }
+  .sub-revenue-strip .label-block {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .sub-revenue-strip .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--text-3);
+  }
+  .sub-revenue-strip .title {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+  .sub-revenue-strip .helper {
+    font-size: 12px;
+    color: var(--text-3);
+    margin-top: 2px;
+  }
+  .sub-revenue-strip .amount {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 28px;
+    letter-spacing: -0.025em;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+  .sub-revenue-strip .amount .currency {
+    font-size: 16px;
+    color: var(--text-3);
+    font-weight: 500;
+    margin-right: 1px;
+  }
+  .sub-revenue-strip .divider {
+    width: 1px;
+    height: 36px;
+    background: var(--line);
+  }
+  .sub-revenue-strip .secondary {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    align-items: flex-end;
+  }
+  .sub-revenue-strip .secondary .label {
+    text-align: right;
+  }
+  .sub-revenue-strip .secondary .num {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 18px;
+    color: var(--text-2);
+    font-variant-numeric: tabular-nums;
+  }
+  @media (max-width: 720px) {
+    .sub-revenue-strip {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    .sub-revenue-strip .divider { display: none; }
+    .sub-revenue-strip .secondary { align-items: flex-start; }
+    .sub-revenue-strip .secondary .label { text-align: left; }
+  }
+
+  /* Per-row renewal tag */
+  .renewal-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-3);
+    margin-top: 4px;
+    letter-spacing: 0.04em;
+  }
+  .renewal-tag.due {
+    color: var(--amber);
+    font-weight: 600;
+  }
+  .renewal-tag .dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.6;
+  }
+
   .empty-state { padding: 72px 24px; text-align: center; }
 
   .empty-state-icon {
@@ -2962,6 +3144,16 @@
     <button type="button" class="btn btn-primary" id="verifyBannerBtn">Review now</button>
   </div>
 
+  <div class="activity-banner muted" id="activityBanner" hidden>
+    <div class="activity-banner-icon" id="activityBannerIcon">✦</div>
+    <div class="activity-banner-body">
+      <div class="activity-banner-title" id="activityBannerTitle">Welcome back</div>
+      <div class="activity-banner-since" id="activityBannerSince"></div>
+      <div class="activity-banner-list" id="activityBannerList"></div>
+    </div>
+    <button type="button" class="activity-banner-dismiss" id="activityBannerDismiss">Dismiss</button>
+  </div>
+
   <div class="hero">
     <div class="hero-grid">
       <div class="hero-main">
@@ -3032,6 +3224,20 @@
         <span class="currency">$</span><span id="totalEarnedToDate">0</span>
       </div>
       <div class="stat-meta" id="totalEarnedToDateNote">Received in pocket vs. earned all-time</div>
+    </div>
+  </div>
+
+  <div class="sub-revenue-strip" id="subRevenueStrip">
+    <div class="label-block">
+      <span class="label">Subscription revenue · <span id="subRevenuePeriodLabel">—</span></span>
+      <span class="title">What your clients actually paid this month</span>
+      <span class="helper" id="subRevenueHelper">Counts every collected payment — even on deals below the $1,000 commission target.</span>
+    </div>
+    <div class="amount"><span class="currency">$</span><span id="subRevenueThisPeriod">0</span></div>
+    <div class="divider" aria-hidden="true"></div>
+    <div class="secondary">
+      <span class="label">All-time collected</span>
+      <span class="num">$<span id="subRevenueAllTime">0</span></span>
     </div>
   </div>
 
@@ -3880,8 +4086,11 @@
   }
 
   // Push payment-state changes (markPaid, cancel, etc.) to Supabase too.
+  // Also bump the "last visit" snapshot so this in-session click doesn't
+  // replay as ghost activity on next page load.
   async function persistPayments(deal) {
     await cacheLocal();
+    await writeLastVisitSnapshot();
     if (!supa || !online) return;
     await withSyncStatus('Syncing payments…', async () => {
       await upsertDealRemote(deal);
@@ -4097,6 +4306,202 @@
     return total;
   }
 
+  // Subscription revenue — the dollar amount the client(s) actually paid in
+  // subscription fees during a given month. This is INDEPENDENT of commission
+  // math: a $359 deal closed alone in a month is below the $1K commission
+  // target (so $0 commission), but the client still paid $359, and that
+  // shows up here. Critical for not making low-MRR deals "look broken."
+  function subscriptionRevenueInMonth(ym) {
+    let total = 0;
+    const payments = [];
+    for (const d of deals) {
+      if (isExcluded(d.plan)) continue;
+      const max = dealMaxUnits(d);
+      const collected = Math.min(d.paymentsCollected || 0, max);
+      if (collected === 0) continue;
+      const perUnit = Number(d.mrr) || 0;
+      // For annual upfront, the one collected unit is the FULL year's value.
+      const unitValue = (d.billing === 'annual' && !isManaged(d.plan)) ? perUnit * 12 : perUnit;
+      for (let n = 1; n <= collected; n++) {
+        if (paymentMonthFor(d, n) === ym) {
+          total += unitValue;
+          payments.push({ deal: d, unit: n, amount: unitValue });
+        }
+      }
+    }
+    return { total, payments };
+  }
+
+  function totalSubscriptionRevenueAllTime() {
+    let total = 0;
+    for (const d of deals) {
+      if (isExcluded(d.plan)) continue;
+      const max = dealMaxUnits(d);
+      const collected = Math.min(d.paymentsCollected || 0, max);
+      const perUnit = Number(d.mrr) || 0;
+      const unitValue = (d.billing === 'annual' && !isManaged(d.plan)) ? perUnit * 12 : perUnit;
+      total += unitValue * collected;
+    }
+    return total;
+  }
+
+  // ── "Since your last visit" activity tracker ────────────────────────────
+  // We snapshot {lastVisitAt, paymentsCollectedById} on every page load (after
+  // computing the diff against the previous snapshot), so the next visit can
+  // show what changed in the meantime. Two signals feed the banner:
+  //   1. New paymentsCollected since the last snapshot (clicks here or on
+  //      another synced device).
+  //   2. Subscription billing cycles that have elapsed on the calendar since
+  //      the last visit — i.e. renewals that are now due to be marked paid.
+  const VISIT_CACHE_KEY = 'ct-last-visit-v1';
+  let _activityBannerData = null;
+
+  async function readLastVisitSnapshot() {
+    const raw = await cache.get(VISIT_CACHE_KEY);
+    if (!raw) return null;
+    try {
+      const p = JSON.parse(raw);
+      if (!p || typeof p !== 'object') return null;
+      return {
+        at: typeof p.at === 'string' ? p.at : null,
+        snapshot: (p.snapshot && typeof p.snapshot === 'object') ? p.snapshot : {}
+      };
+    } catch(e) { return null; }
+  }
+
+  async function writeLastVisitSnapshot() {
+    const snapshot = {};
+    for (const d of deals) snapshot[d.id] = d.paymentsCollected || 0;
+    await cache.set(VISIT_CACHE_KEY, JSON.stringify({
+      at: new Date().toISOString(),
+      snapshot
+    }));
+  }
+
+  function computeActivitySinceLastVisit(prev) {
+    if (!prev || !prev.at) return null;
+    const prevAt = new Date(prev.at);
+    if (isNaN(prevAt.getTime())) return null;
+    const prevYM = prev.at.slice(0, 7);
+    const nowYM = new Date().toISOString().slice(0, 7);
+
+    const newPaymentEvents = [];      // paymentsCollected went up on this/another device
+    const renewalsDue     = [];       // calendar advanced past an expected billing date
+    let newRevenue = 0;
+
+    for (const d of deals) {
+      if (isExcluded(d.plan)) continue;
+      const max = dealMaxUnits(d);
+      const prevCollected = prev.snapshot[d.id] || 0;
+      const currCollected = Math.min(d.paymentsCollected || 0, max);
+      const mrrVal = Number(d.mrr) || 0;
+      const unitValue = (d.billing === 'annual' && !isManaged(d.plan)) ? mrrVal * 12 : mrrVal;
+
+      if (currCollected > prevCollected) {
+        const delta = currCollected - prevCollected;
+        newPaymentEvents.push({ deal: d, delta, revenue: unitValue * delta });
+        newRevenue += unitValue * delta;
+      }
+
+      // Calendar renewals: only meaningful for active monthly subscriptions.
+      // (Managed/annual one-shots renew once or never.)
+      if (!d.cancelled && max > 1) {
+        const baseYM = dealFirstPaymentMonth(d);
+        if (baseYM) {
+          const expectedAtPrev = Math.max(0, Math.min(max, monthDiff(baseYM, prevYM) + 1));
+          const expectedNow    = Math.max(0, Math.min(max, monthDiff(baseYM, nowYM) + 1));
+          const cyclesElapsed  = Math.max(0, expectedNow - expectedAtPrev);
+          if (cyclesElapsed > 0) {
+            // Renewals are only "actionable" (i.e. surface as a prompt) if the
+            // user hasn't already marked them paid.
+            const stillUnmarked = Math.max(0, expectedNow - currCollected);
+            if (stillUnmarked > 0) {
+              renewalsDue.push({ deal: d, cycles: cyclesElapsed, unmarked: stillUnmarked });
+            }
+          }
+        }
+      }
+    }
+
+    if (newPaymentEvents.length === 0 && renewalsDue.length === 0) return null;
+    return { lastVisitAt: prev.at, newPaymentEvents, newRevenue, renewalsDue };
+  }
+
+  function renderActivityBanner() {
+    const banner  = document.getElementById('activityBanner');
+    const title   = document.getElementById('activityBannerTitle');
+    const since   = document.getElementById('activityBannerSince');
+    const list    = document.getElementById('activityBannerList');
+    const icon    = document.getElementById('activityBannerIcon');
+    if (!banner) return;
+
+    const a = _activityBannerData;
+    if (!a) { banner.hidden = true; return; }
+
+    banner.hidden = false;
+    banner.classList.toggle('muted', a.newPaymentEvents.length === 0);
+    icon.textContent = a.newPaymentEvents.length > 0 ? '$' : '!';
+
+    const lastVisitDate = new Date(a.lastVisitAt);
+    const sinceLabel = lastVisitDate.toLocaleString('en-US', {
+      month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
+    });
+    since.textContent = `Last visit · ${sinceLabel}`;
+
+    const parts = [];
+    if (a.newPaymentEvents.length > 0) {
+      const n = a.newPaymentEvents.reduce((s, e) => s + e.delta, 0);
+      const clientNames = [...new Set(a.newPaymentEvents.map(e => e.deal.name))].slice(0, 3).join(', ');
+      const more = a.newPaymentEvents.length > 3 ? ` +${a.newPaymentEvents.length - 3} more` : '';
+      parts.push(`<div>💸 <strong>$${fmt(a.newRevenue)}</strong> in new subscription revenue collected (${n} payment${n !== 1 ? 's' : ''}: ${escapeHtml(clientNames)}${more}).</div>`);
+      title.textContent = 'Your subscriptions earned money since your last visit';
+    } else {
+      title.textContent = 'Welcome back — renewals waiting';
+    }
+    if (a.renewalsDue.length > 0) {
+      const totalDue = a.renewalsDue.reduce((s, r) => s + r.unmarked, 0);
+      const clientNames = a.renewalsDue.slice(0, 3).map(r => escapeHtml(r.deal.name)).join(', ');
+      const more = a.renewalsDue.length > 3 ? ` +${a.renewalsDue.length - 3} more` : '';
+      parts.push(`<div>📅 <strong>${totalDue}</strong> renewal${totalDue !== 1 ? 's' : ''} due to be marked paid: ${clientNames}${more}.</div>`);
+    }
+    list.innerHTML = parts.join('');
+  }
+
+  async function bootstrapActivityBanner() {
+    const prev = await readLastVisitSnapshot();
+    _activityBannerData = computeActivitySinceLastVisit(prev);
+    // Persist a fresh snapshot for next time. This happens once per page load,
+    // so reloads within the same session won't keep replaying old activity.
+    await writeLastVisitSnapshot();
+  }
+
+  // Next renewal/billing date for a subscription. Returns YYYY-MM-DD, or null
+  // if the subscription is fully paid out, cancelled, excluded, or one-shot.
+  // For monthly deals: start day in (start + paymentsCollected) months.
+  // For annual upfront: start day in (start + paymentsCollected × 12) months.
+  function dealNextRenewalDate(d) {
+    if (!d || d.cancelled) return null;
+    if (isExcluded(d.plan)) return null;
+    const max = dealMaxUnits(d);
+    if (max <= 1) return null;
+    const collected = Math.min(d.paymentsCollected || 0, max);
+    if (collected >= max) return null;
+    const startStr = d.firstPaymentDate || d.date;
+    if (!startStr) return null;
+    const [y, m, day] = startStr.split('-').map(Number);
+    if (!y || !m || !day) return null;
+    const advance = d.billing === 'annual' ? collected * 12 : collected;
+    // Date math: clamp the day to the target month's last day so Jan 31 + 1mo lands on Feb 28/29.
+    const targetMonth0 = (m - 1) + advance; // 0-indexed month relative to year
+    const targetYear = y + Math.floor(targetMonth0 / 12);
+    const targetMonth = (targetMonth0 % 12) + 1;
+    const daysInTarget = new Date(targetYear, targetMonth, 0).getDate();
+    const targetDay = Math.min(day, daysInTarget);
+    const mm = String(targetMonth).padStart(2, '0');
+    const dd = String(targetDay).padStart(2, '0');
+    return `${targetYear}-${mm}-${dd}`;
+  }
+
   // Per-deal: how much commission has Gabriel actually been paid by his
   // employer? Equals (monthlyShare × paymentsPaidOut), capped at earned.
   function dealReceivedToDate(d) {
@@ -4179,6 +4584,11 @@
     const totalReceivedToDate = totalReceivedAllTime();
     const totalOutstanding = Math.max(0, totalEarnedToDate - totalReceivedToDate);
 
+    // Subscription revenue — what clients actually paid in subscription fees this
+    // period (always non-zero when a payment landed, even if commission is $0).
+    const subRevHere = subscriptionRevenueInMonth(currentMonth);
+    const subRevenueAllTime = totalSubscriptionRevenueAllTime();
+
     return {
       monthDeals, platformDeals, managedDeals, excludedDeals,
       platformMRR, managedMRR, eligibleMRR, overage,
@@ -4186,6 +4596,9 @@
       totalPotential: platformCommission + managedCommission,
       earnedThisPeriod: earnedHere.total,
       earnedThisPeriodDeals: earnedHere.dealsHit,
+      subRevenueThisPeriod: subRevHere.total,
+      subRevenueThisPeriodPayments: subRevHere.payments,
+      subRevenueAllTime,
       totalEarnedToDate,
       totalReceivedToDate,
       totalOutstanding,
@@ -4196,6 +4609,8 @@
   function render() {
     _invalidateMonthContext();
     const c = calculateMonth();
+
+    renderActivityBanner();
 
     document.getElementById('periodLabel').textContent = formatMonthLabel(currentMonth);
     document.getElementById('monthLabel').textContent = formatMonthLabelShort(currentMonth);
@@ -4268,6 +4683,18 @@
     }
 
     document.getElementById('forecastTotal').textContent = fmt(c.totalPotential);
+
+    // Subscription revenue strip — always populated, independent of $1K target math.
+    document.getElementById('subRevenuePeriodLabel').textContent = formatMonthLabelShort(currentMonth);
+    document.getElementById('subRevenueThisPeriod').textContent = fmt(c.subRevenueThisPeriod);
+    document.getElementById('subRevenueAllTime').textContent = fmt(c.subRevenueAllTime);
+    const subHelper = document.getElementById('subRevenueHelper');
+    if (c.subRevenueThisPeriodPayments.length === 0) {
+      subHelper.textContent = `No payments collected in ${formatMonthLabelShort(currentMonth)} yet — mark client payments below to track revenue.`;
+    } else {
+      const n = c.subRevenueThisPeriodPayments.length;
+      subHelper.textContent = `${n} payment${n !== 1 ? 's' : ''} collected this month · counts every deal, including those below the $1,000 commission threshold.`;
+    }
 
     const tbody = document.getElementById('dealsBody');
     if (c.monthDeals.length === 0) {
@@ -4680,15 +5107,36 @@
       ${d.ref ? `<div class="deal-ref">${escapeHtml(d.ref)}</div>` : ''}`;
 
     // Status footnote: long-form below-target explainer lives alongside the
-    // status badge, not jammed into the commission column.
-    const statusNote = (displayStatus === 'below-target' && !d.cancelled)
-      ? `<span class="status-note">No commission accrues until the close-month MRR clears $1,000. Payments still mark history.</span>`
-      : '';
+    // status badge, not jammed into the commission column. Below-target deals
+    // also get a "$X collected this period" line so the row doesn't look broken.
+    let statusNote = '';
+    if (displayStatus === 'below-target' && !d.cancelled) {
+      const mrrVal = Number(d.mrr) || 0;
+      const unitValue = (d.billing === 'annual' && !isManaged(d.plan)) ? mrrVal * 12 : mrrVal;
+      const collectedRevenue = unitValue * collected;
+      const revenueLine = collectedRevenue > 0
+        ? ` Subscription revenue collected: <strong>$${fmtExact(collectedRevenue)}</strong> (commission still $0 until close-month MRR clears $1,000).`
+        : ' No commission accrues until the close-month MRR clears $1,000. Payments still mark history.';
+      statusNote = `<span class="status-note">${revenueLine}</span>`;
+    }
+
+    // Next renewal date for active monthly/annual subscriptions.
+    const nextRenewal = dealNextRenewalDate(d);
+    let renewalTag = '';
+    if (nextRenewal) {
+      const nowYM = new Date().toISOString().slice(0, 7);
+      const renewYM = nextRenewal.slice(0, 7);
+      const isDue = renewYM <= nowYM && (collected < max);
+      renewalTag = `<div class="renewal-tag${isDue ? ' due' : ''}" title="Next expected billing date">
+        <span class="dot"></span>
+        <span>${isDue ? 'Renewal due' : 'Renews'} ${formatDate(nextRenewal)}</span>
+      </div>`;
+    }
 
     return `
       <tr data-id="${d.id}" class="${isGroupedRow ? 'deal-row-grouped' : ''}">
         <td data-label="Client">${clientCell}</td>
-        <td data-label="Date" class="mono">${formatDate(d.date)}</td>
+        <td data-label="Date" class="mono">${formatDate(d.date)}${renewalTag}</td>
         <td data-label="Plan"><span class="badge ${badgeClass}">${badgeText}</span></td>
         <td data-label="MRR" class="right mono">$${fmt(mrr)}</td>
         <td data-label="Status">
@@ -5269,28 +5717,35 @@
       ['Total Received in Pocket (all-time)', c.totalReceivedToDate.toFixed(2)],
       ['Outstanding (earned but not received)', c.totalOutstanding.toFixed(2)],
       [`Commission Earned This Pay Period (${formatMonthLabelShort(currentMonth)})`, c.earnedThisPeriod.toFixed(2)],
+      [`Subscription Revenue Collected This Period (${formatMonthLabelShort(currentMonth)})`, c.subRevenueThisPeriod.toFixed(2)],
+      ['Subscription Revenue Collected (all-time)', c.subRevenueAllTime.toFixed(2)],
       ['Eligible MRR (this close-month)', c.eligibleMRR.toFixed(2)],
       ['Above Target', c.overage.toFixed(2)],
       ['12-Month Potential (forecast, this close-month)', c.totalPotential.toFixed(2)]
     ];
 
     const header = [
-      'Client', 'Reference', 'Close Date', 'Plan', 'MRR', 'Billing',
+      'Client', 'Reference', 'Close Date', 'Next Renewal', 'Plan', 'MRR', 'Billing',
       'Status', 'Months Paid By Client', 'Months Received By Me', 'Max Units',
-      'Earned to Date', 'Received to Date', 'Pending', '12mo Potential (forecast)'
+      'Subscription Revenue Collected', 'Earned to Date', 'Received to Date',
+      'Pending', '12mo Potential (forecast)'
     ];
 
     const rows = [...c.monthDeals]
       .sort((a, b) => a.date.localeCompare(b.date))
       .map(d => {
         const max = dealMaxUnits(d);
+        const mrrVal = Number(d.mrr) || 0;
+        const unitValue = (d.billing === 'annual' && !isManaged(d.plan)) ? mrrVal * 12 : mrrVal;
+        const subRevenueCollected = unitValue * Math.min(d.paymentsCollected || 0, max);
         return [
-          d.name, d.ref || '', d.date, planLabel(d.plan),
-          Number(d.mrr), d.billing || 'monthly',
+          d.name, d.ref || '', d.date, dealNextRenewalDate(d) || '—',
+          planLabel(d.plan), mrrVal, d.billing || 'monthly',
           dealStatus(d),
           d.paymentsCollected || 0,
           d.paymentsPaidOut || 0,
           max,
+          subRevenueCollected.toFixed(2),
           dealEarnedToDate(d).toFixed(2),
           dealReceivedToDate(d).toFixed(2),
           dealPendingNow(d).toFixed(2),
@@ -5569,9 +6024,9 @@
                     fontSize: 8, italics: true, color: COL.text3, margin: [0, 0, 0, 12] },
                   {
                     columns: [
+                      { width: 'auto', ...chip('subscription revenue this period', '$' + fmt(c.subRevenueThisPeriod)) },
                       { width: 'auto', ...chip('all-time earned', '$' + fmt(c.totalEarnedToDate)) },
-                      { width: 'auto', ...chip('payments this period', String(c.earnedThisPeriodDeals.length)) },
-                      { width: 'auto', ...chip('deals closed',    String(c.monthDeals.length)) }
+                      { width: 'auto', ...chip('payments this period', String(c.earnedThisPeriodDeals.length)) }
                     ],
                     columnGap: 5
                   }
@@ -5712,6 +6167,45 @@
             hLineWidth: () => 0, vLineWidth: () => 0,
             paddingLeft: () => 18, paddingRight: () => 18,
             paddingTop: () => 6, paddingBottom: () => 6
+          }
+        },
+
+        // ── Section: Subscription revenue (client-paid) ─────────
+        {
+          margin: [0, 22, 0, 8],
+          columns: [
+            { width: 8, canvas: [{ type: 'rect', x: 0, y: 4, w: 8, h: 8, color: COL.lime }] },
+            { width: 'auto', text: 'SUBSCRIPTION REVENUE COLLECTED', fontSize: 8.5, bold: true,
+              color: COL.text2, characterSpacing: 1.5, margin: [8, 2, 0, 0] },
+            { width: '*', canvas: [{ type: 'line', x1: 8, y1: 7, x2: 360, y2: 7, lineWidth: 0.5, lineColor: COL.line }] }
+          ]
+        },
+        {
+          table: {
+            widths: ['*', 'auto'],
+            body: [
+              [
+                { text: [
+                    { text: `What clients paid in subscription fees · ${monthName}`, color: COL.text },
+                    { text: '\nCounts every collected payment, including deals below the $1,000 commission target.',
+                      color: COL.text3, fontSize: 8, italics: true }
+                  ]
+                },
+                { text: '$' + fmtExact(c.subRevenueThisPeriod), bold: true, color: COL.text, alignment: 'right', fontSize: 14 }
+              ],
+              [
+                { text: 'Subscription revenue collected · all-time', color: COL.text2 },
+                { text: '$' + fmtExact(c.subRevenueAllTime), color: COL.text2, alignment: 'right' }
+              ]
+            ]
+          },
+          layout: {
+            fillColor: () => COL.surface2,
+            hLineColor: () => COL.lineSoft, vLineColor: () => null,
+            hLineWidth: (i, node) => i > 0 && i < node.table.body.length ? 0.4 : 0,
+            vLineWidth: () => 0,
+            paddingLeft: () => 18, paddingRight: () => 18,
+            paddingTop: () => 8, paddingBottom: () => 8
           }
         },
 
@@ -6531,6 +7025,7 @@
   async function init() {
     await initSupabase();
     await loadData();
+    await bootstrapActivityBanner();
 
     dealBillingDropdown = setupDropdown('dealBilling');
     VoiceInput.init();
@@ -6581,6 +7076,11 @@
 
     document.getElementById('verifyBannerBtn').addEventListener('click', startVerificationFlow);
     document.getElementById('verifyHistoryToggle').addEventListener('click', toggleVerificationHistory);
+
+    document.getElementById('activityBannerDismiss').addEventListener('click', () => {
+      _activityBannerData = null;
+      renderActivityBanner();
+    });
 
     applyBreakdownState();
 
