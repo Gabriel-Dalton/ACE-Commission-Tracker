@@ -5823,6 +5823,12 @@
         planPickerState.tab = 'platform';
         planPickerState.coverage = ddState.dealPlan.startsWith('unlimited_') ? 'unlimited' : 'single';
       }
+    } else {
+      // Fresh form (new deal or new subscription) — clear stale picker state
+      // so the previous deal's tab / coverage / custom draft don't leak in.
+      planPickerState.tab = 'platform';
+      planPickerState.coverage = 'single';
+      planPickerState.customDraft = { billing: 'monthly', mrr: '', category: 'platform' };
     }
 
     openModal({
