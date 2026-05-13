@@ -40,14 +40,52 @@ create table if not exists settings (
   updated_at  timestamptz default now()
 );
 
+-- Monthly verification queue: each row is one (deal, billing month) pending
+-- a "is this client still with us?" check. Populated by the
+-- queue-verifications GitHub Action; consumed and deleted by the dashboard
+-- when Gabriel confirms or cancels. Unique on (deal_id, period_month) so
+-- the action is idempotent and re-runs never double-queue.
+create table if not exists pending_verifications (
+  id            bigserial primary key,
+  deal_id       text not null,
+  period_month  text not null,
+  queued_at     timestamptz default now(),
+  unique (deal_id, period_month)
+);
+create index if not exists pending_verifications_deal_idx on pending_verifications(deal_id);
+
+-- Immutable audit log of every verification decision. Persists past deletion
+-- of the deal (deal_name is denormalized) so the "transparent proof that I
+-- said that" trail survives indefinitely.
+create table if not exists verification_log (
+  id            bigserial primary key,
+  deal_id       text not null,
+  deal_name     text not null,
+  decision      text not null check (decision in ('confirmed_active', 'marked_cancelled', 'skipped')),
+  period_month  text not null,
+  verified_at   timestamptz default now(),
+  notes         text
+);
+create index if not exists verification_log_deal_idx     on verification_log(deal_id);
+create index if not exists verification_log_verified_idx on verification_log(verified_at desc);
+
+-- Stamp on the deal so the dashboard can show "last reviewed" at a glance.
+alter table deals add column if not exists last_verified_at timestamptz;
+
 -- Row Level Security: enabled but permissive for the publishable key.
 -- This is appropriate for a single-user personal tracker.
 -- If you ever expose this app publicly, swap these for auth.uid()-scoped policies.
-alter table deals    enable row level security;
-alter table settings enable row level security;
+alter table deals                  enable row level security;
+alter table settings               enable row level security;
+alter table pending_verifications  enable row level security;
+alter table verification_log       enable row level security;
 
-drop policy if exists "deals all anon"    on deals;
-drop policy if exists "settings all anon" on settings;
+drop policy if exists "deals all anon"                  on deals;
+drop policy if exists "settings all anon"               on settings;
+drop policy if exists "pending_verifications all anon"  on pending_verifications;
+drop policy if exists "verification_log all anon"       on verification_log;
 
-create policy "deals all anon"    on deals    for all to anon using (true) with check (true);
-create policy "settings all anon" on settings for all to anon using (true) with check (true);
+create policy "deals all anon"                  on deals                  for all to anon using (true) with check (true);
+create policy "settings all anon"               on settings               for all to anon using (true) with check (true);
+create policy "pending_verifications all anon"  on pending_verifications  for all to anon using (true) with check (true);
+create policy "verification_log all anon"       on verification_log       for all to anon using (true) with check (true);
