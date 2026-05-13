@@ -2630,6 +2630,111 @@
   }
   .voice-overlay .voice-cancel:hover { background: rgba(255, 255, 255, 0.2); }
 
+  /* FORM-LEVEL VOICE CAPTURE ("say everything at once") */
+  .voice-form-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--text-2);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.12s, color 0.12s, border-color 0.12s, transform 0.1s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .voice-form-btn:hover { background: var(--surface-2); color: var(--text); border-color: var(--line-2); }
+  .voice-form-btn:active { transform: scale(0.97); }
+  .voice-form-btn[hidden] { display: none; }
+  .voice-form-btn.listening {
+    background: var(--accent-soft);
+    border-color: var(--accent-line);
+    color: var(--accent-strong);
+    animation: voicePulse 1.4s ease-in-out infinite;
+  }
+  .voice-form-btn svg { flex-shrink: 0; }
+  .voice-form-btn .label { letter-spacing: 0.02em; }
+
+  .voice-review {
+    margin-top: 14px;
+    padding: 14px 16px;
+    border: 1px solid var(--accent-line);
+    background: var(--accent-soft);
+    border-radius: var(--radius);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .voice-review[hidden] { display: none; }
+  .voice-review-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .voice-review-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--accent-strong);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-weight: 600;
+  }
+  .voice-review-close {
+    background: transparent;
+    border: none;
+    color: var(--text-3);
+    cursor: pointer;
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  .voice-review-close:hover { background: rgba(0,0,0,0.06); color: var(--text); }
+  .voice-review-transcript {
+    font-size: 13px;
+    color: var(--text);
+    font-style: italic;
+    line-height: 1.45;
+  }
+  .voice-review-fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 8px 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+  }
+  .voice-review-field {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    line-height: 1.3;
+  }
+  .voice-review-field .vk {
+    color: var(--text-3);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .voice-review-field .vv {
+    color: var(--text);
+    font-weight: 500;
+    word-break: break-word;
+  }
+  .voice-review-field .vv.missing { color: var(--amber); font-weight: 600; }
+  .voice-review-notes {
+    font-size: 12px;
+    color: var(--text-2);
+    line-height: 1.4;
+  }
+  .voice-review-notes .vw {
+    color: var(--amber);
+    font-weight: 500;
+  }
+
   /* RESPONSIVE */
   @media (max-width: 1100px) {
     .hero-grid { grid-template-columns: 1fr; gap: 24px; }
@@ -2852,6 +2957,13 @@
 
   <div class="section-head">
     <div class="section-title"><span class="num">01</span><span>Log a Deal</span></div>
+    <button type="button" class="voice-form-btn" id="voiceFormBtn" hidden aria-label="Dictate the whole deal" title="Say the deal in one sentence — client, MRR, plan, billing, date">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="6" y="2" width="4" height="8" rx="2"/>
+        <path d="M3.5 7.5a4.5 4.5 0 009 0M8 12v2.5M5.5 14.5h5"/>
+      </svg>
+      <span class="label">Voice fill</span>
+    </button>
   </div>
   <div class="add-deal">
     <div class="sub-banner" id="subBanner" hidden>
@@ -2942,6 +3054,15 @@
           </svg>
         </button>
       </div>
+    </div>
+    <div class="voice-review" id="voiceReview" hidden>
+      <div class="voice-review-head">
+        <span class="voice-review-title">Voice fill — review before adding</span>
+        <button type="button" class="voice-review-close" id="voiceReviewClose" aria-label="Dismiss review">Dismiss</button>
+      </div>
+      <div class="voice-review-transcript" id="voiceReviewTranscript">—</div>
+      <div class="voice-review-fields" id="voiceReviewFields"></div>
+      <div class="voice-review-notes" id="voiceReviewNotes" hidden></div>
     </div>
   </div>
 
@@ -6020,6 +6141,599 @@
     return { init, supported };
   })();
 
+  // ── FormVoice ───────────────────────────────────────────────────────────
+  // "Say everything in one breath" — capture a single utterance describing
+  // the whole deal, then extract MRR, plan, billing, date, and client name
+  // deterministically (no AI/API). Shows a review banner so the user can see
+  // exactly what was filled before submitting.
+  const FormVoice = (() => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const supported = !!SR;
+    let recog = null;
+    let listening = false;
+    let lastTranscript = '';
+
+    // Shared number-word table (mirrors VoiceInput's, kept local so the
+    // modules stay decoupled).
+    const NUM_WORDS = {
+      zero:0, oh:0, one:1, two:2, to:2, too:2, three:3, four:4, for:4, five:5,
+      six:6, seven:7, eight:8, ate:8, nine:9, ten:10, eleven:11, twelve:12,
+      thirteen:13, fourteen:14, fifteen:15, sixteen:16, seventeen:17,
+      eighteen:18, nineteen:19, twenty:20, thirty:30, forty:40, fifty:50,
+      sixty:60, seventy:70, eighty:80, ninety:90
+    };
+    const SCALES = { hundred:100, thousand:1000, million:1000000 };
+
+    function wordsToNumber(text) {
+      const tokens = String(text).toLowerCase().replace(/[,.\-]/g, ' ').split(/\s+/).filter(Boolean);
+      let total = 0, current = 0, sawAnyWord = false;
+      for (const tok of tokens) {
+        if (tok in NUM_WORDS)       { current += NUM_WORDS[tok]; sawAnyWord = true; }
+        else if (tok === 'hundred') { current = (current || 1) * 100; sawAnyWord = true; }
+        else if (tok in SCALES)     { total += (current || 1) * SCALES[tok]; current = 0; sawAnyWord = true; }
+        else if (/^\d+$/.test(tok)) { current += parseInt(tok, 10); sawAnyWord = true; }
+      }
+      const result = total + current;
+      return (sawAnyWord && result > 0) ? result : null;
+    }
+
+    // Strip the most common filler so name extraction doesn't trip on it.
+    function preclean(text) {
+      return text
+        .replace(/\bm\.?\s*r\.?\s*r\.?\b/gi, 'MRR')   // "m r r" → "MRR"
+        .replace(/\bu\.?\s*s\.?\s*d\.?\b/gi, 'USD')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    // ─── MRR ──────────────────────────────────────────────────────────────
+    function extractMRR(text, lower) {
+      // Pattern 1: "$359", "$1,099.50"
+      let m = text.match(/\$\s*([\d,]+(?:\.\d+)?)/);
+      if (m) {
+        const n = parseFloat(m[1].replace(/,/g, ''));
+        if (n > 0 && n < 1000000) return n;
+      }
+      // Pattern 2: "359 dollars" / "1099 USD"
+      m = lower.match(/([\d,]+(?:\.\d+)?)\s*(?:us\s*)?(?:dollars?|usd|bucks)\b/);
+      if (m) {
+        const n = parseFloat(m[1].replace(/,/g, ''));
+        if (n > 0 && n < 1000000) return n;
+      }
+      // Pattern 3: "MRR of 359" / "MRR is 359" / "MRR 359"
+      m = lower.match(/mrr\s*(?:of|is|at|=)?\s*\$?\s*([\d,]+(?:\.\d+)?)/);
+      if (m) {
+        const n = parseFloat(m[1].replace(/,/g, ''));
+        if (n > 0 && n < 1000000) return n;
+      }
+      // Pattern 4: "359 MRR" or "359 per month"
+      m = lower.match(/([\d,]+(?:\.\d+)?)\s*(?:mrr|per\s+month|a\s+month|monthly|\/\s*month|\/mo)\b/);
+      if (m) {
+        const n = parseFloat(m[1].replace(/,/g, ''));
+        if (n > 0 && n < 1000000) return n;
+      }
+      // Pattern 5: spoken numbers right before MRR cue ("three fifty nine MRR")
+      m = lower.match(/((?:[a-z]+\s+){1,6}?)(mrr|per\s+month|a\s+month|monthly|dollars?\s*(?:per\s+month|monthly))/);
+      if (m) {
+        const n = wordsToNumber(m[1]);
+        if (n && n > 0 && n < 1000000) return n;
+      }
+      return null;
+    }
+
+    // ─── Billing ──────────────────────────────────────────────────────────
+    function extractBilling(lower) {
+      const hasAnnualKeyword =
+        /\b(annual(?:ly)?(?:\s+upfront)?|yearly|per\s+year|a\s+year|upfront(?:\s+annual)?|one[-\s]?time\s+annual)\b/.test(lower);
+      const hasMonthlyKeyword =
+        /\b(monthly|per\s+month|a\s+month|each\s+month|month[-\s]to[-\s]month|going\s+monthly|on\s+a\s+monthly|recurring\s+monthly)\b/.test(lower);
+
+      if (hasAnnualKeyword && !hasMonthlyKeyword) return { value: 'annual', confident: true };
+      if (hasMonthlyKeyword && !hasAnnualKeyword) return { value: 'monthly', confident: true };
+      if (hasMonthlyKeyword && hasAnnualKeyword) {
+        // "annual upfront ... going monthly" — second one wins (likely a correction)
+        const lastMonthly = lower.lastIndexOf('month');
+        const lastAnnual = Math.max(lower.lastIndexOf('annual'), lower.lastIndexOf('yearly'), lower.lastIndexOf('upfront'), lower.lastIndexOf('per year'), lower.lastIndexOf('a year'));
+        return { value: lastAnnual > lastMonthly ? 'annual' : 'monthly', confident: false };
+      }
+      return { value: 'monthly', confident: false }; // sensible default
+    }
+
+    // ─── Plan ─────────────────────────────────────────────────────────────
+    // Decide a plan key from the catalog based on:
+    //  - explicit category cues ("managed", "platform", "unlimited", "single domain")
+    //  - explicit tier names ("Pro 2500", "Scale", "Enterprise S")
+    //  - page count ("500 pages", "10000 pages")
+    //  - the MRR (matched against catalog price)
+    // Falls back to CUSTOM_* if the word "custom" is used or nothing matches.
+    function extractPlan(lower, mrr) {
+      const isManagedKW = /\b(managed|accessibility)\b/.test(lower);
+      const isUnlimited = /\bunlimited(?:\s+(?:domains?|sites?))?\b/.test(lower);
+      const isSingleKW  = /\bsingle\s+(?:domain|site)\b/.test(lower);
+      const saidCustom  = /\bcustom\s+(?:plan|deal|tier|price|rate)?\b|\boff[-\s]catalog\b/.test(lower);
+      const isEnterprise = /\benterprise\b/.test(lower);
+      const isPlatformKW = /\bplatform\b/.test(lower);
+
+      // Page count (handles "500 pages", "1,000 pages", "ten thousand pages")
+      let pageCount = null;
+      let m = lower.match(/(\d[\d,]*)\s*pages?\b/);
+      if (m) {
+        const n = parseInt(m[1].replace(/,/g, ''), 10);
+        if (!isNaN(n)) pageCount = n;
+      } else {
+        m = lower.match(/((?:[a-z]+\s+){1,4}?)pages?\b/);
+        if (m) {
+          const n = wordsToNumber(m[1]);
+          if (n) pageCount = n;
+        }
+      }
+
+      // Pro tier explicit ("Pro 2500", "Pro 10000")
+      let proTier = null;
+      m = lower.match(/\bpro\s+(\d[\d,]*)/);
+      if (m) proTier = parseInt(m[1].replace(/,/g, ''), 10);
+      else {
+        m = lower.match(/\bpro\s+((?:[a-z]+\s+){1,4}?)(?=$|[a-z]{0,12}\b|\d)/);
+        if (m) { const n = wordsToNumber(m[1]); if (n) proTier = n; }
+      }
+
+      // Self-serve hits — these are exact, so they win over fuzzy matching.
+      if (/\blite\b/.test(lower) && !isManagedKW && !isUnlimited)    return tier(PLAN_CATALOG.selfServe.find(p => p.key === 'lite'));
+      if (/\bstarter\b/.test(lower) && !isManagedKW && !isUnlimited) return tier(PLAN_CATALOG.selfServe.find(p => p.key === 'starter'));
+      if (/\bgrowth\b/.test(lower) && !isManagedKW && !isUnlimited)  return tier(PLAN_CATALOG.selfServe.find(p => p.key === 'growth'));
+
+      // Pages-from-catalog lookup helper
+      const pagesEq = (p, n) => parseInt(p.pages.replace(/,/g, ''), 10) === n;
+
+      // Managed family
+      if (isManagedKW) {
+        const groups = isEnterprise
+          ? [PLAN_CATALOG.managedEnterprise, PLAN_CATALOG.managedStandard]
+          : [PLAN_CATALOG.managedStandard, PLAN_CATALOG.managedEnterprise];
+        for (const g of groups) {
+          if (pageCount) {
+            const hit = g.find(p => pagesEq(p, pageCount));
+            if (hit) return tier(hit);
+          }
+        }
+        // "Managed Scale", "Small Sites", etc.
+        if (/\bscale\b/.test(lower))  { const h = PLAN_CATALOG.managedStandard.find(p => p.key === 'managed_scale');  if (h) return tier(h); }
+        if (/\bsmall\b/.test(lower))  { const h = PLAN_CATALOG.managedStandard.find(p => p.key === 'managed_small');  if (h) return tier(h); }
+        if (/\bmedium\b/.test(lower)) { const h = PLAN_CATALOG.managedStandard.find(p => p.key === 'managed_medium'); if (h) return tier(h); }
+        if (/\blarge\b/.test(lower))  { const h = PLAN_CATALOG.managedStandard.find(p => p.key === 'managed_large');  if (h) return tier(h); }
+        // Enterprise sizing: "Enterprise S", "Enterprise XL"
+        const eMatch = lower.match(/\benterprise\s+(\d?xl|s|m|l|small|medium|large)\b/);
+        if (eMatch) {
+          const sizeMap = { s:'managed_ent_s', small:'managed_ent_s', m:'managed_ent_m', medium:'managed_ent_m',
+            l:'managed_ent_l', large:'managed_ent_l', xl:'managed_ent_xl', '2xl':'managed_ent_2xl',
+            '3xl':'managed_ent_3xl', '4xl':'managed_ent_4xl', '5xl':'managed_ent_5xl',
+            '6xl':'managed_ent_6xl', '7xl':'managed_ent_7xl' };
+          const key = sizeMap[eMatch[1].toLowerCase()];
+          if (key) { const h = PLAN_CATALOG.managedEnterprise.find(p => p.key === key); if (h) return tier(h); }
+        }
+        // Price-based match as a last resort within Managed
+        if (mrr) {
+          const all = [...PLAN_CATALOG.managedStandard, ...PLAN_CATALOG.managedEnterprise];
+          const hit = all.find(p => p.price === mrr);
+          if (hit) return tier(hit);
+        }
+        if (saidCustom) return tier({ key: CUSTOM_MANAGED, name: PLAN_LABELS[CUSTOM_MANAGED] }, true);
+        return tier({ key: CUSTOM_MANAGED, name: PLAN_LABELS[CUSTOM_MANAGED] }, true);
+      }
+
+      // Platform Unlimited family
+      if (isUnlimited) {
+        if (pageCount) {
+          const hit = PLAN_CATALOG.platformUnlimited.find(p => pagesEq(p, pageCount));
+          if (hit) return tier(hit);
+        }
+        if (mrr) {
+          const hit = PLAN_CATALOG.platformUnlimited.find(p => p.price === mrr);
+          if (hit) return tier(hit);
+        }
+        if (saidCustom) return tier({ key: CUSTOM_PLATFORM, name: PLAN_LABELS[CUSTOM_PLATFORM] }, true);
+        return tier({ key: CUSTOM_PLATFORM, name: PLAN_LABELS[CUSTOM_PLATFORM] }, true);
+      }
+
+      // Platform Single (Pro tiers + Scale)
+      if (proTier !== null) {
+        const wantKey = 'pro' + proTier;
+        let hit = PLAN_CATALOG.platformSingle.find(p => p.key === wantKey);
+        if (!hit) hit = PLAN_CATALOG.platformSingle.find(p => pagesEq(p, proTier));
+        if (hit) return tier(hit);
+      }
+      if (/\bscale\b/.test(lower) && !isManagedKW) {
+        const h = PLAN_CATALOG.platformSingle.find(p => p.key === 'scale');
+        if (h) return tier(h);
+      }
+      if (isSingleKW && pageCount) {
+        const hit = PLAN_CATALOG.platformSingle.find(p => pagesEq(p, pageCount));
+        if (hit) return tier(hit);
+      }
+      if ((isSingleKW || isPlatformKW) && mrr) {
+        const hit = PLAN_CATALOG.platformSingle.find(p => p.price === mrr);
+        if (hit) return tier(hit);
+      }
+
+      // Pure price match — only if MRR matches a catalog price uniquely.
+      if (mrr) {
+        const all = [
+          ...PLAN_CATALOG.platformUnlimited, ...PLAN_CATALOG.platformSingle,
+          ...PLAN_CATALOG.managedStandard,    ...PLAN_CATALOG.managedEnterprise
+        ];
+        const hits = all.filter(p => p.price === mrr);
+        if (hits.length === 1) return tier(hits[0]);
+      }
+
+      // Explicit "custom" fallback
+      if (saidCustom) {
+        const key = isManagedKW ? CUSTOM_MANAGED : CUSTOM_PLATFORM;
+        return tier({ key, name: PLAN_LABELS[key] }, true);
+      }
+
+      return null;
+
+      function tier(t, isCustom = false) {
+        if (!t) return null;
+        return {
+          key: t.key,
+          label: PLAN_LABELS[t.key] || t.name,
+          price: t.price ?? null,
+          isCustom
+        };
+      }
+    }
+
+    // ─── Date ─────────────────────────────────────────────────────────────
+    const MONTHS = ['january','february','march','april','may','june','july','august','september','october','november','december'];
+    const MONTH_ABBR = { jan:0, feb:1, mar:2, apr:3, may:4, jun:5, jul:6, aug:7, sep:8, sept:8, oct:9, nov:10, dec:11 };
+
+    function toISO(d) {
+      if (!d || isNaN(d.getTime())) return null;
+      const y = d.getFullYear();
+      const m = String(d.getMonth()+1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    }
+
+    function extractDate(text, lower) {
+      const today = new Date();
+
+      // ISO yyyy-mm-dd
+      let m = text.match(/\b(\d{4})-(\d{1,2})-(\d{1,2})\b/);
+      if (m) {
+        const d = new Date(parseInt(m[1]), parseInt(m[2])-1, parseInt(m[3]));
+        if (!isNaN(d.getTime())) return toISO(d);
+      }
+
+      // Spelled month + day (+ optional year): "April 21st", "Apr 21 2026"
+      for (let i = 0; i < MONTHS.length; i++) {
+        const re = new RegExp(`\\b${MONTHS[i]}\\b\\s+(\\d{1,2})(?:st|nd|rd|th)?(?:,?\\s+(\\d{4}))?`, 'i');
+        const mm = text.match(re);
+        if (mm) {
+          const day = parseInt(mm[1], 10);
+          const year = mm[2] ? parseInt(mm[2], 10) : today.getFullYear();
+          if (day >= 1 && day <= 31) return toISO(new Date(year, i, day));
+        }
+      }
+      for (const abbr in MONTH_ABBR) {
+        const re = new RegExp(`\\b${abbr}\\.?\\s+(\\d{1,2})(?:st|nd|rd|th)?(?:,?\\s+(\\d{4}))?`, 'i');
+        const mm = text.match(re);
+        if (mm) {
+          const day = parseInt(mm[1], 10);
+          const year = mm[2] ? parseInt(mm[2], 10) : today.getFullYear();
+          if (day >= 1 && day <= 31) return toISO(new Date(year, MONTH_ABBR[abbr], day));
+        }
+      }
+
+      // Numeric M/D or M/D/Y or M-D-Y
+      m = text.match(/\b(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{2,4}))?\b/);
+      if (m) {
+        const month = parseInt(m[1], 10);
+        const day = parseInt(m[2], 10);
+        let year = m[3] ? parseInt(m[3], 10) : today.getFullYear();
+        if (year < 100) year += 2000;
+        if (month >= 1 && month <= 12 && day >= 1 && day <= 31) return toISO(new Date(year, month-1, day));
+      }
+
+      // Relative
+      if (/\btoday\b/.test(lower))     return toISO(today);
+      if (/\byesterday\b/.test(lower)) { const d = new Date(today); d.setDate(today.getDate()-1); return toISO(d); }
+      if (/\btomorrow\b/.test(lower))  { const d = new Date(today); d.setDate(today.getDate()+1); return toISO(d); }
+
+      return null;
+    }
+
+    // ─── Client name ──────────────────────────────────────────────────────
+    // Strategy:
+    //   1. "client name X" / "customer X" / "company X" / "account X"
+    //   2. The first noun phrase before "is/are/signed/wants/gives/going/just/has"
+    //   3. The opening capitalized run-up to a verb
+    // We keep the original casing so names stay readable.
+    function extractName(text) {
+      // Pattern A: explicit cue
+      let m = text.match(/(?:client(?:\s+name)?|customer|company|account)\s+(?:is\s+)?["']?([A-Z][\w &.,'\-]{1,80}?)["']?(?=[,.]|\s+(?:is|are|on|paying|gives|giving|wants|signed|starts?|started|goes|going|with|for|at|currently|just|has|have)\b|\s+\$|\s+MRR\b|$)/i);
+      if (m) return cleanName(m[1]);
+
+      // Pattern B: <NAME> + verb at the start of the utterance
+      m = text.match(/^["']?(?:add\s+|log\s+|new\s+(?:client\s+|customer\s+|deal\s+for\s+)?)?["']?((?:The\s+)?[A-Z][\w'\-]*(?:\s+(?:&|and|of|the|de|la|le|du)?\s*[A-Z][\w'\-.]+){0,5})\s+(?:is|are|has|have|signed|wants?|gives?|giving|going|just|started|starts|takes|will|pays?|paying|currently|with|on)\b/);
+      if (m) return cleanName(m[1]);
+
+      // Pattern C: comma/dollar/MRR-terminated name at the start
+      //   "Acme Corp, $599 MRR, ..." or "Lift Box Inc. $899 MRR ..."
+      m = text.match(/^["']?(?:add\s+|log\s+|new\s+(?:client\s+|customer\s+|deal\s+for\s+)?)?["']?((?:The\s+)?[A-Z][\w'\-.]*(?:\s+(?:&|and|of|the|de|la|le|du)?\s*[A-Z][\w'\-.]+){0,5})\s*(?:[,;.]|\s+(?:\$|MRR\b|signed up|closed|wants))/);
+      if (m) return cleanName(m[1]);
+
+      // Pattern D: "for <NAME>" or "with <NAME>"
+      m = text.match(/\b(?:for|with)\s+((?:The\s+)?[A-Z][\w'\-]*(?:\s+[A-Z][\w'\-.]+){0,4})\b/);
+      if (m) return cleanName(m[1]);
+
+      return null;
+
+      function cleanName(n) {
+        return n.replace(/\s+(?:is|are|has|have|going|just|signed|wants|gives|giving)$/i, '')
+                .replace(/[.,;:]+$/, '')
+                .trim();
+      }
+    }
+
+    // ─── Currency ─────────────────────────────────────────────────────────
+    function extractCurrency(lower) {
+      if (/\b(united\s+states\s+dollars?|us\s+dollars?|usd)\b/.test(lower)) return 'USD';
+      if (/\b(canadian\s+dollars?|cad)\b/.test(lower))                     return 'CAD';
+      if (/\b(euros?|eur)\b/.test(lower))                                  return 'EUR';
+      if (/\b(pounds?|gbp|sterling)\b/.test(lower))                        return 'GBP';
+      if (/\baustralian\s+dollars?|aud\b/.test(lower))                     return 'AUD';
+      return null;
+    }
+
+    // ─── Main parser ──────────────────────────────────────────────────────
+    function parse(rawText) {
+      const text = preclean(rawText);
+      const lower = text.toLowerCase();
+
+      const result = {
+        transcript: text,
+        name: null,
+        mrr: null,
+        plan: null,
+        planLabel: null,
+        billing: 'monthly',
+        date: null,
+        currency: null,
+        notes: [],
+        warnings: []
+      };
+
+      result.mrr = extractMRR(text, lower);
+      const billing = extractBilling(lower);
+      result.billing = billing.value;
+      if (!billing.confident) result.notes.push('Billing not explicitly detected — defaulted to Monthly');
+
+      const plan = extractPlan(lower, result.mrr);
+      if (plan) {
+        result.plan = plan.key;
+        result.planLabel = plan.label;
+        if (plan.isCustom) result.notes.push('Treated as Custom plan — adjust MRR/category in the picker if needed');
+      } else {
+        result.warnings.push('Could not identify plan — pick one manually');
+      }
+
+      result.date = extractDate(text, lower);
+      if (!result.date) result.notes.push('Close date not detected — defaulted to today');
+
+      result.name = extractName(text);
+      if (!result.name) result.warnings.push('Could not extract client name — type it in');
+
+      result.currency = extractCurrency(lower);
+      if (result.currency && result.currency !== 'USD') {
+        result.warnings.push(`Currency "${result.currency}" mentioned — app only tracks USD; verify the MRR`);
+      }
+
+      if (!result.mrr) result.warnings.push('Could not detect an MRR amount');
+
+      return result;
+    }
+
+    // ─── Fill the form ────────────────────────────────────────────────────
+    function applyToForm(parsed) {
+      if (parsed.name) {
+        const nameEl = document.getElementById('dealName');
+        if (nameEl && !nameEl.readOnly) nameEl.value = parsed.name;
+      }
+      if (parsed.mrr != null) {
+        const mrrEl = document.getElementById('dealMRR');
+        if (mrrEl) mrrEl.value = parsed.mrr;
+      }
+      if (parsed.plan) {
+        // Custom plans need an MRR; setSelectedPlan only auto-fills MRR for catalog plans.
+        if (parsed.plan === CUSTOM_PLATFORM || parsed.plan === CUSTOM_MANAGED) {
+          setSelectedPlan(parsed.plan, parsed.mrr ? { mrrOverride: parsed.mrr } : {});
+        } else {
+          setSelectedPlan(parsed.plan);
+          // setSelectedPlan only auto-fills MRR when the field is empty; if the
+          // user spoke a price that differs from the catalog tier, prefer their value.
+          if (parsed.mrr != null) document.getElementById('dealMRR').value = parsed.mrr;
+        }
+      }
+      if (parsed.billing) {
+        if (dealBillingDropdown) dealBillingDropdown.setValue(parsed.billing);
+        else ddState.dealBilling = parsed.billing;
+      }
+      if (parsed.date) {
+        const dateEl = document.getElementById('dealDate');
+        if (dateEl) dateEl.value = parsed.date;
+      }
+      clearFormError();
+    }
+
+    // ─── Review banner ────────────────────────────────────────────────────
+    function escape(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    function showReview(parsed) {
+      const panel = document.getElementById('voiceReview');
+      const tEl = document.getElementById('voiceReviewTranscript');
+      const fEl = document.getElementById('voiceReviewFields');
+      const nEl = document.getElementById('voiceReviewNotes');
+      if (!panel || !tEl || !fEl || !nEl) return;
+
+      tEl.textContent = '"' + parsed.transcript + '"';
+
+      const billingLabel = parsed.billing === 'annual' ? 'Annual upfront' : 'Monthly';
+      const dateLabel = parsed.date
+        ? new Date(parsed.date + 'T00:00:00').toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' })
+        : '—';
+
+      const rows = [
+        { k: 'Client',  v: parsed.name      || '—', missing: !parsed.name },
+        { k: 'MRR',     v: parsed.mrr != null ? ('$' + parsed.mrr.toLocaleString('en-US')) : '—', missing: parsed.mrr == null },
+        { k: 'Plan',    v: parsed.planLabel || '—', missing: !parsed.plan },
+        { k: 'Billing', v: billingLabel,    missing: false },
+        { k: 'Date',    v: dateLabel,       missing: !parsed.date }
+      ];
+      if (parsed.currency) rows.push({ k: 'Currency', v: parsed.currency, missing: false });
+
+      fEl.innerHTML = rows.map(r => `
+        <div class="voice-review-field">
+          <span class="vk">${escape(r.k)}</span>
+          <span class="vv${r.missing ? ' missing' : ''}">${escape(r.v)}</span>
+        </div>
+      `).join('');
+
+      const noteHTML = [
+        ...parsed.warnings.map(w => `<div class="vw">⚠ ${escape(w)}</div>`),
+        ...parsed.notes.map(n => `<div>· ${escape(n)}</div>`)
+      ].join('');
+      if (noteHTML) { nEl.innerHTML = noteHTML; nEl.hidden = false; }
+      else          { nEl.innerHTML = '';       nEl.hidden = true; }
+
+      panel.hidden = false;
+    }
+
+    function hideReview() {
+      const panel = document.getElementById('voiceReview');
+      if (panel) panel.hidden = true;
+    }
+
+    // ─── Overlay (reuses the existing one) ────────────────────────────────
+    function showOverlay() {
+      const overlay = document.getElementById('voiceOverlay');
+      const targetLabel = document.getElementById('voiceTargetLabel');
+      const transcript  = document.getElementById('voiceTranscript');
+      if (!overlay) return;
+      targetLabel.textContent = 'Full deal — say it all';
+      transcript.textContent = 'Try: "Acme Corp, $599 MRR, Pro 2500 single domain, monthly, started April 21st."';
+      overlay.hidden = false;
+      requestAnimationFrame(() => overlay.classList.add('visible'));
+    }
+    function hideOverlay() {
+      const overlay = document.getElementById('voiceOverlay');
+      if (!overlay) return;
+      overlay.classList.remove('visible');
+      setTimeout(() => { overlay.hidden = true; }, 200);
+    }
+
+    function stop() { if (recog) { try { recog.stop(); } catch(e) {} } }
+
+    function start() {
+      if (!supported) {
+        showToast('Voice input not supported on this browser', 'error');
+        return;
+      }
+      if (listening) { stop(); return; }
+
+      const btn = document.getElementById('voiceFormBtn');
+      lastTranscript = '';
+      listening = true;
+      btn?.classList.add('listening');
+      showOverlay();
+      hideReview();
+
+      recog = new SR();
+      recog.lang = navigator.language || 'en-US';
+      recog.interimResults = true;
+      // Allow long sentences — the platform engine returns final results when the user pauses.
+      recog.continuous = true;
+      recog.maxAlternatives = 1;
+
+      recog.onresult = (e) => {
+        let interim = '', final = '';
+        for (let i = 0; i < e.results.length; i++) {
+          const r = e.results[i];
+          if (r.isFinal) final += r[0].transcript + ' ';
+          else           interim += r[0].transcript + ' ';
+        }
+        lastTranscript = (final + interim).trim();
+        const transcript = document.getElementById('voiceTranscript');
+        if (transcript) transcript.textContent = lastTranscript || 'Listening…';
+      };
+
+      recog.onerror = (e) => {
+        if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+          showToast('Microphone access blocked — enable it in browser settings', 'error');
+        } else if (e.error === 'no-speech') {
+          showToast('No speech detected', 'error');
+        } else if (e.error !== 'aborted') {
+          showToast('Voice error: ' + e.error, 'error');
+        }
+      };
+
+      recog.onend = () => {
+        const btn = document.getElementById('voiceFormBtn');
+        btn?.classList.remove('listening');
+        hideOverlay();
+        listening = false;
+        if (lastTranscript) {
+          const parsed = parse(lastTranscript);
+          applyToForm(parsed);
+          showReview(parsed);
+          const filled = ['name','mrr','plan','date'].filter(k => parsed[k] != null && parsed[k] !== '').length;
+          showToast(`Voice fill — ${filled}/4 fields detected`);
+        }
+        recog = null;
+      };
+
+      try { recog.start(); }
+      catch(e) {
+        showToast('Could not start voice — try again', 'error');
+        const btn = document.getElementById('voiceFormBtn');
+        btn?.classList.remove('listening');
+        hideOverlay();
+        listening = false;
+        recog = null;
+      }
+    }
+
+    function init() {
+      const btn = document.getElementById('voiceFormBtn');
+      if (!btn) return;
+      if (!supported) return; // keep hidden when the browser can't do speech recognition
+      btn.hidden = false;
+      btn.addEventListener('click', (e) => { e.preventDefault(); start(); });
+
+      const closeBtn = document.getElementById('voiceReviewClose');
+      if (closeBtn) closeBtn.addEventListener('click', hideReview);
+
+      // Share Cancel + backdrop click with the per-field voice — whichever
+      // module is currently listening will stop. Discarding the transcript
+      // happens via a flag the onresult handler checks.
+      const cancelBtn = document.getElementById('voiceCancel');
+      if (cancelBtn) cancelBtn.addEventListener('click', () => {
+        if (listening) { lastTranscript = ''; stop(); }
+      });
+      const overlay = document.getElementById('voiceOverlay');
+      if (overlay) overlay.addEventListener('click', (e) => {
+        if (e.target === overlay && listening) { lastTranscript = ''; stop(); }
+      });
+    }
+
+    return { init, supported, parse };
+  })();
+
   function applyBreakdownState() {
     const breakdown = document.getElementById('breakdown');
     const toggle = document.getElementById('breakdownToggle');
@@ -6035,6 +6749,7 @@
 
     dealBillingDropdown = setupDropdown('dealBilling');
     VoiceInput.init();
+    FormVoice.init();
     document.getElementById('rulesBtn').addEventListener('click', openRulesModal);
     document.getElementById('planPickBtn').addEventListener('click', openPlanPickerModal);
 
