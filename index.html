@@ -80,6 +80,74 @@
 
   .container { max-width: 1280px; margin: 0 auto; }
 
+  /* ─── Auth gate ─────────────────────────────────────────────────────────
+     Full-screen Supabase login overlay. The dashboard (.container) stays
+     hidden until a valid session exists, so private data never flashes for an
+     unauthenticated visitor (fail closed). */
+  body.auth-locked { overflow: hidden; }
+  body.auth-locked .container { display: none !important; }
+  .auth-gate { display: none; }
+  body.auth-locked .auth-gate {
+    display: flex;
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background:
+      radial-gradient(1100px 520px at 50% -8%, var(--accent-soft), transparent 60%),
+      var(--bg);
+  }
+  .auth-card {
+    width: 100%;
+    max-width: 384px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    padding: 32px 28px;
+  }
+  .auth-card .brand-mark { margin-bottom: 20px; }
+  .auth-title {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .auth-sub {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text-3);
+    margin-bottom: 22px;
+  }
+  .auth-field { margin-bottom: 14px; }
+  .auth-field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-2);
+    margin-bottom: 6px;
+  }
+  .auth-error {
+    margin-bottom: 14px;
+    padding: 9px 12px;
+    border-radius: var(--radius);
+    font-size: 12.5px;
+    line-height: 1.4;
+    color: var(--red);
+    background: rgba(185, 28, 28, 0.08);
+    border: 1px solid rgba(185, 28, 28, 0.22);
+  }
+  .auth-submit { width: 100%; justify-content: center; margin-top: 4px; }
+  .auth-checking { font-size: 13px; color: var(--text-3); padding: 6px 0; }
+  .auth-form, .auth-checking, .auth-fatal { display: none; }
+  .auth-gate[data-state="checking"] .auth-checking { display: block; }
+  .auth-gate[data-state="login"] .auth-form { display: block; }
+  .auth-gate[data-state="error"] .auth-fatal { display: block; }
+
   button { font-family: inherit; }
 
   /* HEADER */
@@ -3096,7 +3164,41 @@
   }
 </style>
 </head>
-<body>
+<body class="auth-locked">
+
+<!-- Login gate. Shown until a valid Supabase session exists; the dashboard
+     markup below stays hidden behind it (see body.auth-locked rules). -->
+<div id="authGate" class="auth-gate" data-state="checking" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+  <div class="auth-card">
+    <div class="brand-mark">
+      <span class="dot"></span>
+      <span>ACE · Commission Tracker</span>
+    </div>
+
+    <div class="auth-checking">Checking your session…</div>
+
+    <form class="auth-form" id="authForm" autocomplete="on">
+      <h1 class="auth-title" id="authTitle">Sign in</h1>
+      <p class="auth-sub">This dashboard is private. Please sign in to continue.</p>
+      <div class="auth-field">
+        <label for="authEmail">Email</label>
+        <input class="input" type="email" id="authEmail" name="email" autocomplete="username" autocapitalize="off" spellcheck="false" required>
+      </div>
+      <div class="auth-field">
+        <label for="authPassword">Password</label>
+        <input class="input" type="password" id="authPassword" name="password" autocomplete="current-password" required>
+      </div>
+      <div class="auth-error" id="authError" role="alert" hidden></div>
+      <button class="btn btn-primary auth-submit" type="submit" id="authSubmit">Sign in</button>
+    </form>
+
+    <div class="auth-fatal">
+      <h1 class="auth-title">Unavailable</h1>
+      <p class="auth-sub">Couldn't reach the server to sign you in. Refresh the page or try again in a moment.</p>
+    </div>
+  </div>
+</div>
+
 <div class="container">
 
   <header class="header">
@@ -3129,6 +3231,12 @@
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="8" cy="8" r="6.5"/>
           <path d="M8 5.5v3M8 11h.01"/>
+        </svg>
+      </button>
+      <button class="icon-btn" id="signOutBtn" title="Sign out" aria-label="Sign out">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 2.5H4a1.5 1.5 0 0 0-1.5 1.5v8A1.5 1.5 0 0 0 4 13.5h2"/>
+          <path d="M10.5 11l3-3-3-3M13.5 8H6.5"/>
         </svg>
       </button>
     </div>
@@ -7026,10 +7134,109 @@
     label.textContent = breakdownOpen ? 'Hide' : 'Show';
   }
 
-  async function init() {
-    await initSupabase();
+  // ─── Auth gate ───────────────────────────────────────────────────────────
+  // The dashboard sits behind a Supabase email/password login. App markup is
+  // hidden (body.auth-locked) until a valid session exists, and every data
+  // request then runs as the `authenticated` role so RLS can scope access.
+  let _appStarted = false;
+
+  function showAuthGate(state /* 'checking' | 'login' | 'error' */) {
+    document.body.classList.add('auth-locked');
+    const gate = document.getElementById('authGate');
+    if (gate) gate.dataset.state = state || 'login';
+    if ((state || 'login') === 'login') {
+      const email = document.getElementById('authEmail');
+      if (email && !email.value) email.focus();
+    }
+  }
+  function hideAuthGate() {
+    document.body.classList.remove('auth-locked');
+  }
+  function setAuthError(msg) {
+    const el = document.getElementById('authError');
+    if (!el) return;
+    el.textContent = msg || '';
+    el.hidden = !msg;
+  }
+
+  // On sign-out, drop in-memory + cached data so nothing private lingers on a
+  // shared machine.
+  async function clearLocalData() {
+    deals = [];
+    try {
+      await cache.set('ct-deals-v3', '[]');
+      await cache.set('ct-deals-v2', '[]');
+    } catch(e) {}
+    try { render(); } catch(e) {}
+  }
+
+  // Reveal + boot the dashboard exactly once per session.
+  async function enterApp() {
+    if (_appStarted) return;
+    _appStarted = true;
+    hideAuthGate();
     await loadData();
     await bootstrapActivityBanner();
+    render();
+  }
+
+  function applyAuthState(session) {
+    if (session) {
+      enterApp();
+    } else {
+      _appStarted = false;
+      showAuthGate('login');
+    }
+  }
+
+  function setupAuthGate() {
+    const form = document.getElementById('authForm');
+    if (form) form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!supa) { setAuthError('Server unavailable — try again in a moment.'); return; }
+      const email = document.getElementById('authEmail').value.trim();
+      const password = document.getElementById('authPassword').value;
+      const btn = document.getElementById('authSubmit');
+      setAuthError('');
+      btn.disabled = true; btn.textContent = 'Signing in…';
+      let error;
+      try {
+        ({ error } = await supa.auth.signInWithPassword({ email, password }));
+      } catch(err) { error = err; }
+      btn.disabled = false; btn.textContent = 'Sign in';
+      if (error) {
+        const m = error.message || '';
+        setAuthError(/invalid login credentials/i.test(m)
+          ? 'Wrong email or password.'
+          : /email not confirmed/i.test(m)
+            ? 'This account’s email is not confirmed yet.'
+            : (m || 'Sign in failed.'));
+        return;
+      }
+      document.getElementById('authPassword').value = '';
+      // onAuthStateChange → applyAuthState reveals the dashboard.
+    });
+
+    const out = document.getElementById('signOutBtn');
+    if (out) out.addEventListener('click', async () => {
+      try { if (supa) await supa.auth.signOut(); } catch(e) {}
+      await clearLocalData();
+      // onAuthStateChange → applyAuthState(null) shows the gate.
+    });
+  }
+
+  async function init() {
+    await initSupabase();
+    setupAuthGate();
+
+    if (!supa) {
+      // No Supabase config reachable — can't authenticate, so fail closed.
+      showAuthGate('error');
+    } else {
+      supa.auth.onAuthStateChange((_event, session) => applyAuthState(session));
+      const { data: { session } } = await supa.auth.getSession();
+      applyAuthState(session);
+    }
 
     dealBillingDropdown = setupDropdown('dealBilling');
     VoiceInput.init();
