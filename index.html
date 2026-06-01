@@ -205,6 +205,7 @@
   }
   @keyframes auth-spin { to { transform: rotate(360deg); } }
   .auth-foot {
+    justify-content: center;
     align-items: center;
     gap: 7px;
     margin-top: 20px;
@@ -217,6 +218,13 @@
     color: var(--text-4);
   }
   .auth-foot svg { flex-shrink: 0; color: var(--accent-strong); }
+  .auth-form .auth-title { margin-bottom: 20px; }
+  /* Footer reflects the real transport: it only claims "encrypted" on https. */
+  .auth-foot .ico-unlock { display: none; }
+  .auth-foot[data-secure="0"] { color: var(--amber); }
+  .auth-foot[data-secure="0"] svg { color: var(--amber); }
+  .auth-foot[data-secure="0"] .ico-lock { display: none; }
+  .auth-foot[data-secure="0"] .ico-unlock { display: block; }
   .auth-form, .auth-checking, .auth-fatal, .auth-foot { display: none; }
   .auth-gate[data-state="checking"] .auth-checking { display: flex; }
   .auth-gate[data-state="login"] .auth-form { display: block; }
@@ -3261,7 +3269,6 @@
 
     <form class="auth-form" id="authForm" autocomplete="on">
       <h1 class="auth-title" id="authTitle">Sign in</h1>
-      <p class="auth-sub">Private application — authorized access only.</p>
       <div class="auth-field">
         <label for="authEmail">Email</label>
         <input class="input" type="email" id="authEmail" name="email" autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false" inputmode="email" required>
@@ -3289,12 +3296,16 @@
       <p class="auth-sub">Couldn't reach the authentication server. Refresh the page or try again in a moment.</p>
     </div>
 
-    <div class="auth-foot">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <div class="auth-foot" id="authSecure" data-secure="1">
+      <svg class="ico-lock" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <rect x="5" y="11" width="14" height="9" rx="2"/>
         <path d="M8 11V8a4 4 0 0 1 8 0v3"/>
       </svg>
-      Encrypted connection
+      <svg class="ico-unlock" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="5" y="11" width="14" height="9" rx="2"/>
+        <path d="M8 11V7a4 4 0 0 1 7-2.6"/>
+      </svg>
+      <span id="authSecureLabel">Encrypted connection</span>
     </div>
   </div>
 </div>
@@ -7341,6 +7352,16 @@
       pw.addEventListener('keydown', capsSync);
       pw.addEventListener('keyup', capsSync);
       pw.addEventListener('blur', () => { caps.dataset.on = '0'; });
+    }
+
+    // Footer reflects the real transport — never a hardcoded claim. Reads the
+    // actual page protocol so it can't say "encrypted" over plain http.
+    const footEl = document.getElementById('authSecure');
+    if (footEl) {
+      const secure = location.protocol === 'https:';
+      footEl.dataset.secure = secure ? '1' : '0';
+      const lbl = document.getElementById('authSecureLabel');
+      if (lbl) lbl.textContent = secure ? 'Encrypted connection' : 'Not encrypted';
     }
 
     const out = document.getElementById('signOutBtn');
