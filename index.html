@@ -13,30 +13,34 @@
 <script src="config.local.js" onerror="void 0"></script>
 <style>
   :root {
-    --bg: #fafaf7;
-    --bg-tint: #f4f4ef;
+    --bg: #f7f8f7;
+    --bg-tint: #eef1ee;
     --surface: #ffffff;
-    --surface-2: #f7f7f3;
-    --surface-3: #ededea;
-    --line: #e8e8e2;
-    --line-2: #d6d6cf;
-    --line-3: #c1c1b9;
-    --text: #15151a;
-    --text-2: #4a4a52;
-    --text-3: #82828a;
-    --text-4: #b0b0b6;
-    --accent: #c4e84a;
-    --accent-strong: #6b8a14;
-    --accent-fg: #1a2200;
-    --accent-soft: #eef9c9;
-    --accent-line: #d3e878;
-    --green: #15803d;
-    --green-soft: #e6f5ec;
-    --amber: #b45309;
-    --amber-soft: #fdf3e0;
-    --red: #b91c1c;
-    --blue: #1e4eb2;
-    --blue-soft: #e7eefb;
+    --surface-2: #f5f6f4;
+    --surface-3: #eaece8;
+    --line: #e7e9e5;
+    --line-2: #d5d8d2;
+    --line-3: #bec2bb;
+    --text: #292b2a;
+    --text-2: #555a56;
+    --text-3: #828884;
+    --text-4: #aab0aa;
+    /* Brand palette — taken from the AccessibilityChecker.org logo: green
+       #45bd7b / #78f0b4 on charcoal #3a3a3a. One green family + neutrals;
+       semantic amber/red are kept muted and used sparingly. */
+    --accent: #157d46;        /* primary green — buttons, key actions (white text passes AA) */
+    --accent-strong: #0f6b3b; /* deeper green — hover, and green text on light surfaces */
+    --accent-bright: #3cbd77; /* the bright logo green — progress fills, brand dot, accents */
+    --accent-fg: #ffffff;     /* text / icons on the primary green */
+    --accent-soft: #e7f6ee;   /* soft green — chip / badge backgrounds */
+    --accent-line: #c1e6d3;   /* soft green border */
+    --green: #157d46;         /* "good" / positive folds into the brand green */
+    --green-soft: #e7f6ee;
+    --amber: #9a6a1c;         /* muted caution — below target, cancelled, renewal due */
+    --amber-soft: #f4eedd;
+    --red: #b3261d;           /* destructive only (delete) */
+    --blue: #5f6b62;          /* neutralised — the palette has no separate blue hue */
+    --blue-soft: #eef1ee;
     --shadow-sm: 0 1px 2px rgba(20, 20, 20, 0.04);
     --shadow: 0 1px 3px rgba(20, 20, 20, 0.05), 0 1px 2px rgba(20, 20, 20, 0.03);
     --shadow-md: 0 4px 12px rgba(20, 20, 20, 0.06), 0 1px 3px rgba(20, 20, 20, 0.04);
@@ -55,6 +59,12 @@
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
+  /* The `hidden` attribute must always win — several components (activity
+     banner, carry-over header, sub-banner) set `display: flex` on their class,
+     which would otherwise override `[hidden]` and leave them stuck on screen
+     (e.g. a "Welcome back" banner whose Dismiss button appeared to do nothing). */
+  [hidden] { display: none !important; }
+
   html, body {
     background: var(--bg);
     color: var(--text);
@@ -68,8 +78,7 @@
 
   body {
     background:
-      radial-gradient(1200px 600px at 90% -20%, rgba(196, 232, 74, 0.10), transparent 55%),
-      radial-gradient(900px 500px at -10% 110%, rgba(30, 78, 178, 0.04), transparent 60%),
+      radial-gradient(1100px 560px at 96% -24%, rgba(60, 189, 119, 0.05), transparent 60%),
       var(--bg);
     padding: 32px 28px 80px;
   }
@@ -90,24 +99,21 @@
 
   .brand { display: flex; flex-direction: column; gap: 4px; }
 
-  .brand-mark {
-    display: flex;
+  .ac-logo {
+    display: inline-flex;
     align-items: center;
-    gap: 9px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--text-3);
-    text-transform: uppercase;
-    letter-spacing: 0.16em;
-    margin-bottom: 4px;
+    margin-bottom: 12px;
+    text-decoration: none;
+    width: fit-content;
   }
 
-  .brand-mark .dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: var(--accent);
-    box-shadow: 0 0 0 3px rgba(196, 232, 74, 0.25);
+  .ac-logo-img {
+    height: 40px;
+    width: auto;
+    display: block;
   }
+
+  .ac-logo:hover .ac-logo-img { opacity: 0.85; }
 
   .brand h1 {
     font-family: var(--font-display);
@@ -164,33 +170,126 @@
   .month-stepper button:hover { background: var(--surface-2); color: var(--text); }
   .month-stepper button:disabled { color: var(--text-4); cursor: not-allowed; background: transparent; }
 
+  .month-control { position: relative; display: inline-flex; }
+
   .month-stepper .month-display {
-    padding: 0 18px;
+    padding: 0 14px;
     height: 40px;
-    display: flex;
+    display: inline-flex;
     align-items: center;
+    gap: 8px;
+    border: none;
     border-left: 1px solid var(--line);
     border-right: 1px solid var(--line);
+    background: transparent;
     font-family: 'JetBrains Mono', monospace;
     font-size: 13px;
     font-weight: 500;
     color: var(--text);
-    min-width: 150px;
+    min-width: 168px;
     justify-content: center;
     cursor: pointer;
-    position: relative;
     user-select: none;
+    transition: background 0.12s;
   }
 
   .month-stepper .month-display:hover { background: var(--surface-2); }
-  .month-stepper .month-display input {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    cursor: pointer;
-    border: none;
-    background: transparent;
+  .month-stepper .month-display .month-caret {
+    color: var(--text-3);
+    flex-shrink: 0;
+    transition: transform 0.15s;
   }
+  .month-stepper .month-display[aria-expanded="true"] .month-caret { transform: rotate(180deg); }
+
+  /* MONTH PICKER POPOVER */
+  .month-picker {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 300px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 12px;
+    z-index: 200;
+    opacity: 0;
+    transform: translateY(-4px);
+    pointer-events: none;
+    transition: opacity 0.15s, transform 0.15s;
+  }
+
+  .month-picker.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+  .mp-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .mp-nav {
+    width: 30px; height: 30px;
+    flex-shrink: 0;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--text-2);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.12s, color 0.12s, border-color 0.12s;
+  }
+
+  .mp-nav:hover { background: var(--surface-2); color: var(--text); border-color: var(--line-2); }
+
+  .mp-year, .mp-range {
+    flex: 1;
+    text-align: center;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--text);
+  }
+
+  .mp-year {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 6px 8px;
+    border-radius: var(--radius);
+    transition: background 0.12s;
+  }
+
+  .mp-year:hover { background: var(--surface-2); }
+
+  .mp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+
+  .mp-cell {
+    border: 1px solid transparent;
+    background: var(--surface-2);
+    color: var(--text-2);
+    border-radius: var(--radius);
+    padding: 9px 4px;
+    font-family: var(--font-sans);
+    font-size: 12.5px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    text-align: center;
+    transition: background 0.12s, color 0.12s, border-color 0.12s;
+  }
+
+  .mp-cell:hover { background: var(--surface-3); color: var(--text); }
+  .mp-cell.today { border-color: var(--line-2); color: var(--text); }
+  .mp-cell.selected {
+    background: var(--accent);
+    color: var(--accent-fg);
+    border-color: var(--accent-line);
+    font-weight: 600;
+  }
+  .mp-cell.selected:hover { background: var(--accent); color: var(--accent-fg); }
 
   /* ICON BUTTON (header) */
   .icon-btn {
@@ -445,15 +544,15 @@
 
   .progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, var(--accent), #a8d124);
+    background: linear-gradient(90deg, var(--accent), #2aa362);
     border-radius: 999px;
     transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 0 12px rgba(196, 232, 74, 0.5);
+    box-shadow: 0 0 12px rgba(60, 189, 119, 0.5);
   }
 
   .progress-fill.complete {
-    background: linear-gradient(90deg, #22c55e, var(--green));
-    box-shadow: 0 0 12px rgba(34, 197, 94, 0.4);
+    background: linear-gradient(90deg, #3cbd77, var(--green));
+    box-shadow: 0 0 12px rgba(60, 189, 119, 0.4);
   }
 
   .progress-meta {
@@ -638,7 +737,7 @@
   .input:focus {
     outline: none;
     border-color: var(--accent-line);
-    box-shadow: 0 0 0 3px rgba(196, 232, 74, 0.18);
+    box-shadow: 0 0 0 3px rgba(60, 189, 119, 0.18);
     background: var(--surface);
   }
   .input.locked,
@@ -763,7 +862,7 @@
   .dd-trigger:hover { border-color: var(--line-3); }
   .dd-trigger.open {
     border-color: var(--accent-line);
-    box-shadow: 0 0 0 3px rgba(196, 232, 74, 0.18);
+    box-shadow: 0 0 0 3px rgba(60, 189, 119, 0.18);
   }
 
   .dd-trigger .chev {
@@ -860,13 +959,13 @@
     background: var(--accent);
     color: var(--accent-fg);
     font-weight: 600;
-    box-shadow: 0 1px 2px rgba(107, 138, 20, 0.2);
+    box-shadow: 0 1px 2px rgba(15, 107, 59, 0.2);
   }
 
   .btn-primary:hover {
     background: #b5dc36;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(196, 232, 74, 0.4);
+    box-shadow: 0 4px 12px rgba(60, 189, 119, 0.4);
   }
 
   .btn-primary:active { transform: translateY(0); }
@@ -961,261 +1060,222 @@
   td { padding: 14px 16px; font-size: 13px; vertical-align: middle; color: var(--text-2); }
   td.right { text-align: right; }
 
-  .deal-name { font-weight: 500; color: var(--text); }
+  .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 
-  .deal-ref {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    color: var(--text-4);
-    margin-top: 2px;
-    letter-spacing: 0.04em;
-  }
+  /* ─── DEALS — card list ─────────────────────────────────────────────────
+     Each deal renders as a self-contained card (see renderDealRow). This
+     replaces the old dense table that collapsed awkwardly on phones, and
+     drops the uppercase-mono micro-labels in favour of calm sans-serif text.
+     One status chip per card; money figures up top; a tappable payment
+     control; a quieter "received" line so the two counters never blur. */
+  .deals-list { display: grid; grid-template-columns: 1fr; gap: 14px; }
+  @media (min-width: 1080px) { .deals-list { grid-template-columns: 1fr 1fr; } }
 
-  .mono { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
-
-  .badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 3px 9px;
-    border-radius: 999px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-  }
-
-  .badge-platform { background: var(--blue-soft); color: var(--blue); }
-  .badge-managed { background: var(--accent-soft); color: var(--accent-strong); }
-  .badge-excluded { background: var(--surface-3); color: var(--text-3); }
-
-  .badge::before {
-    content: '';
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: currentColor;
-    opacity: 0.7;
-  }
-
-  .commission-cell {
-    font-family: 'JetBrains Mono', monospace;
-    font-weight: 600;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .commission-cell.earned { color: var(--green); }
-  .commission-cell.zero { color: var(--text-4); }
-
-  .eligibility {
-    font-size: 11px;
-    color: var(--text-3);
-    font-family: 'JetBrains Mono', monospace;
-  }
-
-  .eligibility.yes { color: var(--green); }
-  .eligibility.partial { color: var(--amber); }
-  .eligibility.no { color: var(--text-4); }
-
-  /* PAYMENT TRACKING UI (per-deal row) */
-  .pay-cell { display: flex; flex-direction: column; gap: 6px; min-width: 188px; }
-
-  .pay-grid {
-    display: inline-flex;
-    gap: 3px;
-    flex-wrap: wrap;
-    max-width: 168px;
-  }
-
-  .pay-box {
-    width: 11px;
-    height: 14px;
-    border-radius: 2px;
-    background: var(--surface-3);
-    border: 1px solid var(--line-2);
-    transition: background 0.12s, border-color 0.12s;
-  }
-
-  .pay-box.filled {
-    background: var(--accent);
-    border-color: var(--accent-strong);
-    box-shadow: 0 0 0 1px rgba(196, 232, 74, 0.25);
-  }
-
-  .pay-box.cancelled {
-    background: repeating-linear-gradient(
-      45deg, var(--surface-3) 0 3px, var(--line-2) 3px 4px);
-  }
-
-  .pay-controls {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--text-3);
-  }
-
-  .pay-btn {
-    width: 22px;
-    height: 22px;
-    border-radius: 6px;
-    background: var(--surface-2);
+  .deal-card {
+    background: var(--surface);
     border: 1px solid var(--line);
-    color: var(--text-2);
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
-    line-height: 1;
-    padding: 0;
-    transition: background 0.1s, border-color 0.1s, color 0.1s;
-  }
-
-  .pay-btn:hover:not(:disabled) {
-    background: var(--accent-soft);
-    border-color: var(--accent-line);
-    color: var(--accent-strong);
-  }
-
-  .pay-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-  .pay-count { min-width: 38px; text-align: center; }
-
-  .pay-oneshot {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 5px 10px;
-    border-radius: 999px;
-    background: var(--surface-2);
-    border: 1px solid var(--line);
-    cursor: pointer;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--text-2);
-    transition: background 0.1s, color 0.1s, border-color 0.1s;
-    user-select: none;
-  }
-
-  .pay-oneshot:hover { background: var(--surface-3); border-color: var(--line-2); }
-
-  .pay-oneshot.collected {
-    background: var(--green-soft);
-    color: var(--green);
-    border-color: rgba(21, 128, 61, 0.2);
-  }
-
-  .pay-oneshot .dot {
-    width: 6px; height: 6px; border-radius: 50%;
-    background: currentColor;
-  }
-
-  .cancel-btn {
-    background: var(--surface-2);
-    border: 1px solid var(--line);
-    color: var(--text-3);
-    border-radius: 999px;
-    padding: 3px 10px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.1s, border-color 0.1s, color 0.1s;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-  }
-
-  .cancel-btn:hover { background: var(--amber-soft); border-color: rgba(180, 83, 9, 0.3); color: var(--amber); }
-  .cancel-btn.active { background: var(--amber-soft); color: var(--amber); border-color: rgba(180, 83, 9, 0.3); }
-
-  /* Deal status badge */
-  .deal-status {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 3px 9px;
-    border-radius: 999px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-  }
-
-  .deal-status::before {
-    content: '';
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: currentColor;
-  }
-
-  .deal-status.active    { background: var(--green-soft); color: var(--green); }
-  .deal-status.complete  { background: var(--accent-soft); color: var(--accent-strong); }
-  .deal-status.cancelled { background: var(--amber-soft); color: var(--amber); }
-  .deal-status.pending   { background: var(--blue-soft);   color: var(--blue); }
-  .deal-status.excluded  { background: var(--surface-3);   color: var(--text-3); }
-  .deal-status.below-target {
-    background: var(--amber-soft);
-    color: var(--amber);
-    border: 1px solid rgba(180, 83, 9, 0.18);
-  }
-  .deal-status.below-target::before { background: var(--amber); opacity: 0.85; }
-
-  /* Below-target footnote — sits beside the status badge, not inside it */
-  .status-note {
-    display: block;
-    margin-top: 4px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    color: var(--amber);
-    letter-spacing: 0.04em;
-    max-width: 180px;
-    line-height: 1.4;
-  }
-
-  /* Three-value commission cell */
-  .commission-stack {
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+    box-shadow: var(--shadow-sm);
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
-    gap: 2px;
-    font-variant-numeric: tabular-nums;
-    font-family: 'JetBrains Mono', monospace;
+    gap: 16px;
+    transition: box-shadow 0.15s, border-color 0.15s;
   }
+  .deal-card:hover { box-shadow: var(--shadow-md); border-color: var(--line-2); }
+  .deal-card.is-cancelled { background: var(--surface-2); }
+  .deal-card.is-cancelled .dc-name { color: var(--text-2); }
 
-  .commission-stack .earned {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--green);
-    line-height: 1.1;
+  /* Header */
+  .dc-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .dc-id { min-width: 0; }
+  .dc-name-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+  .dc-name {
+    font-family: var(--font-display);
+    font-weight: 600; font-size: 17px;
+    letter-spacing: -0.01em; color: var(--text); line-height: 1.2;
   }
-
-  .commission-stack .earned.zero { color: var(--text-4); font-weight: 600; }
-  .commission-stack .earned.muted { color: var(--text-4); font-weight: 600; }
-
-  .commission-stack .pending {
-    font-size: 11px;
-    color: var(--amber);
+  .dc-subtag {
+    display: inline-flex; align-items: center; white-space: nowrap;
+    font-size: 11px; font-weight: 600;
+    color: var(--accent-strong); background: var(--accent-soft);
+    border: 1px solid var(--accent-line);
+    padding: 2px 9px; border-radius: 999px;
   }
-
-  .commission-stack .potential {
-    font-size: 10px;
-    color: var(--text-4);
-    letter-spacing: 0.02em;
+  .dc-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; font-size: 12.5px; color: var(--text-3); }
+  .dc-meta-item { color: var(--text-3); }
+  .dc-meta-item.mono { font-size: 11px; color: var(--text-4); }
+  .dc-sep { width: 3px; height: 3px; border-radius: 50%; background: var(--line-3); flex-shrink: 0; }
+  .dc-plan {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 600;
+    padding: 2px 9px; border-radius: 6px;
   }
+  .dc-plan::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; opacity: 0.6; }
+  .dc-plan.platform { background: var(--blue-soft); color: var(--blue); }
+  .dc-plan.managed  { background: var(--accent-soft); color: var(--accent-strong); }
+  .dc-plan.excluded { background: var(--surface-3); color: var(--text-3); }
+  .dc-renew { color: var(--text-3); }
+  .dc-renew.due { color: var(--amber); font-weight: 600; }
 
-  .commission-stack .label {
-    color: var(--text-4);
-    margin-right: 4px;
-    font-size: 9px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
+  /* Status — one calm chip per card, sans-serif (no uppercase mono pill) */
+  .dc-status {
+    flex-shrink: 0;
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 600;
+    padding: 4px 11px; border-radius: 999px; white-space: nowrap;
+  }
+  .dc-status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .dc-status.active       { background: var(--green-soft);  color: var(--green); }
+  .dc-status.complete     { background: var(--accent-soft); color: var(--accent-strong); }
+  .dc-status.cancelled    { background: var(--amber-soft);  color: var(--amber); }
+  .dc-status.pending      { background: var(--blue-soft);   color: var(--blue); }
+  .dc-status.excluded     { background: var(--surface-3);   color: var(--text-3); }
+  .dc-status.below-target { background: var(--amber-soft);  color: var(--amber); }
+
+  /* Figures — earned (primary) · MRR · forecast */
+  .dc-figures { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 30px; }
+  .dc-fig { display: flex; flex-direction: column; gap: 4px; }
+  .dc-fig-label { font-size: 11.5px; color: var(--text-3); font-weight: 500; }
+  .dc-fig-value {
+    font-family: var(--font-display); font-variant-numeric: tabular-nums;
+    font-weight: 600; font-size: 18px; color: var(--text);
+    letter-spacing: -0.01em; line-height: 1;
+  }
+  .dc-fig-primary .dc-fig-value { font-size: 27px; }
+  .dc-fig-value.pos { color: var(--green); }
+  .dc-fig-value.muted { color: var(--text-4); }
+  .dc-unit { font-size: 12px; color: var(--text-4); font-weight: 500; margin-left: 1px; }
+
+  .dc-hint {
+    font-size: 12.5px; line-height: 1.55; color: var(--text-2);
+    background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 9px 12px;
+  }
+  .dc-hint b { color: var(--text); font-weight: 600; }
+
+  /* Payments — primary control */
+  .dc-pay { display: flex; flex-direction: column; gap: 12px; padding-top: 16px; border-top: 1px solid var(--line); }
+  .dc-pay-row { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+  .dc-pay-label { font-size: 13px; font-weight: 600; color: var(--text); }
+  .dc-pay-count { font-size: 13px; color: var(--text-3); }
+  .dc-pay-count b { color: var(--text); font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  /* Tappable month segments — tap any month to jump straight to that count */
+  .dc-segs { display: flex; gap: 4px; max-width: 560px; }
+  .dc-seg {
+    flex: 1 1 0; min-width: 0; height: 24px; padding: 0;
+    border-radius: 5px; cursor: pointer;
+    background: var(--surface-3); border: 1px solid var(--line-2);
+    transition: background 0.12s, border-color 0.12s, transform 0.06s;
+  }
+  .dc-seg:hover:not(:disabled) { border-color: var(--accent-strong); }
+  .dc-seg:active:not(:disabled) { transform: scale(0.92); }
+  .dc-seg.filled { background: var(--accent-bright); border-color: var(--accent); }
+  .dc-seg.capped { background: repeating-linear-gradient(45deg, var(--surface-3) 0 4px, var(--line-2) 4px 5px); cursor: not-allowed; }
+  .dc-seg:disabled { cursor: not-allowed; }
+
+  .dc-stepper { display: flex; align-items: center; gap: 8px; }
+  .dc-step {
+    height: 38px; min-width: 38px; padding: 0 10px;
+    border-radius: var(--radius);
+    background: var(--surface); border: 1px solid var(--line-2);
+    color: var(--text-2); cursor: pointer;
+    font-size: 18px; font-weight: 500; line-height: 1;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: background 0.1s, border-color 0.1s, color 0.1s;
+  }
+  .dc-step:hover:not(:disabled) { background: var(--surface-2); border-color: var(--line-3); }
+  .dc-step:disabled { opacity: 0.4; cursor: not-allowed; }
+  .dc-step.dc-step-all { font-size: 12.5px; font-weight: 600; color: var(--text-3); }
+  .dc-step.sm { height: 30px; min-width: 30px; font-size: 15px; }
+  .dc-mark {
+    flex: 1; height: 38px; padding: 0 16px;
+    border-radius: var(--radius);
+    background: var(--accent); border: 1px solid var(--accent-strong);
+    color: var(--accent-fg); cursor: pointer;
+    font-size: 13px; font-weight: 600;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: filter 0.12s, opacity 0.12s;
+  }
+  .dc-mark:hover:not(:disabled) { filter: brightness(0.97); }
+  .dc-mark:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  /* One-shot collected toggle (managed / annual) */
+  .dc-toggle {
+    align-self: flex-start;
+    display: inline-flex; align-items: center; gap: 9px;
+    padding: 9px 15px; border-radius: var(--radius);
+    background: var(--surface); border: 1px solid var(--line-2);
+    color: var(--text); cursor: pointer; font-size: 13px; font-weight: 500;
+    transition: background 0.12s, border-color 0.12s, color 0.12s;
+  }
+  .dc-toggle:hover:not(:disabled) { border-color: var(--line-3); background: var(--surface-2); }
+  .dc-toggle:disabled { opacity: 0.5; cursor: not-allowed; }
+  .dc-toggle.on { background: var(--green-soft); border-color: rgba(21,128,61,0.3); color: var(--green); font-weight: 600; }
+
+  .dc-check {
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 1.5px solid var(--line-3); flex-shrink: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: background 0.12s, border-color 0.12s;
+  }
+  .dc-check.sm { width: 15px; height: 15px; }
+  .dc-toggle.on .dc-check, .dc-rec-toggle.on .dc-check { background: var(--green); border-color: var(--green); }
+  .dc-toggle.on .dc-check::after, .dc-rec-toggle.on .dc-check::after {
+    content: ''; width: 5px; height: 9px;
+    border-right: 2px solid #fff; border-bottom: 2px solid #fff;
+    transform: rotate(45deg) translate(-0.5px, -1px);
+  }
+  .dc-check.sm::after { width: 4px; height: 7px; border-width: 1.5px; }
+
+  /* Received — quieter secondary line */
+  .dc-received {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    padding: 10px 12px; border-radius: var(--radius);
+    background: var(--surface-2); border: 1px solid var(--line);
+  }
+  .dc-received-label { font-size: 12.5px; font-weight: 600; color: var(--text-2); }
+  .dc-rec-state { font-size: 12.5px; color: var(--text-3); margin-left: auto; }
+  .dc-rec-state b { color: var(--text); font-weight: 700; font-variant-numeric: tabular-nums; }
+  .dc-rec-state.done { color: var(--green); }
+  .dc-rec-state.done b { color: var(--green); }
+  .dc-rec-stepper { display: inline-flex; gap: 6px; }
+  .dc-rec-toggle {
+    margin-left: auto;
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 12px; border-radius: var(--radius);
+    background: var(--surface); border: 1px solid var(--line-2);
+    color: var(--text-2); cursor: pointer; font-size: 12.5px; font-weight: 500;
+    transition: background 0.12s, border-color 0.12s, color 0.12s;
+  }
+  .dc-rec-toggle:hover:not(:disabled) { border-color: var(--line-3); }
+  .dc-rec-toggle:disabled { opacity: 0.5; cursor: not-allowed; }
+  .dc-rec-toggle.on { background: var(--green-soft); border-color: rgba(21,128,61,0.3); color: var(--green); font-weight: 600; }
+
+  /* Footer actions */
+  .dc-foot { display: flex; align-items: center; gap: 12px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .dc-foot-spacer { flex: 1; }
+  .dc-link {
+    background: none; border: none; padding: 4px 2px;
+    color: var(--text-3); cursor: pointer; font-family: inherit;
+    font-size: 12.5px; font-weight: 500; transition: color 0.12s;
+  }
+  .dc-link:hover { color: var(--text); text-decoration: underline; }
+  .dc-link.is-on { color: var(--amber); font-weight: 600; }
+  .dc-icon-btn {
+    width: 34px; height: 34px; border-radius: var(--radius);
+    background: none; border: 1px solid transparent; color: var(--text-4); cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: background 0.12s, color 0.12s, border-color 0.12s;
+  }
+  .dc-icon-btn:hover { background: #fef2f2; color: var(--red); border-color: #fecaca; }
+
+  @media (max-width: 540px) {
+    .deal-card { padding: 16px; gap: 14px; }
+    .dc-fig-primary .dc-fig-value { font-size: 24px; }
+    .dc-seg { height: 26px; }
+    .dc-foot { flex-wrap: wrap; gap: 8px 12px; }
   }
 
   /* FORECAST SECTION (muted, clearly labeled) */
@@ -1489,7 +1549,7 @@
      sub-revenue strip — it sits above the numbered workflow. */
   .optimizer {
     background:
-      linear-gradient(180deg, rgba(196, 232, 74, 0.07), transparent 130px),
+      linear-gradient(180deg, rgba(60, 189, 119, 0.06), transparent 130px),
       var(--surface);
     border: 1px solid var(--line);
     border-radius: var(--radius-xl);
@@ -1613,7 +1673,7 @@
   .opt-play:focus-visible {
     outline: none;
     border-color: var(--accent-strong);
-    box-shadow: 0 0 0 3px rgba(196, 232, 74, 0.3);
+    box-shadow: 0 0 0 3px rgba(60, 189, 119, 0.18);
   }
   .opt-play.top {
     border-color: var(--accent-line);
@@ -1728,7 +1788,7 @@
   }
   .optimizer-goal-input-wrap:focus-within {
     border-color: var(--accent-strong);
-    box-shadow: 0 0 0 3px rgba(196, 232, 74, 0.18);
+    box-shadow: 0 0 0 3px rgba(60, 189, 119, 0.18);
   }
   .optimizer-goal-input-wrap .cur,
   .optimizer-goal-input-wrap .suffix {
@@ -1787,8 +1847,9 @@
   }
   .optimizer-goal-fill {
     height: 100%;
-    background: linear-gradient(90deg, var(--accent), var(--accent-strong));
+    background: linear-gradient(90deg, var(--accent), #2aa362);
     border-radius: 999px;
+    box-shadow: 0 0 12px rgba(60, 189, 119, 0.5);
     transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
@@ -1799,28 +1860,6 @@
       text-align: left;
       margin-top: 4px;
     }
-  }
-
-  /* Per-row renewal tag */
-  .renewal-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    color: var(--text-3);
-    margin-top: 4px;
-    letter-spacing: 0.04em;
-  }
-  .renewal-tag.due {
-    color: var(--amber);
-    font-weight: 600;
-  }
-  .renewal-tag .dot {
-    width: 5px; height: 5px;
-    border-radius: 50%;
-    background: currentColor;
-    opacity: 0.6;
   }
 
   .empty-state { padding: 72px 24px; text-align: center; }
@@ -2174,7 +2213,7 @@
   }
   .verify-modal .chartmogul-link:hover {
     border-color: var(--accent-line);
-    box-shadow: 0 4px 10px rgba(196, 232, 74, 0.18);
+    box-shadow: 0 4px 10px rgba(60, 189, 119, 0.18);
     transform: translateY(-1px);
   }
   .verify-modal .chartmogul-hint {
@@ -2278,7 +2317,7 @@
   }
 
   .plan-pick-btn:hover { border-color: var(--line-3); }
-  .plan-pick-btn:focus { outline: none; border-color: var(--accent-line); box-shadow: 0 0 0 3px rgba(196, 232, 74, 0.18); }
+  .plan-pick-btn:focus { outline: none; border-color: var(--accent-line); box-shadow: 0 0 0 3px rgba(60, 189, 119, 0.18); }
 
   .plan-pick-btn .plan-pick-label {
     flex: 1;
@@ -2422,7 +2461,7 @@
 
   .plan-info-banner {
     background: var(--blue-soft);
-    border: 1px solid rgba(30, 78, 178, 0.15);
+    border: 1px solid var(--line-2);
     border-radius: var(--radius);
     padding: 10px 12px;
     font-size: 12px;
@@ -2496,7 +2535,7 @@
   }
   .custom-plan-mrr:focus-within {
     border-color: var(--accent-line);
-    box-shadow: 0 0 0 3px rgba(196, 232, 74, 0.18);
+    box-shadow: 0 0 0 3px rgba(60, 189, 119, 0.18);
   }
   .custom-plan-mrr .currency,
   .custom-plan-mrr .suffix {
@@ -2540,72 +2579,6 @@
     flex: 1;
   }
 
-  /* MULTIPLE-SUBSCRIPTION GROUPING (rows with the same client name are
-     visually grouped together but treated as equal peers) */
-  .deal-row-grouped td:first-child { border-left: 3px solid var(--accent-line); }
-  .deal-row-grouped td {
-    background: linear-gradient(
-      90deg,
-      rgba(196, 232, 74, 0.045) 0%,
-      rgba(196, 232, 74, 0.015) 50%,
-      transparent 100%
-    );
-  }
-
-  .sub-index {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    color: var(--accent-strong);
-    background: var(--accent-soft);
-    padding: 2px 7px;
-    border-radius: 999px;
-    margin-bottom: 4px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    font-weight: 600;
-    border: 1px solid var(--accent-line);
-  }
-  .sub-index .sub-index-num { font-weight: 700; }
-
-  .deal-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    align-items: flex-end;
-  }
-  .add-sub-btn {
-    background: var(--surface-2);
-    border: 1px solid var(--line);
-    color: var(--text-3);
-    padding: 5px 10px;
-    border-radius: 999px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    font-weight: 500;
-    cursor: pointer;
-    transition: border-color 0.12s, background 0.12s, color 0.12s;
-    white-space: nowrap;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-  }
-  .add-sub-btn:hover {
-    border-color: var(--accent-line);
-    background: var(--accent-soft);
-    color: var(--accent-strong);
-  }
-  .add-sub-btn::before {
-    content: '+';
-    font-weight: 700;
-    font-size: 12px;
-    line-height: 1;
-  }
-
   /* "Add another subscription" banner above the add-deal form */
   .sub-banner {
     display: flex;
@@ -2635,7 +2608,7 @@
   .sub-banner .sub-banner-text strong { font-weight: 700; }
   .sub-banner .sub-banner-cancel {
     background: transparent;
-    border: 1px solid rgba(107, 138, 20, 0.35);
+    border: 1px solid rgba(15, 107, 59, 0.35);
     color: var(--accent-strong);
     padding: 5px 10px;
     border-radius: 6px;
@@ -2648,117 +2621,9 @@
     font-weight: 600;
   }
   .sub-banner .sub-banner-cancel:hover {
-    background: rgba(196, 232, 74, 0.35);
+    background: rgba(60, 189, 119, 0.35);
     border-color: var(--accent-strong);
   }
-
-  /* MONEY-RECEIVED TRACKER (per-deal: have you been paid the commission yet?) */
-  .payout-row {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    margin-top: 6px;
-    padding-top: 6px;
-    border-top: 1px dashed var(--line);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    color: var(--text-3);
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-  }
-  .payout-row .payout-label {
-    font-size: 9px;
-    color: var(--text-4);
-    letter-spacing: 0.08em;
-  }
-  .payout-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 10px;
-    border-radius: 999px;
-    background: var(--surface-2);
-    border: 1px solid var(--line);
-    cursor: pointer;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    color: var(--text-3);
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    font-weight: 500;
-    transition: background 0.1s, color 0.1s, border-color 0.1s;
-    user-select: none;
-    white-space: nowrap;
-  }
-  .payout-toggle:hover:not(:disabled) {
-    background: var(--green-soft);
-    color: var(--green);
-    border-color: rgba(21, 128, 61, 0.2);
-  }
-  .payout-toggle:disabled { opacity: 0.4; cursor: not-allowed; }
-  .payout-toggle.received {
-    background: var(--green-soft);
-    color: var(--green);
-    border-color: rgba(21, 128, 61, 0.25);
-  }
-  .payout-toggle .check {
-    width: 11px;
-    height: 11px;
-    border-radius: 50%;
-    border: 1.5px solid currentColor;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
-  .payout-toggle.received .check {
-    background: currentColor;
-    border-color: currentColor;
-  }
-  .payout-toggle.received .check::after {
-    content: '';
-    width: 5px;
-    height: 3px;
-    border-left: 1.5px solid var(--green-soft);
-    border-bottom: 1.5px solid var(--green-soft);
-    transform: rotate(-45deg) translate(0.5px, -1px);
-  }
-  .payout-counter {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-  }
-  .payout-counter .payout-btn {
-    width: 20px;
-    height: 20px;
-    border-radius: 5px;
-    background: var(--surface-2);
-    border: 1px solid var(--line);
-    color: var(--text-2);
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    font-size: 12px;
-    line-height: 1;
-    padding: 0;
-    transition: background 0.1s, border-color 0.1s, color 0.1s;
-  }
-  .payout-counter .payout-btn:hover:not(:disabled) {
-    background: var(--green-soft);
-    border-color: rgba(21, 128, 61, 0.2);
-    color: var(--green);
-  }
-  .payout-counter .payout-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-  .payout-counter .payout-count {
-    min-width: 56px;
-    text-align: center;
-    font-size: 10px;
-    color: var(--text-3);
-    letter-spacing: 0.04em;
-  }
-  .payout-counter.complete .payout-count { color: var(--green); font-weight: 700; }
 
   /* PDF DOCUMENT (rendered off-screen, captured by html2pdf) */
   .pdf-doc {
@@ -2795,7 +2660,7 @@
   .pdf-brand { display: flex; gap: 14px; align-items: stretch; }
   .pdf-accent-bar {
     width: 5px;
-    background: #c4e84a;
+    background: #3cbd77;
     border-radius: 3px;
     align-self: stretch;
     min-height: 42px;
@@ -2829,7 +2694,7 @@
     position: absolute;
     top: 0; right: 0;
     width: 280px; height: 100%;
-    background: radial-gradient(ellipse at top right, #eef9c9 0%, transparent 60%);
+    background: radial-gradient(ellipse at top right, #e7f6ee 0%, transparent 60%);
     pointer-events: none;
   }
   .pdf-hero-left {
@@ -2888,8 +2753,8 @@
     padding: 4px 10px;
     border-radius: 999px;
   }
-  .pdf-status-hit { background: #e6f5ec; color: #15803d; }
-  .pdf-status-below { background: #fdf3e0; color: #b45309; }
+  .pdf-status-hit { background: #e7f6ee; color: #157d46; }
+  .pdf-status-below { background: #f4eedd; color: #9a6a1c; }
 
   .pdf-mrr {
     display: flex;
@@ -2915,11 +2780,11 @@
   }
   .pdf-progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, #c4e84a, #a8d124);
+    background: linear-gradient(90deg, #3cbd77, #2aa362);
     border-radius: 999px;
   }
   .pdf-progress-fill.complete {
-    background: linear-gradient(90deg, #22c55e, #15803d);
+    background: linear-gradient(90deg, #3cbd77, #157d46);
   }
 
   .pdf-caption {
@@ -2953,7 +2818,7 @@
   }
   .pdf-section-dot {
     width: 8px; height: 8px;
-    background: #c4e84a;
+    background: #3cbd77;
     flex-shrink: 0;
   }
   .pdf-section-label {
@@ -3013,15 +2878,15 @@
     font-weight: 700;
     font-family: 'JetBrains Mono', monospace;
   }
-  .pdf-table td.commission.earned { color: #15803d; }
+  .pdf-table td.commission.earned { color: #157d46; }
   .pdf-table td.commission.zero { color: #b0b0b6; }
   .pdf-status-cell {
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
     font-weight: 700;
   }
-  .pdf-status-cell.eligible { color: #15803d; }
-  .pdf-status-cell.managed { color: #6b8a14; }
+  .pdf-status-cell.eligible { color: #157d46; }
+  .pdf-status-cell.managed { color: #0f6b3b; }
   .pdf-status-cell.excluded { color: #b0b0b6; }
 
   /* Calculation */
@@ -3051,7 +2916,7 @@
     color: #82828a;
     font-style: italic;
   }
-  .pdf-calc-row .green { color: #15803d; }
+  .pdf-calc-row .green { color: #157d46; }
   .pdf-calc-divider { height: 8px; }
 
   /* Total bar */
@@ -3059,8 +2924,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: linear-gradient(135deg, #eef9c9 0%, #f9fce8 70%);
-    border: 1px solid #c4e84a;
+    background: linear-gradient(135deg, #e7f6ee 0%, #eef8f1 70%);
+    border: 1px solid #3cbd77;
     border-radius: 12px;
     padding: 20px 24px 20px 30px;
     margin-top: 24px;
@@ -3071,7 +2936,7 @@
     position: absolute;
     left: 8px; top: 16px; bottom: 16px;
     width: 4px;
-    background: #c4e84a;
+    background: #3cbd77;
     border-radius: 2px;
   }
   .pdf-total-label {
@@ -3080,12 +2945,12 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.14em;
-    color: #6b8a14;
+    color: #0f6b3b;
   }
   .pdf-total-month {
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
-    color: #6b8a14;
+    color: #0f6b3b;
     margin-top: 4px;
     opacity: 0.75;
   }
@@ -3229,8 +3094,8 @@
   }
   .voice-btn[hidden] { display: none; }
   @keyframes voicePulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(196, 232, 74, 0.45); }
-    50% { box-shadow: 0 0 0 6px rgba(196, 232, 74, 0); }
+    0%, 100% { box-shadow: 0 0 0 0 rgba(60, 189, 119, 0.45); }
+    50% { box-shadow: 0 0 0 6px rgba(60, 189, 119, 0); }
   }
 
   /* MOBILE VOICE OVERLAY (full-screen feedback while listening) */
@@ -3262,12 +3127,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 0 0 0 rgba(196, 232, 74, 0.45);
+    box-shadow: 0 0 0 0 rgba(60, 189, 119, 0.45);
     animation: voicePulseLg 1.4s ease-in-out infinite;
   }
   @keyframes voicePulseLg {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(196, 232, 74, 0.55); }
-    50% { box-shadow: 0 0 0 22px rgba(196, 232, 74, 0); }
+    0%, 100% { box-shadow: 0 0 0 0 rgba(60, 189, 119, 0.55); }
+    50% { box-shadow: 0 0 0 22px rgba(60, 189, 119, 0); }
   }
   .voice-overlay .voice-label {
     font-family: 'JetBrains Mono', monospace;
@@ -3398,14 +3263,6 @@
     .stat-value .stat-divider { margin: 0 4px; font-size: 18px; }
     .stat-value { font-size: 22px; }
 
-    /* Inline payout controls wrap onto their own line on narrow screens */
-    .payout-row {
-      margin-top: 10px;
-      padding-top: 8px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-    }
-
     .footer-actions { flex-wrap: wrap; }
     .footer-actions .btn { flex: 1 1 calc(50% - 4px); }
   }
@@ -3416,29 +3273,32 @@
 
   <header class="header">
     <div class="brand">
-      <div class="brand-mark">
-        <span class="dot"></span>
-        <span>ACE · Commission Tracker</span>
-      </div>
+      <a class="ac-logo" href="https://www.accessibilitychecker.org" target="_blank" rel="noopener noreferrer">
+        <img class="ac-logo-img" src="assets/accessibilitychecker-logo.svg" alt="AccessibilityChecker.org" width="216" height="32">
+      </a>
       <h1>Commission dashboard</h1>
-      <div class="meta">Gabriel Dalton · accessibilitychecker.org</div>
     </div>
     <div class="header-actions">
-      <div class="month-stepper">
-        <button type="button" id="prevMonth" title="Previous month" aria-label="Previous month">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M10 4L6 8l4 4"/>
-          </svg>
-        </button>
-        <label class="month-display" id="monthDisplay">
-          <span id="monthLabel">—</span>
-          <input type="month" id="monthSelector">
-        </label>
-        <button type="button" id="nextMonth" title="Next month" aria-label="Next month">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M6 4l4 4-4 4"/>
-          </svg>
-        </button>
+      <div class="month-control" id="monthControl">
+        <div class="month-stepper">
+          <button type="button" id="prevMonth" title="Previous month" aria-label="Previous month">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10 4L6 8l4 4"/>
+            </svg>
+          </button>
+          <button type="button" class="month-display" id="monthDisplay" aria-haspopup="dialog" aria-expanded="false" title="Choose month and year">
+            <span id="monthLabel">—</span>
+            <svg class="month-caret" width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 6l4 4 4-4"/>
+            </svg>
+          </button>
+          <button type="button" id="nextMonth" title="Next month" aria-label="Next month">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 4l4 4-4 4"/>
+            </svg>
+          </button>
+        </div>
+        <div class="month-picker" id="monthPicker" role="dialog" aria-label="Choose month and year"></div>
       </div>
       <button class="icon-btn" id="rulesBtn" title="Commission rules" aria-label="Commission rules">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -3698,33 +3558,17 @@
   <div class="section-head">
     <div class="section-title"><span class="num">02</span><span>Deals This Month</span></div>
   </div>
-  <div class="table-wrap">
-    <table id="dealsTable">
-      <thead>
-        <tr>
-          <th>Client</th>
-          <th>Date</th>
-          <th>Plan</th>
-          <th class="right">MRR</th>
-          <th>Status</th>
-          <th>Payments collected</th>
-          <th class="right">Commission · earned / pending / forecast</th>
-          <th class="right" style="width: 130px;">Actions</th>
-        </tr>
-      </thead>
-      <tbody id="dealsBody">
-        <tr><td colspan="8" class="empty-state">
-          <div class="empty-state-icon">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-              <rect x="3" y="4" width="14" height="13" rx="2"/>
-              <path d="M7 2v3M13 2v3M3 8h14"/>
-            </svg>
-          </div>
-          <h3>No deals logged this month</h3>
-          <p>Add your first deal above to start tracking commission.</p>
-        </td></tr>
-      </tbody>
-    </table>
+  <div id="dealsBody" class="deals-list">
+    <div class="empty-state">
+      <div class="empty-state-icon">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <rect x="3" y="4" width="14" height="13" rx="2"/>
+          <path d="M7 2v3M13 2v3M3 8h14"/>
+        </svg>
+      </div>
+      <h3>No deals logged this month</h3>
+      <p>Add your first deal above to start tracking commission.</p>
+    </div>
   </div>
 
   <div id="carryoverSection" class="section-head" hidden>
@@ -3733,22 +3577,8 @@
       <span>Carry-over · still earning from prior months</span>
     </div>
   </div>
-  <div id="carryoverWrap" class="table-wrap" hidden style="margin-bottom: 8px;">
-    <table id="carryoverTable">
-      <thead>
-        <tr>
-          <th>Client</th>
-          <th>Closed</th>
-          <th>Plan</th>
-          <th class="right">MRR</th>
-          <th>Status</th>
-          <th>Payments collected</th>
-          <th class="right">Commission · earned / pending / forecast</th>
-          <th class="right" style="width: 130px;">Actions</th>
-        </tr>
-      </thead>
-      <tbody id="carryoverBody"></tbody>
-    </table>
+  <div id="carryoverWrap" hidden style="margin-bottom: 8px;">
+    <div id="carryoverBody" class="deals-list"></div>
   </div>
   <div id="carryoverNote" class="forecast-note" hidden style="margin-bottom: 24px; padding: 0 4px;">
     These monthly platform deals closed in earlier months but are still receiving payments. Mark each month as the client pays — that's what flows into "Earned This Pay Period" above.
@@ -4719,7 +4549,20 @@
   //   2. Subscription billing cycles that have elapsed on the calendar since
   //      the last visit — i.e. renewals that are now due to be marked paid.
   const VISIT_CACHE_KEY = 'ct-last-visit-v1';
+  const DISMISS_CACHE_KEY = 'ct-activity-dismissed-v1';
   let _activityBannerData = null;
+
+  // A stable fingerprint of an activity set, independent of WHEN it's shown.
+  // Dismissing stores this; on load we suppress the banner while the pending
+  // situation is unchanged, so a dismissal actually sticks instead of the
+  // banner reappearing on every visit. Genuinely new activity → new signature
+  // → the banner returns.
+  function activitySignature(a) {
+    if (!a) return '';
+    const pays = a.newPaymentEvents.map(e => e.deal.id + ':' + e.delta).sort().join(',');
+    const rens = a.renewalsDue.map(r => r.deal.id + ':' + r.unmarked).sort().join(',');
+    return 'p[' + pays + ']r[' + rens + ']';
+  }
 
   async function readLastVisitSnapshot() {
     const raw = await cache.get(VISIT_CACHE_KEY);
@@ -4754,6 +4597,13 @@
     const renewalsDue     = [];       // calendar advanced past an expected billing date
     let newRevenue = 0;
 
+    // Without a real prior baseline (empty snapshot — e.g. the very first visit,
+    // or a visit where the cloud hadn't loaded yet) every deal would look like a
+    // brand-new payment. Skip the "new revenue" signal in that case so the
+    // banner doesn't falsely celebrate on a fresh load. Renewals are
+    // calendar-based and stay reliable.
+    const haveBaseline = prev.snapshot && Object.keys(prev.snapshot).length > 0;
+
     for (const d of deals) {
       if (isExcluded(d.plan)) continue;
       const max = dealMaxUnits(d);
@@ -4762,7 +4612,7 @@
       const mrrVal = Number(d.mrr) || 0;
       const unitValue = (d.billing === 'annual' && !isManaged(d.plan)) ? mrrVal * 12 : mrrVal;
 
-      if (currCollected > prevCollected) {
+      if (haveBaseline && currCollected > prevCollected) {
         const delta = currCollected - prevCollected;
         newPaymentEvents.push({ deal: d, delta, revenue: unitValue * delta });
         newRevenue += unitValue * delta;
@@ -4821,7 +4671,7 @@
       parts.push(`<div>💸 <strong>$${fmt(a.newRevenue)}</strong> in new subscription revenue collected (${n} payment${n !== 1 ? 's' : ''}: ${escapeHtml(clientNames)}${more}).</div>`);
       title.textContent = 'Your subscriptions earned money since your last visit';
     } else {
-      title.textContent = 'Welcome back — renewals waiting';
+      title.textContent = 'Renewals ready to mark as paid';
     }
     if (a.renewalsDue.length > 0) {
       const totalDue = a.renewalsDue.reduce((s, r) => s + r.unmarked, 0);
@@ -4835,6 +4685,14 @@
   async function bootstrapActivityBanner() {
     const prev = await readLastVisitSnapshot();
     _activityBannerData = computeActivitySinceLastVisit(prev);
+    // Honour a previous dismissal: if the pending situation is unchanged from
+    // what the user already dismissed, keep the banner hidden.
+    if (_activityBannerData) {
+      const dismissed = await cache.get(DISMISS_CACHE_KEY);
+      if (dismissed && dismissed === activitySignature(_activityBannerData)) {
+        _activityBannerData = null;
+      }
+    }
     // Persist a fresh snapshot for next time. This happens once per page load,
     // so reloads within the same session won't keep replaying old activity.
     await writeLastVisitSnapshot();
@@ -4978,7 +4836,7 @@
     renderActivityBanner();
 
     document.getElementById('periodLabel').textContent = formatMonthLabel(currentMonth);
-    document.getElementById('monthLabel').textContent = formatMonthLabelShort(currentMonth);
+    document.getElementById('monthLabel').textContent = formatMonthLabel(currentMonth);
 
     document.getElementById('eligibleMRR').textContent = fmt(c.eligibleMRR);
     document.getElementById('eligibleMrrCard').textContent = fmt(c.eligibleMRR);
@@ -5063,7 +4921,7 @@
 
     const tbody = document.getElementById('dealsBody');
     if (c.monthDeals.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="8" class="empty-state">
+      tbody.innerHTML = `<div class="empty-state">
         <div class="empty-state-icon">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
             <rect x="3" y="4" width="14" height="13" rx="2"/>
@@ -5072,7 +4930,7 @@
         </div>
         <h3>No deals logged this month</h3>
         <p>Add your first deal above to start tracking commission.</p>
-      </td></tr>`;
+      </div>`;
     } else {
       tbody.innerHTML = groupByClient(c.monthDeals)
         .map(d => renderDealRow(d)).join('');
@@ -5337,10 +5195,12 @@
     return deals.filter(d => clientKey(d.name) === key);
   }
 
-  // Single-row renderer for the deals table — extracted so payment-tracking
-  // controls can be re-rendered in place without rebuilding the whole table.
+  // Single-card renderer for a deal. Produces a self-contained .deal-card so
+  // the list reads as a clean stack of cards on every screen size — instead of
+  // a dense table that collapses awkwardly on a phone. The actual money math
+  // is unchanged; only the presentation and the payment controls are new.
   function renderDealRow(d) {
-    const mrr = Number(d.mrr);
+    const mrr = Number(d.mrr) || 0;
     const max = dealMaxUnits(d);
     const collected = Math.min(d.paymentsCollected || 0, max);
     const paidOut = Math.min(d.paymentsPaidOut || 0, collected);
@@ -5351,221 +5211,200 @@
     const status = dealStatus(d);
 
     // Subscription grouping: rank within the client's roster of subscriptions.
-    const siblings = dealsForClient(d.name)
-      .slice()
+    const siblings = dealsForClient(d.name).slice()
       .sort((a, b) => (a.date || '').localeCompare(b.date || ''));
     const totalSubs = siblings.length;
     const subIndex = totalSubs > 1 ? siblings.findIndex(s => s.id === d.id) + 1 : 0;
     const isGroupedRow = totalSubs > 1;
 
-    // Plan badge
-    let badgeClass, badgeText;
-    if (isManaged(d.plan))      { badgeClass = 'badge-managed';  badgeText = planShortLabel(d.plan); }
-    else if (isExcluded(d.plan)){ badgeClass = 'badge-excluded'; badgeText = planShortLabel(d.plan); }
-    else                        { badgeClass = 'badge-platform'; badgeText = planShortLabel(d.plan); }
+    // Plan kind drives the tag colour.
+    let planKind;
+    if (isManaged(d.plan))       planKind = 'managed';
+    else if (isExcluded(d.plan)) planKind = 'excluded';
+    else                         planKind = 'platform';
 
-    // Status badge. "Below target" is its own state visually so the
-    // long-form footnote can live alongside the badge instead of stuffed
-    // into the commission column.
+    // "Below target" is its own visual state so a $0-earned active deal doesn't
+    // look broken — it gets an explainer instead.
     const belowTarget = status === 'active' && earned === 0 && monthlyShare === 0;
     const displayStatus = belowTarget ? 'below-target' : status;
     const STATUS_TEXT = {
-      active:        'Active',
-      complete:      'Fully paid out',
-      cancelled:     'Cancelled',
-      pending:       'Awaiting first payment',
-      excluded:      'Excluded',
-      'below-target':'Below target'
+      active: 'Active', complete: 'Fully paid', cancelled: 'Cancelled',
+      pending: 'Awaiting payment', excluded: 'No commission',
+      'below-target': 'Below target'
     };
-    if (status === 'complete' && earned === 0) STATUS_TEXT.complete = 'Resolved · no commission';
+    if (status === 'complete' && earned === 0) STATUS_TEXT.complete = 'Resolved';
 
-    // Payments cell: 12 boxes for monthly, single toggle for annual/managed/excluded
-    let paymentsCell = '';
-    if (max === 0) {
-      paymentsCell = `<div class="pay-cell"><span class="eligibility no">No commission earned</span></div>`;
-    } else if (max === 1) {
-      const oneShotLabel = isManaged(d.plan) ? 'First invoice' : 'Annual payment';
-      paymentsCell = `
-        <div class="pay-cell">
-          <button type="button" class="pay-oneshot${collected ? ' collected' : ''}"
-                  onclick="toggleOneshot('${d.id}')" ${d.cancelled ? 'disabled' : ''}>
-            <span class="dot"></span>
-            <span>${oneShotLabel}: ${collected ? 'Collected' : 'Not collected'}</span>
-          </button>
-          <div class="pay-controls">
-            <button type="button" class="cancel-btn${d.cancelled ? ' active' : ''}"
-                    onclick="toggleCancel('${d.id}')">${d.cancelled ? 'Cancelled' : 'Mark cancelled'}</button>
-          </div>
-        </div>`;
-    } else {
-      // Monthly platform — 12-box indicator + ± controls
-      const boxes = Array.from({ length: max }, (_, i) => {
-        const cls = i < collected ? 'pay-box filled' : (d.cancelled ? 'pay-box cancelled' : 'pay-box');
-        return `<span class="${cls}" title="Month ${i + 1}"></span>`;
-      }).join('');
-      paymentsCell = `
-        <div class="pay-cell">
-          <div class="pay-grid">${boxes}</div>
-          <div class="pay-controls">
-            <button type="button" class="pay-btn" onclick="unmarkPaid('${d.id}')"
-                    ${collected === 0 || d.cancelled ? 'disabled' : ''} title="Undo last payment">−</button>
-            <span class="pay-count mono">${collected}/${max} mo</span>
-            <button type="button" class="pay-btn" onclick="markPaid('${d.id}')"
-                    ${collected >= max || d.cancelled ? 'disabled' : ''} title="Mark next month paid">+</button>
-            <button type="button" class="cancel-btn${d.cancelled ? ' active' : ''}"
-                    onclick="toggleCancel('${d.id}')" style="margin-left:6px">${d.cancelled ? 'Cancelled' : 'Cancel'}</button>
-          </div>
-        </div>`;
-    }
+    // ── Header: name, sub badge, plan + close date + reference + renewal ──
+    const subtag = totalSubs > 1
+      ? `<span class="dc-subtag" title="${totalSubs} subscriptions for this client">Sub ${subIndex} of ${totalSubs}</span>`
+      : '';
+    const ref = d.ref
+      ? `<span class="dc-sep"></span><span class="dc-meta-item mono">${escapeHtml(d.ref)}</span>` : '';
 
-    // Commission stack: earned / pending / potential
-    const earnedCls = earned > 0 ? 'earned' : (max === 0 ? 'muted' : 'earned zero');
-    let commissionCell;
-    if (max === 0) {
-      commissionCell = `
-        <div class="commission-stack">
-          <span class="earned muted">$0.00</span>
-          <span class="potential">Excluded plan — no commission</span>
-        </div>`;
-    } else if (max === 1) {
-      // Managed / annual — no separate pending/potential breakdown
-      const subtitle = isManaged(d.plan)
-        ? (collected ? 'Flat $300 paid' : 'Owed on first invoice')
-        : (collected ? 'Annual lump-sum paid' : 'Owed on annual collection');
-      commissionCell = `
-        <div class="commission-stack">
-          <span class="${earnedCls}">$${fmtExact(earned)}</span>
-          ${!collected && !d.cancelled && potential > 0
-            ? `<span class="pending"><span class="label">Pending</span>$${fmtExact(potential)}</span>` : ''}
-          <span class="potential">${escapeHtml(subtitle)}</span>
-        </div>`;
-    } else {
-      // Monthly platform
-      commissionCell = `
-        <div class="commission-stack">
-          <span class="${earnedCls}"><span class="label">Earned</span>$${fmtExact(earned)}</span>
-          ${pending > 0
-            ? `<span class="pending"><span class="label">Pending</span>$${fmtExact(pending)}</span>`
-            : ''}
-          <span class="potential">
-            <span class="label">${d.cancelled ? 'Capped' : 'Forecast'}</span>
-            $${fmtExact(d.cancelled ? earned : potential)}
-            ${monthlyShare > 0 && !d.cancelled ? `· $${fmtExact(monthlyShare)}/mo × ${max}` : ''}
-          </span>
-          ${renderPayoutControl(d, max, collected, paidOut, earned)}
-        </div>`;
-    }
-    // For one-shot and excluded, the payout control needs to attach too.
-    if (max === 1) {
-      commissionCell = commissionCell.replace(
-        '</div>',
-        `${renderPayoutControl(d, max, collected, paidOut, earned)}</div>`
-      );
-    }
-
-    // Client cell: name + (if part of a multi-sub set) a small index badge.
-    const subBadge = totalSubs > 1
-      ? `<span class="sub-index" title="${totalSubs} subscriptions for this client">
-           Subscription <span class="sub-index-num">${subIndex}</span> / ${totalSubs}
-         </span>` : '';
-    const clientCell = `${subBadge}
-      <div class="deal-name">${escapeHtml(d.name)}</div>
-      ${d.ref ? `<div class="deal-ref">${escapeHtml(d.ref)}</div>` : ''}`;
-
-    // Status footnote: long-form below-target explainer lives alongside the
-    // status badge, not jammed into the commission column. Below-target deals
-    // also get a "$X collected this period" line so the row doesn't look broken.
-    let statusNote = '';
-    if (displayStatus === 'below-target' && !d.cancelled) {
-      const mrrVal = Number(d.mrr) || 0;
-      const unitValue = (d.billing === 'annual' && !isManaged(d.plan)) ? mrrVal * 12 : mrrVal;
-      const collectedRevenue = unitValue * collected;
-      const revenueLine = collectedRevenue > 0
-        ? ` Subscription revenue collected: <strong>$${fmtExact(collectedRevenue)}</strong> (commission still $0 until close-month MRR clears $1,000).`
-        : ' No commission accrues until the close-month MRR clears $1,000. Payments still mark history.';
-      statusNote = `<span class="status-note">${revenueLine}</span>`;
-    }
-
-    // Next renewal date for active monthly/annual subscriptions.
     const nextRenewal = dealNextRenewalDate(d);
     let renewalTag = '';
     if (nextRenewal) {
       const nowYM = new Date().toISOString().slice(0, 7);
-      const renewYM = nextRenewal.slice(0, 7);
-      const isDue = renewYM <= nowYM && (collected < max);
-      renewalTag = `<div class="renewal-tag${isDue ? ' due' : ''}" title="Next expected billing date">
-        <span class="dot"></span>
-        <span>${isDue ? 'Renewal due' : 'Renews'} ${formatDate(nextRenewal)}</span>
-      </div>`;
+      const isDue = nextRenewal.slice(0, 7) <= nowYM && collected < max;
+      renewalTag = `<span class="dc-sep"></span><span class="dc-renew${isDue ? ' due' : ''}">`
+        + `${isDue ? 'Renewal due' : 'Renews'} ${formatDate(nextRenewal)}</span>`;
     }
 
-    return `
-      <tr data-id="${d.id}" class="${isGroupedRow ? 'deal-row-grouped' : ''}">
-        <td data-label="Client">${clientCell}</td>
-        <td data-label="Date" class="mono">${formatDate(d.date)}${renewalTag}</td>
-        <td data-label="Plan"><span class="badge ${badgeClass}">${badgeText}</span></td>
-        <td data-label="MRR" class="right mono">$${fmt(mrr)}</td>
-        <td data-label="Status">
-          <span class="deal-status ${displayStatus}">${STATUS_TEXT[displayStatus] || displayStatus}</span>
-          ${statusNote}
-        </td>
-        <td data-label="Payments">${paymentsCell}</td>
-        <td data-label="Commission" class="right">${commissionCell}</td>
-        <td data-label="" class="right">
-          <div class="deal-actions">
-            <button class="btn-icon btn-trash" onclick="deleteDeal('${d.id}')" title="Delete deal" aria-label="Delete deal">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 6h18"/>
-                <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                <line x1="10" y1="11" x2="10" y2="17"/>
-                <line x1="14" y1="11" x2="14" y2="17"/>
-              </svg>
-            </button>
-            <button class="add-sub-btn" type="button" onclick="addSubscription('${d.id}')" title="Add another subscription for this client">Add subscription</button>
+    const header = `
+      <div class="dc-top">
+        <div class="dc-id">
+          <div class="dc-name-row">
+            <span class="dc-name">${escapeHtml(d.name)}</span>
+            ${subtag}
           </div>
-        </td>
-      </tr>`;
+          <div class="dc-meta">
+            <span class="dc-plan ${planKind}">${escapeHtml(planShortLabel(d.plan))}</span>
+            <span class="dc-sep"></span>
+            <span class="dc-meta-item">Closed ${formatDate(d.date)}</span>
+            ${ref}
+            ${renewalTag}
+          </div>
+        </div>
+        <span class="dc-status ${displayStatus}">${STATUS_TEXT[displayStatus] || displayStatus}</span>
+      </div>`;
+
+    // ── Figures: earned (primary) · MRR · forecast ──
+    const unitValue = (d.billing === 'annual' && !isManaged(d.plan)) ? mrr * 12 : mrr;
+    const collectedRevenue = unitValue * collected;
+    let figures, hint = '';
+    if (max === 0) {
+      figures = `
+        <div class="dc-figures">
+          <div class="dc-fig dc-fig-primary">
+            <span class="dc-fig-label">Commission</span>
+            <span class="dc-fig-value muted">$0.00</span>
+          </div>
+          <div class="dc-fig">
+            <span class="dc-fig-label">MRR</span>
+            <span class="dc-fig-value">$${fmt(mrr)}<span class="dc-unit">/mo</span></span>
+          </div>
+        </div>`;
+      hint = `<div class="dc-hint">Self-serve plan — it doesn't earn commission. Logged here just for the record.</div>`;
+    } else {
+      const forecastLabel = d.cancelled ? 'Capped at' : (max === 1 ? 'Commission' : 'Forecast · 12 mo');
+      const forecastVal = d.cancelled ? earned : potential;
+      figures = `
+        <div class="dc-figures">
+          <div class="dc-fig dc-fig-primary">
+            <span class="dc-fig-label">Earned so far</span>
+            <span class="dc-fig-value ${earned > 0 ? 'pos' : 'muted'}">$${fmtExact(earned)}</span>
+          </div>
+          <div class="dc-fig">
+            <span class="dc-fig-label">MRR</span>
+            <span class="dc-fig-value">$${fmt(mrr)}<span class="dc-unit">${d.billing === 'annual' ? '/yr' : '/mo'}</span></span>
+          </div>
+          <div class="dc-fig">
+            <span class="dc-fig-label">${forecastLabel}</span>
+            <span class="dc-fig-value muted">$${fmtExact(forecastVal)}</span>
+          </div>
+        </div>`;
+      if (belowTarget) {
+        hint = collectedRevenue > 0
+          ? `<div class="dc-hint">Below the <b>$1,000</b> monthly target, so commission is still $0 — but you've collected <b>$${fmtExact(collectedRevenue)}</b> in subscription revenue. Commission unlocks once this month's eligible MRR clears $1,000.</div>`
+          : `<div class="dc-hint">Below the <b>$1,000</b> monthly target — no commission accrues yet. Marking payments still records the revenue.</div>`;
+      } else if (pending > 0 && !d.cancelled) {
+        hint = `<div class="dc-hint"><b>$${fmtExact(pending)}</b> is pending — mark the latest payment below once the client pays.</div>`;
+      }
+    }
+
+    const controls = (max === 0) ? '' : renderPaymentBlock(d, max, collected, paidOut, earned);
+
+    // ── Footer: cancel · add subscription · delete ──
+    const cancelLink = (max === 0) ? ''
+      : `<button type="button" class="dc-link${d.cancelled ? ' is-on' : ''}" onclick="toggleCancel('${d.id}')">`
+        + `${d.cancelled ? 'Un-cancel deal' : 'Mark cancelled'}</button>`;
+    const footer = `
+      <div class="dc-foot">
+        ${cancelLink}
+        <span class="dc-foot-spacer"></span>
+        <button type="button" class="dc-link" onclick="addSubscription('${d.id}')" title="Add another subscription for this client">+ Add subscription</button>
+        <button type="button" class="dc-icon-btn" onclick="deleteDeal('${d.id}')" title="Delete deal" aria-label="Delete deal">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+            <line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>
+          </svg>
+        </button>
+      </div>`;
+
+    return `
+      <div class="deal-card${isGroupedRow ? ' grouped' : ''}${d.cancelled ? ' is-cancelled' : ''}" data-id="${d.id}">
+        ${header}
+        ${figures}
+        ${hint}
+        ${controls}
+        ${footer}
+      </div>`;
   }
 
-  // Per-deal "money received" control. Hidden when there's nothing to mark
-  // (excluded plans, $0 earned). For one-shot deals it's a single toggle;
-  // for monthly deals it's a counter that mirrors paymentsCollected.
-  function renderPayoutControl(d, max, collected, paidOut, earned) {
-    if (max === 0) return '';
-    if (earned === 0 && paidOut === 0) return '';
-
+  // Payments-collected + commission-received controls for one card.
+  //  • Collected is the PRIMARY action: a row of month segments you can tap to
+  //    jump straight to a count (no more clicking "+" twelve times), plus a
+  //    stepper and a one-tap "All".
+  //  • Received is a calmer SECONDARY line so the two counters never blur
+  //    together. Both still write the same paymentsCollected / paymentsPaidOut
+  //    fields the dashboard math reads.
+  function renderPaymentBlock(d, max, collected, paidOut, earned) {
+    let collectedUI;
     if (max === 1) {
-      const isReceived = paidOut >= 1;
-      return `
-        <div class="payout-row">
-          <button type="button"
-                  class="payout-toggle${isReceived ? ' received' : ''}"
-                  onclick="togglePayoutReceived('${d.id}')"
-                  ${collected === 0 ? 'disabled' : ''}
-                  title="${collected === 0 ? 'Mark the client payment first' : (isReceived ? 'Unmark — money not yet received' : 'Mark commission as received')}">
-            <span class="check"></span>
-            <span>${isReceived ? 'Received' : 'Mark received'}</span>
-          </button>
+      const isOn = collected >= 1;
+      const label = isManaged(d.plan) ? 'First invoice' : 'Annual payment';
+      collectedUI = `
+        <div class="dc-pay-row"><span class="dc-pay-label">${label}</span></div>
+        <button type="button" class="dc-toggle${isOn ? ' on' : ''}" onclick="toggleOneshot('${d.id}')" ${d.cancelled ? 'disabled' : ''}>
+          <span class="dc-check"></span>
+          <span>${isOn ? 'Payment collected' : 'Mark payment collected'}</span>
+        </button>`;
+    } else {
+      const segs = Array.from({ length: max }, (_, i) => {
+        const cls = i < collected ? 'dc-seg filled' : (d.cancelled ? 'dc-seg capped' : 'dc-seg');
+        return `<button type="button" class="${cls}" title="Set to ${i + 1} of ${max}" `
+          + `onclick="setPaid('${d.id}', ${i + 1})" ${d.cancelled ? 'disabled' : ''} aria-label="Month ${i + 1}"></button>`;
+      }).join('');
+      collectedUI = `
+        <div class="dc-pay-row">
+          <span class="dc-pay-label">Payments collected</span>
+          <span class="dc-pay-count"><b>${collected}</b> of ${max} months</span>
+        </div>
+        <div class="dc-segs" role="group" aria-label="Payments collected — tap a month to set the count">${segs}</div>
+        <div class="dc-stepper">
+          <button type="button" class="dc-step" onclick="unmarkPaid('${d.id}')" ${collected === 0 || d.cancelled ? 'disabled' : ''} aria-label="Remove last payment">−</button>
+          <button type="button" class="dc-mark" onclick="markPaid('${d.id}')" ${collected >= max || d.cancelled ? 'disabled' : ''}>Mark a payment</button>
+          <button type="button" class="dc-step dc-step-all" onclick="setPaid('${d.id}', ${max})" ${collected >= max || d.cancelled ? 'disabled' : ''} title="Mark all ${max} months collected">All paid</button>
         </div>`;
     }
 
-    const allReceived = paidOut >= collected && collected > 0;
-    return `
-      <div class="payout-row">
-        <span class="payout-label">Received</span>
-        <div class="payout-counter${allReceived ? ' complete' : ''}">
-          <button type="button" class="payout-btn"
-                  onclick="unmarkPayout('${d.id}')"
-                  ${paidOut === 0 ? 'disabled' : ''}
-                  title="Undo last received payment">−</button>
-          <span class="payout-count">${paidOut}/${collected} mo</span>
-          <button type="button" class="payout-btn"
-                  onclick="markPayout('${d.id}')"
-                  ${paidOut >= collected ? 'disabled' : ''}
-                  title="Mark next month's commission as received">+</button>
-        </div>
-      </div>`;
+    let receivedUI = '';
+    if (earned > 0 || paidOut > 0) {
+      if (max === 1) {
+        const isReceived = paidOut >= 1;
+        receivedUI = `
+          <div class="dc-received">
+            <span class="dc-received-label">Your commission</span>
+            <button type="button" class="dc-rec-toggle${isReceived ? ' on' : ''}" onclick="togglePayoutReceived('${d.id}')" ${collected === 0 ? 'disabled' : ''}>
+              <span class="dc-check sm"></span><span>${isReceived ? 'Received in pocket' : 'Mark received'}</span>
+            </button>
+          </div>`;
+      } else {
+        const allReceived = paidOut >= collected && collected > 0;
+        receivedUI = `
+          <div class="dc-received">
+            <span class="dc-received-label">Your commission</span>
+            <span class="dc-rec-state${allReceived ? ' done' : ''}"><b>${paidOut}</b> of ${collected} received</span>
+            <div class="dc-rec-stepper">
+              <button type="button" class="dc-step sm" onclick="unmarkPayout('${d.id}')" ${paidOut === 0 ? 'disabled' : ''} aria-label="Undo received">−</button>
+              <button type="button" class="dc-step sm" onclick="markPayout('${d.id}')" ${paidOut >= collected ? 'disabled' : ''} aria-label="Mark received">+</button>
+            </div>
+          </div>`;
+      }
+    }
+
+    return `<div class="dc-pay">${collectedUI}${receivedUI}</div>`;
   }
 
   // Payment-tracking event handlers (window-scoped so inline onclick works).
@@ -5576,6 +5415,22 @@
     if ((d.paymentsCollected || 0) >= max) return;
     if (d.cancelled) return;
     d.paymentsCollected = (d.paymentsCollected || 0) + 1;
+    render();
+    persistPayments(d);
+  };
+
+  // Jump straight to a collected count by tapping a month segment. Tapping the
+  // segment that's already the last filled one un-marks it, so a single tap can
+  // catch up several months (or step back one) without mashing +/−.
+  window.setPaid = function(id, n) {
+    const d = deals.find(x => x.id === id);
+    if (!d || d.cancelled) return;
+    const max = dealMaxUnits(d);
+    let target = Math.max(0, Math.min(max, n));
+    if ((d.paymentsCollected || 0) === target) target -= 1;   // toggle the last one off
+    d.paymentsCollected = Math.max(0, target);
+    // Can't have received commission for a month the client never paid for.
+    if ((d.paymentsPaidOut || 0) > d.paymentsCollected) d.paymentsPaidOut = d.paymentsCollected;
     render();
     persistPayments(d);
   };
@@ -6377,9 +6232,9 @@
 
     // Brand colors
     const COL = {
-      lime:      '#c4e84a',
-      limeDeep:  '#6b8a14',
-      limeSoft:  '#eef9c9',
+      lime:      '#3cbd77',
+      limeDeep:  '#0f6b3b',
+      limeSoft:  '#e7f6ee',
       text:      '#15151a',
       text2:     '#4a4a52',
       text3:     '#82828a',
@@ -6388,10 +6243,10 @@
       lineSoft:  '#f0f0eb',
       surface2:  '#f7f7f3',
       rowAlt:    '#fbfbf8',
-      green:     '#15803d',
-      greenSoft: '#e6f5ec',
-      amber:     '#b45309',
-      amberSoft: '#fdf3e0'
+      green:     '#157d46',
+      greenSoft: '#e7f6ee',
+      amber:     '#9a6a1c',
+      amberSoft: '#f4eedd'
     };
 
     // Helper: a chip pill rendered as a single-cell table (pdfmake has no border-radius, but
@@ -6909,7 +6764,7 @@
     ].join(';');
     overlay.innerHTML = `
       <div style="display:flex;align-items:center;gap:10px;">
-        <div style="width:14px;height:14px;border:2px solid #ededea;border-top-color:#c4e84a;border-radius:50%;animation:pdfSpin 0.7s linear infinite;"></div>
+        <div style="width:14px;height:14px;border:2px solid #ededea;border-top-color:#3cbd77;border-radius:50%;animation:pdfSpin 0.7s linear infinite;"></div>
         <div style="font-size:14px;font-weight:600;color:#15151a;">Generating PDF…</div>
       </div>
       <div style="font-size:11px;color:#82828a;font-family:'JetBrains Mono',monospace;letter-spacing:0.05em;">${escapeHtml(monthName)}</div>
@@ -7057,8 +6912,105 @@
 
   function setMonth(ym) {
     currentMonth = ym;
-    document.getElementById('monthSelector').value = ym;
     render();
+  }
+
+  // ─── Month / year picker ───────────────────────────────────────────────
+  const MONTH_NAMES = ['January','February','March','April','May','June',
+                       'July','August','September','October','November','December'];
+  const MP_CHEV_L = '<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4L6 8l4 4"/></svg>';
+  const MP_CHEV_R = '<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>';
+
+  function setupMonthPicker() {
+    const display = document.getElementById('monthDisplay');
+    const picker  = document.getElementById('monthPicker');
+    let mpYear = new Date().getFullYear();   // year shown in the grid
+    let mpMode = 'month';                    // 'month' | 'year'
+
+    function renderGrid() {
+      const [curY, curM] = currentMonth.split('-').map(Number);
+      const now = new Date();
+      const nowY = now.getFullYear(), nowM = now.getMonth() + 1;
+
+      if (mpMode === 'year') {
+        const start = mpYear - 5;
+        const cells = Array.from({ length: 12 }, (_, i) => {
+          const yr = start + i;
+          const cls = ['mp-cell'];
+          if (yr === curY) cls.push('selected');
+          if (yr === nowY) cls.push('today');
+          return `<button type="button" class="${cls.join(' ')}" data-mp="year" data-year="${yr}">${yr}</button>`;
+        }).join('');
+        picker.innerHTML =
+          `<div class="mp-head">
+             <button type="button" class="mp-nav" data-mp="prevRange" aria-label="Earlier years">${MP_CHEV_L}</button>
+             <span class="mp-range">${start}–${start + 11}</span>
+             <button type="button" class="mp-nav" data-mp="nextRange" aria-label="Later years">${MP_CHEV_R}</button>
+           </div>
+           <div class="mp-grid">${cells}</div>`;
+      } else {
+        const cells = MONTH_NAMES.map((name, i) => {
+          const m = i + 1;
+          const cls = ['mp-cell'];
+          if (mpYear === curY && m === curM) cls.push('selected');
+          if (mpYear === nowY && m === nowM) cls.push('today');
+          return `<button type="button" class="${cls.join(' ')}" data-mp="month" data-month="${m}">${name}</button>`;
+        }).join('');
+        picker.innerHTML =
+          `<div class="mp-head">
+             <button type="button" class="mp-nav" data-mp="prevYear" aria-label="Previous year">${MP_CHEV_L}</button>
+             <button type="button" class="mp-year" data-mp="toggleYear" title="Pick a year">${mpYear}</button>
+             <button type="button" class="mp-nav" data-mp="nextYear" aria-label="Next year">${MP_CHEV_R}</button>
+           </div>
+           <div class="mp-grid">${cells}</div>`;
+      }
+    }
+
+    function open() {
+      mpYear = Number(currentMonth.split('-')[0]);
+      mpMode = 'month';
+      renderGrid();
+      picker.classList.add('open');
+      display.setAttribute('aria-expanded', 'true');
+    }
+    function close() {
+      picker.classList.remove('open');
+      display.setAttribute('aria-expanded', 'false');
+    }
+
+    display.addEventListener('click', (e) => {
+      e.stopPropagation();
+      picker.classList.contains('open') ? close() : open();
+    });
+
+    picker.addEventListener('click', (e) => {
+      // Keep clicks inside the picker from reaching the outside-close handler
+      // below. The handlers here replace the picker's innerHTML (re-render),
+      // which detaches e.target — making a later picker.contains(e.target)
+      // check wrongly report "outside" and close the popover.
+      e.stopPropagation();
+      const btn = e.target.closest('[data-mp]');
+      if (!btn) return;
+      switch (btn.dataset.mp) {
+        case 'prevYear':  mpYear--; renderGrid(); break;
+        case 'nextYear':  mpYear++; renderGrid(); break;
+        case 'prevRange': mpYear -= 12; renderGrid(); break;
+        case 'nextRange': mpYear += 12; renderGrid(); break;
+        case 'toggleYear': mpMode = 'year'; renderGrid(); break;
+        case 'year':  mpYear = Number(btn.dataset.year); mpMode = 'month'; renderGrid(); break;
+        case 'month':
+          close();
+          setMonth(`${mpYear}-${String(btn.dataset.month).padStart(2, '0')}`);
+          break;
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (picker.classList.contains('open') && !picker.contains(e.target) && !display.contains(e.target)) close();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && picker.classList.contains('open')) { close(); display.focus(); }
+    });
   }
 
   // ─── Modal system ──────────────────────────────────────────────────────
@@ -7625,9 +7577,7 @@
     document.getElementById('rulesBtn').addEventListener('click', openRulesModal);
     document.getElementById('planPickBtn').addEventListener('click', openPlanPickerModal);
 
-    const sel = document.getElementById('monthSelector');
-    sel.value = currentMonth;
-    sel.addEventListener('change', (e) => setMonth(e.target.value));
+    setupMonthPicker();
 
     document.getElementById('prevMonth').addEventListener('click', () => setMonth(shiftMonth(currentMonth, -1)));
     document.getElementById('nextMonth').addEventListener('click', () => setMonth(shiftMonth(currentMonth, 1)));
@@ -7681,7 +7631,12 @@
     document.getElementById('verifyBannerBtn').addEventListener('click', startVerificationFlow);
     document.getElementById('verifyHistoryToggle').addEventListener('click', toggleVerificationHistory);
 
-    document.getElementById('activityBannerDismiss').addEventListener('click', () => {
+    document.getElementById('activityBannerDismiss').addEventListener('click', async () => {
+      // Remember this exact activity so it stays dismissed across reloads —
+      // it only comes back if something genuinely new happens.
+      if (_activityBannerData) {
+        try { await cache.set(DISMISS_CACHE_KEY, activitySignature(_activityBannerData)); } catch(e) {}
+      }
       _activityBannerData = null;
       renderActivityBanner();
     });
