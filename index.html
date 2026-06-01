@@ -99,24 +99,21 @@
 
   .brand { display: flex; flex-direction: column; gap: 4px; }
 
-  .brand-mark {
-    display: flex;
+  .ac-logo {
+    display: inline-flex;
     align-items: center;
-    gap: 9px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--text-3);
-    text-transform: uppercase;
-    letter-spacing: 0.16em;
-    margin-bottom: 4px;
+    margin-bottom: 12px;
+    text-decoration: none;
+    width: fit-content;
   }
 
-  .brand-mark .dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: var(--accent);
-    box-shadow: 0 0 0 3px rgba(60, 189, 119, 0.25);
+  .ac-logo-img {
+    height: 40px;
+    width: auto;
+    display: block;
   }
+
+  .ac-logo:hover .ac-logo-img { opacity: 0.85; }
 
   .brand h1 {
     font-family: var(--font-display);
@@ -173,33 +170,126 @@
   .month-stepper button:hover { background: var(--surface-2); color: var(--text); }
   .month-stepper button:disabled { color: var(--text-4); cursor: not-allowed; background: transparent; }
 
+  .month-control { position: relative; display: inline-flex; }
+
   .month-stepper .month-display {
-    padding: 0 18px;
+    padding: 0 14px;
     height: 40px;
-    display: flex;
+    display: inline-flex;
     align-items: center;
+    gap: 8px;
+    border: none;
     border-left: 1px solid var(--line);
     border-right: 1px solid var(--line);
+    background: transparent;
     font-family: 'JetBrains Mono', monospace;
     font-size: 13px;
     font-weight: 500;
     color: var(--text);
-    min-width: 150px;
+    min-width: 168px;
     justify-content: center;
     cursor: pointer;
-    position: relative;
     user-select: none;
+    transition: background 0.12s;
   }
 
   .month-stepper .month-display:hover { background: var(--surface-2); }
-  .month-stepper .month-display input {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    cursor: pointer;
-    border: none;
-    background: transparent;
+  .month-stepper .month-display .month-caret {
+    color: var(--text-3);
+    flex-shrink: 0;
+    transition: transform 0.15s;
   }
+  .month-stepper .month-display[aria-expanded="true"] .month-caret { transform: rotate(180deg); }
+
+  /* MONTH PICKER POPOVER */
+  .month-picker {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 300px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 12px;
+    z-index: 200;
+    opacity: 0;
+    transform: translateY(-4px);
+    pointer-events: none;
+    transition: opacity 0.15s, transform 0.15s;
+  }
+
+  .month-picker.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+  .mp-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .mp-nav {
+    width: 30px; height: 30px;
+    flex-shrink: 0;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--text-2);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.12s, color 0.12s, border-color 0.12s;
+  }
+
+  .mp-nav:hover { background: var(--surface-2); color: var(--text); border-color: var(--line-2); }
+
+  .mp-year, .mp-range {
+    flex: 1;
+    text-align: center;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--text);
+  }
+
+  .mp-year {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 6px 8px;
+    border-radius: var(--radius);
+    transition: background 0.12s;
+  }
+
+  .mp-year:hover { background: var(--surface-2); }
+
+  .mp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+
+  .mp-cell {
+    border: 1px solid transparent;
+    background: var(--surface-2);
+    color: var(--text-2);
+    border-radius: var(--radius);
+    padding: 9px 4px;
+    font-family: var(--font-sans);
+    font-size: 12.5px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    text-align: center;
+    transition: background 0.12s, color 0.12s, border-color 0.12s;
+  }
+
+  .mp-cell:hover { background: var(--surface-3); color: var(--text); }
+  .mp-cell.today { border-color: var(--line-2); color: var(--text); }
+  .mp-cell.selected {
+    background: var(--accent);
+    color: var(--accent-fg);
+    border-color: var(--accent-line);
+    font-weight: 600;
+  }
+  .mp-cell.selected:hover { background: var(--accent); color: var(--accent-fg); }
 
   /* ICON BUTTON (header) */
   .icon-btn {
@@ -2863,29 +2953,32 @@
 
   <header class="header">
     <div class="brand">
-      <div class="brand-mark">
-        <span class="dot"></span>
-        <span>ACE · Commission Tracker</span>
-      </div>
+      <a class="ac-logo" href="https://www.accessibilitychecker.org" target="_blank" rel="noopener noreferrer">
+        <img class="ac-logo-img" src="assets/accessibilitychecker-logo.svg" alt="AccessibilityChecker.org" width="216" height="32">
+      </a>
       <h1>Commission dashboard</h1>
-      <div class="meta">Gabriel Dalton · accessibilitychecker.org</div>
     </div>
     <div class="header-actions">
-      <div class="month-stepper">
-        <button type="button" id="prevMonth" title="Previous month" aria-label="Previous month">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M10 4L6 8l4 4"/>
-          </svg>
-        </button>
-        <label class="month-display" id="monthDisplay">
-          <span id="monthLabel">—</span>
-          <input type="month" id="monthSelector">
-        </label>
-        <button type="button" id="nextMonth" title="Next month" aria-label="Next month">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M6 4l4 4-4 4"/>
-          </svg>
-        </button>
+      <div class="month-control" id="monthControl">
+        <div class="month-stepper">
+          <button type="button" id="prevMonth" title="Previous month" aria-label="Previous month">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10 4L6 8l4 4"/>
+            </svg>
+          </button>
+          <button type="button" class="month-display" id="monthDisplay" aria-haspopup="dialog" aria-expanded="false" title="Choose month and year">
+            <span id="monthLabel">—</span>
+            <svg class="month-caret" width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 6l4 4 4-4"/>
+            </svg>
+          </button>
+          <button type="button" id="nextMonth" title="Next month" aria-label="Next month">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 4l4 4-4 4"/>
+            </svg>
+          </button>
+        </div>
+        <div class="month-picker" id="monthPicker" role="dialog" aria-label="Choose month and year"></div>
       </div>
       <button class="icon-btn" id="rulesBtn" title="Commission rules" aria-label="Commission rules">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -4377,7 +4470,7 @@
     renderActivityBanner();
 
     document.getElementById('periodLabel').textContent = formatMonthLabel(currentMonth);
-    document.getElementById('monthLabel').textContent = formatMonthLabelShort(currentMonth);
+    document.getElementById('monthLabel').textContent = formatMonthLabel(currentMonth);
 
     document.getElementById('eligibleMRR').textContent = fmt(c.eligibleMRR);
     document.getElementById('eligibleMrrCard').textContent = fmt(c.eligibleMRR);
@@ -6225,8 +6318,105 @@
 
   function setMonth(ym) {
     currentMonth = ym;
-    document.getElementById('monthSelector').value = ym;
     render();
+  }
+
+  // ─── Month / year picker ───────────────────────────────────────────────
+  const MONTH_NAMES = ['January','February','March','April','May','June',
+                       'July','August','September','October','November','December'];
+  const MP_CHEV_L = '<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4L6 8l4 4"/></svg>';
+  const MP_CHEV_R = '<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>';
+
+  function setupMonthPicker() {
+    const display = document.getElementById('monthDisplay');
+    const picker  = document.getElementById('monthPicker');
+    let mpYear = new Date().getFullYear();   // year shown in the grid
+    let mpMode = 'month';                    // 'month' | 'year'
+
+    function renderGrid() {
+      const [curY, curM] = currentMonth.split('-').map(Number);
+      const now = new Date();
+      const nowY = now.getFullYear(), nowM = now.getMonth() + 1;
+
+      if (mpMode === 'year') {
+        const start = mpYear - 5;
+        const cells = Array.from({ length: 12 }, (_, i) => {
+          const yr = start + i;
+          const cls = ['mp-cell'];
+          if (yr === curY) cls.push('selected');
+          if (yr === nowY) cls.push('today');
+          return `<button type="button" class="${cls.join(' ')}" data-mp="year" data-year="${yr}">${yr}</button>`;
+        }).join('');
+        picker.innerHTML =
+          `<div class="mp-head">
+             <button type="button" class="mp-nav" data-mp="prevRange" aria-label="Earlier years">${MP_CHEV_L}</button>
+             <span class="mp-range">${start}–${start + 11}</span>
+             <button type="button" class="mp-nav" data-mp="nextRange" aria-label="Later years">${MP_CHEV_R}</button>
+           </div>
+           <div class="mp-grid">${cells}</div>`;
+      } else {
+        const cells = MONTH_NAMES.map((name, i) => {
+          const m = i + 1;
+          const cls = ['mp-cell'];
+          if (mpYear === curY && m === curM) cls.push('selected');
+          if (mpYear === nowY && m === nowM) cls.push('today');
+          return `<button type="button" class="${cls.join(' ')}" data-mp="month" data-month="${m}">${name}</button>`;
+        }).join('');
+        picker.innerHTML =
+          `<div class="mp-head">
+             <button type="button" class="mp-nav" data-mp="prevYear" aria-label="Previous year">${MP_CHEV_L}</button>
+             <button type="button" class="mp-year" data-mp="toggleYear" title="Pick a year">${mpYear}</button>
+             <button type="button" class="mp-nav" data-mp="nextYear" aria-label="Next year">${MP_CHEV_R}</button>
+           </div>
+           <div class="mp-grid">${cells}</div>`;
+      }
+    }
+
+    function open() {
+      mpYear = Number(currentMonth.split('-')[0]);
+      mpMode = 'month';
+      renderGrid();
+      picker.classList.add('open');
+      display.setAttribute('aria-expanded', 'true');
+    }
+    function close() {
+      picker.classList.remove('open');
+      display.setAttribute('aria-expanded', 'false');
+    }
+
+    display.addEventListener('click', (e) => {
+      e.stopPropagation();
+      picker.classList.contains('open') ? close() : open();
+    });
+
+    picker.addEventListener('click', (e) => {
+      // Keep clicks inside the picker from reaching the outside-close handler
+      // below. The handlers here replace the picker's innerHTML (re-render),
+      // which detaches e.target — making a later picker.contains(e.target)
+      // check wrongly report "outside" and close the popover.
+      e.stopPropagation();
+      const btn = e.target.closest('[data-mp]');
+      if (!btn) return;
+      switch (btn.dataset.mp) {
+        case 'prevYear':  mpYear--; renderGrid(); break;
+        case 'nextYear':  mpYear++; renderGrid(); break;
+        case 'prevRange': mpYear -= 12; renderGrid(); break;
+        case 'nextRange': mpYear += 12; renderGrid(); break;
+        case 'toggleYear': mpMode = 'year'; renderGrid(); break;
+        case 'year':  mpYear = Number(btn.dataset.year); mpMode = 'month'; renderGrid(); break;
+        case 'month':
+          close();
+          setMonth(`${mpYear}-${String(btn.dataset.month).padStart(2, '0')}`);
+          break;
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (picker.classList.contains('open') && !picker.contains(e.target) && !display.contains(e.target)) close();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && picker.classList.contains('open')) { close(); display.focus(); }
+    });
   }
 
   // ─── Modal system ──────────────────────────────────────────────────────
@@ -6793,9 +6983,7 @@
     document.getElementById('rulesBtn').addEventListener('click', openRulesModal);
     document.getElementById('planPickBtn').addEventListener('click', openPlanPickerModal);
 
-    const sel = document.getElementById('monthSelector');
-    sel.value = currentMonth;
-    sel.addEventListener('change', (e) => setMonth(e.target.value));
+    setupMonthPicker();
 
     document.getElementById('prevMonth').addEventListener('click', () => setMonth(shiftMonth(currentMonth, -1)));
     document.getElementById('nextMonth').addEventListener('click', () => setMonth(shiftMonth(currentMonth, 1)));
