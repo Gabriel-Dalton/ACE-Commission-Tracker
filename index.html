@@ -13,30 +13,34 @@
 <script src="config.local.js" onerror="void 0"></script>
 <style>
   :root {
-    --bg: #fafaf7;
-    --bg-tint: #f4f4ef;
+    --bg: #f7f8f7;
+    --bg-tint: #eef1ee;
     --surface: #ffffff;
-    --surface-2: #f7f7f3;
-    --surface-3: #ededea;
-    --line: #e8e8e2;
-    --line-2: #d6d6cf;
-    --line-3: #c1c1b9;
-    --text: #15151a;
-    --text-2: #4a4a52;
-    --text-3: #82828a;
-    --text-4: #b0b0b6;
-    --accent: #c4e84a;
-    --accent-strong: #6b8a14;
-    --accent-fg: #1a2200;
-    --accent-soft: #eef9c9;
-    --accent-line: #d3e878;
-    --green: #15803d;
-    --green-soft: #e6f5ec;
-    --amber: #b45309;
-    --amber-soft: #fdf3e0;
-    --red: #b91c1c;
-    --blue: #1e4eb2;
-    --blue-soft: #e7eefb;
+    --surface-2: #f5f6f4;
+    --surface-3: #eaece8;
+    --line: #e7e9e5;
+    --line-2: #d5d8d2;
+    --line-3: #bec2bb;
+    --text: #292b2a;
+    --text-2: #555a56;
+    --text-3: #828884;
+    --text-4: #aab0aa;
+    /* Brand palette — taken from the AccessibilityChecker.org logo: green
+       #45bd7b / #78f0b4 on charcoal #3a3a3a. One green family + neutrals;
+       semantic amber/red are kept muted and used sparingly. */
+    --accent: #157d46;        /* primary green — buttons, key actions (white text passes AA) */
+    --accent-strong: #0f6b3b; /* deeper green — hover, and green text on light surfaces */
+    --accent-bright: #3cbd77; /* the bright logo green — progress fills, brand dot, accents */
+    --accent-fg: #ffffff;     /* text / icons on the primary green */
+    --accent-soft: #e7f6ee;   /* soft green — chip / badge backgrounds */
+    --accent-line: #c1e6d3;   /* soft green border */
+    --green: #157d46;         /* "good" / positive folds into the brand green */
+    --green-soft: #e7f6ee;
+    --amber: #9a6a1c;         /* muted caution — below target, cancelled, renewal due */
+    --amber-soft: #f4eedd;
+    --red: #b3261d;           /* destructive only (delete) */
+    --blue: #5f6b62;          /* neutralised — the palette has no separate blue hue */
+    --blue-soft: #eef1ee;
     --shadow-sm: 0 1px 2px rgba(20, 20, 20, 0.04);
     --shadow: 0 1px 3px rgba(20, 20, 20, 0.05), 0 1px 2px rgba(20, 20, 20, 0.03);
     --shadow-md: 0 4px 12px rgba(20, 20, 20, 0.06), 0 1px 3px rgba(20, 20, 20, 0.04);
@@ -74,8 +78,7 @@
 
   body {
     background:
-      radial-gradient(1200px 600px at 90% -20%, rgba(196, 232, 74, 0.10), transparent 55%),
-      radial-gradient(900px 500px at -10% 110%, rgba(30, 78, 178, 0.04), transparent 60%),
+      radial-gradient(1100px 560px at 96% -24%, rgba(60, 189, 119, 0.05), transparent 60%),
       var(--bg);
     padding: 32px 28px 80px;
   }
@@ -112,7 +115,7 @@
     width: 7px; height: 7px;
     border-radius: 50%;
     background: var(--accent);
-    box-shadow: 0 0 0 3px rgba(196, 232, 74, 0.25);
+    box-shadow: 0 0 0 3px rgba(60, 189, 119, 0.25);
   }
 
   .brand h1 {
@@ -451,15 +454,15 @@
 
   .progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, var(--accent), #a8d124);
+    background: linear-gradient(90deg, var(--accent), #2aa362);
     border-radius: 999px;
     transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 0 12px rgba(196, 232, 74, 0.5);
+    box-shadow: 0 0 12px rgba(60, 189, 119, 0.5);
   }
 
   .progress-fill.complete {
-    background: linear-gradient(90deg, #22c55e, var(--green));
-    box-shadow: 0 0 12px rgba(34, 197, 94, 0.4);
+    background: linear-gradient(90deg, #3cbd77, var(--green));
+    box-shadow: 0 0 12px rgba(60, 189, 119, 0.4);
   }
 
   .progress-meta {
@@ -644,7 +647,7 @@
   .input:focus {
     outline: none;
     border-color: var(--accent-line);
-    box-shadow: 0 0 0 3px rgba(196, 232, 74, 0.18);
+    box-shadow: 0 0 0 3px rgba(60, 189, 119, 0.18);
     background: var(--surface);
   }
   .input.locked,
@@ -769,7 +772,7 @@
   .dd-trigger:hover { border-color: var(--line-3); }
   .dd-trigger.open {
     border-color: var(--accent-line);
-    box-shadow: 0 0 0 3px rgba(196, 232, 74, 0.18);
+    box-shadow: 0 0 0 3px rgba(60, 189, 119, 0.18);
   }
 
   .dd-trigger .chev {
@@ -866,13 +869,13 @@
     background: var(--accent);
     color: var(--accent-fg);
     font-weight: 600;
-    box-shadow: 0 1px 2px rgba(107, 138, 20, 0.2);
+    box-shadow: 0 1px 2px rgba(15, 107, 59, 0.2);
   }
 
   .btn-primary:hover {
     background: #b5dc36;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(196, 232, 74, 0.4);
+    box-shadow: 0 4px 12px rgba(60, 189, 119, 0.4);
   }
 
   .btn-primary:active { transform: translateY(0); }
@@ -990,7 +993,6 @@
     transition: box-shadow 0.15s, border-color 0.15s;
   }
   .deal-card:hover { box-shadow: var(--shadow-md); border-color: var(--line-2); }
-  .deal-card.grouped { border-left: 3px solid var(--accent); }
   .deal-card.is-cancelled { background: var(--surface-2); }
   .deal-card.is-cancelled .dc-name { color: var(--text-2); }
 
@@ -1079,7 +1081,7 @@
   }
   .dc-seg:hover:not(:disabled) { border-color: var(--accent-strong); }
   .dc-seg:active:not(:disabled) { transform: scale(0.92); }
-  .dc-seg.filled { background: var(--accent); border-color: var(--accent-strong); }
+  .dc-seg.filled { background: var(--accent-bright); border-color: var(--accent); }
   .dc-seg.capped { background: repeating-linear-gradient(45deg, var(--surface-3) 0 4px, var(--line-2) 4px 5px); cursor: not-allowed; }
   .dc-seg:disabled { cursor: not-allowed; }
 
@@ -1801,7 +1803,7 @@
   }
   .verify-modal .chartmogul-link:hover {
     border-color: var(--accent-line);
-    box-shadow: 0 4px 10px rgba(196, 232, 74, 0.18);
+    box-shadow: 0 4px 10px rgba(60, 189, 119, 0.18);
     transform: translateY(-1px);
   }
   .verify-modal .chartmogul-hint {
@@ -1905,7 +1907,7 @@
   }
 
   .plan-pick-btn:hover { border-color: var(--line-3); }
-  .plan-pick-btn:focus { outline: none; border-color: var(--accent-line); box-shadow: 0 0 0 3px rgba(196, 232, 74, 0.18); }
+  .plan-pick-btn:focus { outline: none; border-color: var(--accent-line); box-shadow: 0 0 0 3px rgba(60, 189, 119, 0.18); }
 
   .plan-pick-btn .plan-pick-label {
     flex: 1;
@@ -2049,7 +2051,7 @@
 
   .plan-info-banner {
     background: var(--blue-soft);
-    border: 1px solid rgba(30, 78, 178, 0.15);
+    border: 1px solid var(--line-2);
     border-radius: var(--radius);
     padding: 10px 12px;
     font-size: 12px;
@@ -2123,7 +2125,7 @@
   }
   .custom-plan-mrr:focus-within {
     border-color: var(--accent-line);
-    box-shadow: 0 0 0 3px rgba(196, 232, 74, 0.18);
+    box-shadow: 0 0 0 3px rgba(60, 189, 119, 0.18);
   }
   .custom-plan-mrr .currency,
   .custom-plan-mrr .suffix {
@@ -2196,7 +2198,7 @@
   .sub-banner .sub-banner-text strong { font-weight: 700; }
   .sub-banner .sub-banner-cancel {
     background: transparent;
-    border: 1px solid rgba(107, 138, 20, 0.35);
+    border: 1px solid rgba(15, 107, 59, 0.35);
     color: var(--accent-strong);
     padding: 5px 10px;
     border-radius: 6px;
@@ -2209,7 +2211,7 @@
     font-weight: 600;
   }
   .sub-banner .sub-banner-cancel:hover {
-    background: rgba(196, 232, 74, 0.35);
+    background: rgba(60, 189, 119, 0.35);
     border-color: var(--accent-strong);
   }
 
@@ -2248,7 +2250,7 @@
   .pdf-brand { display: flex; gap: 14px; align-items: stretch; }
   .pdf-accent-bar {
     width: 5px;
-    background: #c4e84a;
+    background: #3cbd77;
     border-radius: 3px;
     align-self: stretch;
     min-height: 42px;
@@ -2282,7 +2284,7 @@
     position: absolute;
     top: 0; right: 0;
     width: 280px; height: 100%;
-    background: radial-gradient(ellipse at top right, #eef9c9 0%, transparent 60%);
+    background: radial-gradient(ellipse at top right, #e7f6ee 0%, transparent 60%);
     pointer-events: none;
   }
   .pdf-hero-left {
@@ -2341,8 +2343,8 @@
     padding: 4px 10px;
     border-radius: 999px;
   }
-  .pdf-status-hit { background: #e6f5ec; color: #15803d; }
-  .pdf-status-below { background: #fdf3e0; color: #b45309; }
+  .pdf-status-hit { background: #e7f6ee; color: #157d46; }
+  .pdf-status-below { background: #f4eedd; color: #9a6a1c; }
 
   .pdf-mrr {
     display: flex;
@@ -2368,11 +2370,11 @@
   }
   .pdf-progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, #c4e84a, #a8d124);
+    background: linear-gradient(90deg, #3cbd77, #2aa362);
     border-radius: 999px;
   }
   .pdf-progress-fill.complete {
-    background: linear-gradient(90deg, #22c55e, #15803d);
+    background: linear-gradient(90deg, #3cbd77, #157d46);
   }
 
   .pdf-caption {
@@ -2406,7 +2408,7 @@
   }
   .pdf-section-dot {
     width: 8px; height: 8px;
-    background: #c4e84a;
+    background: #3cbd77;
     flex-shrink: 0;
   }
   .pdf-section-label {
@@ -2466,15 +2468,15 @@
     font-weight: 700;
     font-family: 'JetBrains Mono', monospace;
   }
-  .pdf-table td.commission.earned { color: #15803d; }
+  .pdf-table td.commission.earned { color: #157d46; }
   .pdf-table td.commission.zero { color: #b0b0b6; }
   .pdf-status-cell {
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
     font-weight: 700;
   }
-  .pdf-status-cell.eligible { color: #15803d; }
-  .pdf-status-cell.managed { color: #6b8a14; }
+  .pdf-status-cell.eligible { color: #157d46; }
+  .pdf-status-cell.managed { color: #0f6b3b; }
   .pdf-status-cell.excluded { color: #b0b0b6; }
 
   /* Calculation */
@@ -2504,7 +2506,7 @@
     color: #82828a;
     font-style: italic;
   }
-  .pdf-calc-row .green { color: #15803d; }
+  .pdf-calc-row .green { color: #157d46; }
   .pdf-calc-divider { height: 8px; }
 
   /* Total bar */
@@ -2512,8 +2514,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: linear-gradient(135deg, #eef9c9 0%, #f9fce8 70%);
-    border: 1px solid #c4e84a;
+    background: linear-gradient(135deg, #e7f6ee 0%, #eef8f1 70%);
+    border: 1px solid #3cbd77;
     border-radius: 12px;
     padding: 20px 24px 20px 30px;
     margin-top: 24px;
@@ -2524,7 +2526,7 @@
     position: absolute;
     left: 8px; top: 16px; bottom: 16px;
     width: 4px;
-    background: #c4e84a;
+    background: #3cbd77;
     border-radius: 2px;
   }
   .pdf-total-label {
@@ -2533,12 +2535,12 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.14em;
-    color: #6b8a14;
+    color: #0f6b3b;
   }
   .pdf-total-month {
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
-    color: #6b8a14;
+    color: #0f6b3b;
     margin-top: 4px;
     opacity: 0.75;
   }
@@ -2682,8 +2684,8 @@
   }
   .voice-btn[hidden] { display: none; }
   @keyframes voicePulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(196, 232, 74, 0.45); }
-    50% { box-shadow: 0 0 0 6px rgba(196, 232, 74, 0); }
+    0%, 100% { box-shadow: 0 0 0 0 rgba(60, 189, 119, 0.45); }
+    50% { box-shadow: 0 0 0 6px rgba(60, 189, 119, 0); }
   }
 
   /* MOBILE VOICE OVERLAY (full-screen feedback while listening) */
@@ -2715,12 +2717,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 0 0 0 rgba(196, 232, 74, 0.45);
+    box-shadow: 0 0 0 0 rgba(60, 189, 119, 0.45);
     animation: voicePulseLg 1.4s ease-in-out infinite;
   }
   @keyframes voicePulseLg {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(196, 232, 74, 0.55); }
-    50% { box-shadow: 0 0 0 22px rgba(196, 232, 74, 0); }
+    0%, 100% { box-shadow: 0 0 0 0 rgba(60, 189, 119, 0.55); }
+    50% { box-shadow: 0 0 0 22px rgba(60, 189, 119, 0); }
   }
   .voice-overlay .voice-label {
     font-family: 'JetBrains Mono', monospace;
@@ -5543,9 +5545,9 @@
 
     // Brand colors
     const COL = {
-      lime:      '#c4e84a',
-      limeDeep:  '#6b8a14',
-      limeSoft:  '#eef9c9',
+      lime:      '#3cbd77',
+      limeDeep:  '#0f6b3b',
+      limeSoft:  '#e7f6ee',
       text:      '#15151a',
       text2:     '#4a4a52',
       text3:     '#82828a',
@@ -5554,10 +5556,10 @@
       lineSoft:  '#f0f0eb',
       surface2:  '#f7f7f3',
       rowAlt:    '#fbfbf8',
-      green:     '#15803d',
-      greenSoft: '#e6f5ec',
-      amber:     '#b45309',
-      amberSoft: '#fdf3e0'
+      green:     '#157d46',
+      greenSoft: '#e7f6ee',
+      amber:     '#9a6a1c',
+      amberSoft: '#f4eedd'
     };
 
     // Helper: a chip pill rendered as a single-cell table (pdfmake has no border-radius, but
@@ -6075,7 +6077,7 @@
     ].join(';');
     overlay.innerHTML = `
       <div style="display:flex;align-items:center;gap:10px;">
-        <div style="width:14px;height:14px;border:2px solid #ededea;border-top-color:#c4e84a;border-radius:50%;animation:pdfSpin 0.7s linear infinite;"></div>
+        <div style="width:14px;height:14px;border:2px solid #ededea;border-top-color:#3cbd77;border-radius:50%;animation:pdfSpin 0.7s linear infinite;"></div>
         <div style="font-size:14px;font-weight:600;color:#15151a;">Generating PDF…</div>
       </div>
       <div style="font-size:11px;color:#82828a;font-family:'JetBrains Mono',monospace;letter-spacing:0.05em;">${escapeHtml(monthName)}</div>
