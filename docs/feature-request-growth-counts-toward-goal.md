@@ -199,10 +199,18 @@ platform **$561.60/yr** + managed **$300** + Growth **$0** = **$861.60** forecas
 
 ## 8. UI / UX changes
 
-- **Plan badge:** new violet **"Growth"** badge (`badge-goal`) — distinct from the
-  grey "excluded" badge, so a glance separates "helps the goal" from "ignored."
-- **Status pill:** **"Counts toward goal"** (violet), replacing the old "Excluded".
-- **Commission cell:** "$0.00 — Counts toward $1,000 goal · no commission".
+> Surfaced on the card-based deal UI (the `.dc-*` design), using a muted violet
+> (`--violet: #6b4fa1`) that sits with the AccessibilityChecker.org brand palette
+> while staying distinct from platform/managed/excluded.
+
+- **Plan tag:** new violet **"Growth"** tag (`.dc-plan.goal`) — distinct from the
+  grey "excluded" tag, so a glance separates "helps the goal" from "ignored."
+- **Status chip:** **"Counts toward goal"** (`.dc-status.goal`, violet), replacing
+  the old "No commission" chip for Growth.
+- **Card hint:** *"Counts toward the $1,000 monthly target — it helps unlock
+  commission on platform deals, but earns no commission itself"* (instead of the
+  excluded tiers' "Self-serve plan — it doesn't earn commission" note). Commission
+  figure still reads **$0.00**.
 - **Forecast breakdown:** a dedicated line —
   *"Beta LLC — Growth (counts toward target · no commission) … $299/mo"* — listed
   alongside platform & managed contributors, so `Eligible MRR` visibly adds up.
@@ -212,7 +220,7 @@ platform **$561.60/yr** + managed **$300** + Growth **$0** = **$861.60** forecas
 - **Plan picker (Self-serve tab):** split into **"Counts toward goal"** (Growth,
   with an explanatory banner) and **"Excluded · no commission"** (Lite, Starter).
 - **PDF / CSV export:** Growth itemized as a goal contributor; status exports as
-  `goal`.
+  `goal` (PDF chip "Toward goal").
 
 ---
 
@@ -249,11 +257,11 @@ us?" prompts (there's no commission to collect).
     `eligibleMRR` and `targetToFill` (the core change).
   - **`dealMaxUnits` / `dealMonthlyShare` / revenue / renewal / carry-over:** key
     off `isCommissionable` so Growth stays at 0 units / $0.
-  - **`dealStatus` + badges + status text + commission cell + breakdown + stats:**
-    surface the "goal" state.
+  - **`dealStatus` + `renderDealRow` (`planKind` tag + `STATUS_TEXT` + card hint)
+    + breakdown + stats:** surface the "goal" state on the card UI.
   - **Rules modal + plan picker + edit-tab routing:** documentation & navigation.
-  - **CSS:** `--violet` / `--violet-soft`; `.badge-goal`, `.deal-status.goal`,
-    `.pdf-status-cell.goal`.
+  - **CSS:** `--violet` / `--violet-soft` (muted to fit the brand palette);
+    `.dc-plan.goal`, `.dc-status.goal`, `.pdf-status-cell.goal`.
 - `scripts/verify-goal-contribution.mjs` — standalone assertions mirroring the
   in-app math for every example in §6 (run with `node`).
 
