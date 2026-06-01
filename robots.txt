@@ -1,0 +1,7 @@
+# ACE Commission Tracker — private tool. Not for public search engines.
+# This asks every well-behaved crawler to stay out entirely.
+# (De-indexing is also enforced via a noindex meta tag in index.html and an
+#  X-Robots-Tag: noindex header in vercel.json, which cover crawlers that
+#  fetch the page anyway.)
+User-agent: *
+Disallow: /

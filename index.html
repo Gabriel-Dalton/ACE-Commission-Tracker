@@ -3,7 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ACE Commission Tracker — Gabriel Dalton</title>
+<!-- Private tool: keep out of all search engines / AI crawlers. Paired with
+     robots.txt (Disallow) and an X-Robots-Tag header in vercel.json. -->
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex, notranslate">
+<meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+<title>Sign in</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -84,6 +88,158 @@
   }
 
   .container { max-width: 1280px; margin: 0 auto; }
+
+  /* ─── Auth gate ─────────────────────────────────────────────────────────
+     Full-screen Supabase login overlay. The dashboard (.container) stays
+     hidden until a valid session exists, so private data never flashes for an
+     unauthenticated visitor (fail closed). */
+  body.auth-locked { overflow: hidden; }
+  body.auth-locked .container { display: none !important; }
+  .auth-gate { display: none; }
+  body.auth-locked .auth-gate {
+    display: flex;
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background:
+      radial-gradient(1100px 520px at 50% -8%, var(--accent-soft), transparent 60%),
+      var(--bg);
+  }
+  .auth-card {
+    width: 100%;
+    max-width: 372px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    padding: 30px 28px 22px;
+  }
+  /* Neutral security badge in place of any brand/owner name. */
+  .auth-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px; height: 44px;
+    border-radius: 13px;
+    background: var(--accent-soft);
+    border: 1px solid var(--accent-line);
+    color: var(--accent-strong);
+    margin-bottom: 18px;
+  }
+  .auth-title {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    color: var(--text);
+    margin-bottom: 5px;
+  }
+  .auth-sub {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text-3);
+    margin-bottom: 22px;
+  }
+  .auth-field { margin-bottom: 14px; }
+  .auth-field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-2);
+    margin-bottom: 6px;
+  }
+  /* Password input with an inline show / hide toggle. */
+  .auth-password { position: relative; }
+  .auth-password .input { padding-right: 42px; }
+  .auth-reveal {
+    position: absolute;
+    top: 50%; right: 5px;
+    transform: translateY(-50%);
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px;
+    padding: 0;
+    border: none; background: transparent;
+    color: var(--text-3); cursor: pointer;
+    border-radius: 6px;
+    transition: color 0.15s, background 0.15s;
+  }
+  .auth-reveal:hover { color: var(--text); background: var(--surface-3); }
+  .auth-reveal:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(196, 232, 74, 0.35);
+  }
+  .auth-reveal .ico-eye-off { display: none; }
+  .auth-reveal[aria-pressed="true"] .ico-eye { display: none; }
+  .auth-reveal[aria-pressed="true"] .ico-eye-off { display: block; }
+  /* Caps-lock warning, shown only while the password field has focus. */
+  .auth-caps {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--amber);
+  }
+  .auth-caps[data-on="1"] { display: flex; }
+  .auth-error {
+    margin-bottom: 14px;
+    padding: 9px 12px;
+    border-radius: var(--radius);
+    font-size: 12.5px;
+    line-height: 1.4;
+    color: var(--red);
+    background: rgba(185, 28, 28, 0.08);
+    border: 1px solid rgba(185, 28, 28, 0.22);
+  }
+  .auth-submit { width: 100%; justify-content: center; margin-top: 6px; }
+  .auth-submit:disabled { opacity: 0.65; cursor: default; transform: none; box-shadow: none; }
+  .auth-checking {
+    align-items: center;
+    gap: 9px;
+    font-size: 13px;
+    color: var(--text-3);
+    padding: 4px 0;
+  }
+  .auth-spinner {
+    width: 15px; height: 15px;
+    flex-shrink: 0;
+    border: 2px solid var(--line-2);
+    border-top-color: var(--accent-strong);
+    border-radius: 50%;
+    animation: auth-spin 0.7s linear infinite;
+  }
+  @keyframes auth-spin { to { transform: rotate(360deg); } }
+  .auth-foot {
+    justify-content: center;
+    align-items: center;
+    gap: 7px;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid var(--line);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--text-4);
+  }
+  .auth-foot svg { flex-shrink: 0; color: var(--accent-strong); }
+  .auth-form .auth-title { margin-bottom: 20px; }
+  /* Footer reflects the real transport: it only claims "encrypted" on https. */
+  .auth-foot .ico-unlock { display: none; }
+  .auth-foot[data-secure="0"] { color: var(--amber); }
+  .auth-foot[data-secure="0"] svg { color: var(--amber); }
+  .auth-foot[data-secure="0"] .ico-lock { display: none; }
+  .auth-foot[data-secure="0"] .ico-unlock { display: block; }
+  .auth-form, .auth-checking, .auth-fatal, .auth-foot { display: none; }
+  .auth-gate[data-state="checking"] .auth-checking { display: flex; }
+  .auth-gate[data-state="login"] .auth-form { display: block; }
+  .auth-gate[data-state="error"] .auth-fatal { display: block; }
+  .auth-gate[data-state="login"] .auth-foot,
+  .auth-gate[data-state="error"] .auth-foot { display: flex; }
 
   button { font-family: inherit; }
 
@@ -2948,7 +3104,68 @@
   }
 </style>
 </head>
-<body>
+<body class="auth-locked">
+
+<!-- Login gate. Shown until a valid Supabase session exists; the dashboard
+     markup below stays hidden behind it (see body.auth-locked rules). -->
+<div id="authGate" class="auth-gate" data-state="checking" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+  <div class="auth-card">
+    <div class="auth-badge" aria-hidden="true">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/>
+        <path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/>
+        <circle cx="12" cy="15.2" r="1.05" fill="currentColor" stroke="none"/>
+      </svg>
+    </div>
+
+    <div class="auth-checking" role="status">
+      <span class="auth-spinner" aria-hidden="true"></span>
+      Verifying your session…
+    </div>
+
+    <form class="auth-form" id="authForm" autocomplete="on">
+      <h1 class="auth-title" id="authTitle">Sign in</h1>
+      <div class="auth-field">
+        <label for="authEmail">Email</label>
+        <input class="input" type="email" id="authEmail" name="email" autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false" inputmode="email" required>
+      </div>
+      <div class="auth-field">
+        <label for="authPassword">Password</label>
+        <div class="auth-password">
+          <input class="input" type="password" id="authPassword" name="password" autocomplete="current-password" required>
+          <button type="button" class="auth-reveal" id="authReveal" aria-label="Show password" aria-pressed="false">
+            <svg class="ico-eye" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="2.6"/></svg>
+            <svg class="ico-eye-off" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.6 5.1A8.6 8.6 0 0 1 12 5c6.5 0 10 7 10 7a16.8 16.8 0 0 1-3 3.8"/><path d="M6.2 6.2A16.7 16.7 0 0 0 2 12s3.5 7 10 7a8.6 8.6 0 0 0 3.9-.9"/><path d="M9.9 9.9a2.6 2.6 0 0 0 3.6 3.6"/></svg>
+          </button>
+        </div>
+        <div class="auth-caps" id="authCaps" role="status">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 11h4v4h8v-4h4z"/><path d="M8 19h8"/></svg>
+          Caps Lock is on
+        </div>
+      </div>
+      <div class="auth-error" id="authError" role="alert" hidden></div>
+      <button class="btn btn-primary auth-submit" type="submit" id="authSubmit">Sign in</button>
+    </form>
+
+    <div class="auth-fatal" role="alert">
+      <div class="auth-title">Service unavailable</div>
+      <p class="auth-sub">Couldn't reach the authentication server. Refresh the page or try again in a moment.</p>
+    </div>
+
+    <div class="auth-foot" id="authSecure" data-secure="1">
+      <svg class="ico-lock" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="5" y="11" width="14" height="9" rx="2"/>
+        <path d="M8 11V8a4 4 0 0 1 8 0v3"/>
+      </svg>
+      <svg class="ico-unlock" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="5" y="11" width="14" height="9" rx="2"/>
+        <path d="M8 11V7a4 4 0 0 1 7-2.6"/>
+      </svg>
+      <span id="authSecureLabel">Encrypted connection</span>
+    </div>
+  </div>
+</div>
+
 <div class="container">
 
   <header class="header">
@@ -2984,6 +3201,12 @@
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="8" cy="8" r="6.5"/>
           <path d="M8 5.5v3M8 11h.01"/>
+        </svg>
+      </button>
+      <button class="icon-btn" id="signOutBtn" title="Sign out" aria-label="Sign out">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 2.5H4a1.5 1.5 0 0 0-1.5 1.5v8A1.5 1.5 0 0 0 4 13.5h2"/>
+          <path d="M10.5 11l3-3-3-3M13.5 8H6.5"/>
         </svg>
       </button>
     </div>
@@ -6973,10 +7196,145 @@
     label.textContent = breakdownOpen ? 'Hide' : 'Show';
   }
 
-  async function init() {
-    await initSupabase();
+  // ─── Auth gate ───────────────────────────────────────────────────────────
+  // The dashboard sits behind a Supabase email/password login. App markup is
+  // hidden (body.auth-locked) until a valid session exists, and every data
+  // request then runs as the `authenticated` role so RLS can scope access.
+  let _appStarted = false;
+
+  function showAuthGate(state /* 'checking' | 'login' | 'error' */) {
+    document.body.classList.add('auth-locked');
+    document.title = 'Sign in';
+    const gate = document.getElementById('authGate');
+    if (gate) gate.dataset.state = state || 'login';
+    if ((state || 'login') === 'login') {
+      const email = document.getElementById('authEmail');
+      if (email && !email.value) email.focus();
+    }
+  }
+  function hideAuthGate() {
+    document.body.classList.remove('auth-locked');
+  }
+  function setAuthError(msg) {
+    const el = document.getElementById('authError');
+    if (!el) return;
+    el.textContent = msg || '';
+    el.hidden = !msg;
+  }
+
+  // On sign-out, drop in-memory + cached data so nothing private lingers on a
+  // shared machine.
+  async function clearLocalData() {
+    deals = [];
+    try {
+      await cache.set('ct-deals-v3', '[]');
+      await cache.set('ct-deals-v2', '[]');
+    } catch(e) {}
+    try { render(); } catch(e) {}
+  }
+
+  // Reveal + boot the dashboard exactly once per session.
+  async function enterApp() {
+    if (_appStarted) return;
+    _appStarted = true;
+    hideAuthGate();
+    document.title = 'Dashboard';
     await loadData();
     await bootstrapActivityBanner();
+    render();
+  }
+
+  function applyAuthState(session) {
+    if (session) {
+      enterApp();
+    } else {
+      _appStarted = false;
+      showAuthGate('login');
+    }
+  }
+
+  function setupAuthGate() {
+    const form = document.getElementById('authForm');
+    if (form) form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!supa) { setAuthError('Server unavailable — try again in a moment.'); return; }
+      const email = document.getElementById('authEmail').value.trim();
+      const password = document.getElementById('authPassword').value;
+      const btn = document.getElementById('authSubmit');
+      setAuthError('');
+      btn.disabled = true; btn.textContent = 'Signing in…';
+      let error;
+      try {
+        ({ error } = await supa.auth.signInWithPassword({ email, password }));
+      } catch(err) { error = err; }
+      btn.disabled = false; btn.textContent = 'Sign in';
+      if (error) {
+        const m = error.message || '';
+        setAuthError(/invalid login credentials/i.test(m)
+          ? 'Wrong email or password.'
+          : /email not confirmed/i.test(m)
+            ? 'This account’s email is not confirmed yet.'
+            : (m || 'Sign in failed.'));
+        return;
+      }
+      document.getElementById('authPassword').value = '';
+      // onAuthStateChange → applyAuthState reveals the dashboard.
+    });
+
+    // Show / hide the password — cuts typos, so fewer failed attempts / lockouts.
+    const pw = document.getElementById('authPassword');
+    const reveal = document.getElementById('authReveal');
+    if (reveal && pw) reveal.addEventListener('click', () => {
+      const show = pw.type === 'password';
+      pw.type = show ? 'text' : 'password';
+      reveal.setAttribute('aria-pressed', String(show));
+      reveal.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+      pw.focus();
+    });
+
+    // Warn when Caps Lock is on while the password field has focus.
+    const caps = document.getElementById('authCaps');
+    const capsSync = (e) => {
+      if (caps && typeof e.getModifierState === 'function') {
+        caps.dataset.on = e.getModifierState('CapsLock') ? '1' : '0';
+      }
+    };
+    if (pw && caps) {
+      pw.addEventListener('keydown', capsSync);
+      pw.addEventListener('keyup', capsSync);
+      pw.addEventListener('blur', () => { caps.dataset.on = '0'; });
+    }
+
+    // Footer reflects the real transport — never a hardcoded claim. Reads the
+    // actual page protocol so it can't say "encrypted" over plain http.
+    const footEl = document.getElementById('authSecure');
+    if (footEl) {
+      const secure = location.protocol === 'https:';
+      footEl.dataset.secure = secure ? '1' : '0';
+      const lbl = document.getElementById('authSecureLabel');
+      if (lbl) lbl.textContent = secure ? 'Encrypted connection' : 'Not encrypted';
+    }
+
+    const out = document.getElementById('signOutBtn');
+    if (out) out.addEventListener('click', async () => {
+      try { if (supa) await supa.auth.signOut(); } catch(e) {}
+      await clearLocalData();
+      // onAuthStateChange → applyAuthState(null) shows the gate.
+    });
+  }
+
+  async function init() {
+    await initSupabase();
+    setupAuthGate();
+
+    if (!supa) {
+      // No Supabase config reachable — can't authenticate, so fail closed.
+      showAuthGate('error');
+    } else {
+      supa.auth.onAuthStateChange((_event, session) => applyAuthState(session));
+      const { data: { session } } = await supa.auth.getSession();
+      applyAuthState(session);
+    }
 
     dealBillingDropdown = setupDropdown('dealBilling');
     VoiceInput.init();

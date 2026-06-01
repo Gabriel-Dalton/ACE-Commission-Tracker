@@ -6,8 +6,11 @@ name: Queue subscription verifications
 # with us?" modal per row on next load.
 #
 # Required GitHub secrets (Settings → Secrets and variables → Actions):
-#   SUPABASE_URL              — same value as Vercel env var
-#   SUPABASE_PUBLISHABLE_KEY  — same value as Vercel env var
+#   SUPABASE_URL               — same value as the Vercel env var
+#   SUPABASE_SERVICE_ROLE_KEY  — Supabase service-role key (Dashboard → Project
+#                                Settings → API → service_role). Bypasses RLS
+#                                for this server-side job. Keep it secret — it
+#                                must never be exposed to the browser.
 
 on:
   schedule:
@@ -34,5 +37,5 @@ jobs:
       - name: Queue pending verifications
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: node scripts/queue-verifications.mjs

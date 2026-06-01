@@ -72,20 +72,36 @@ create index if not exists verification_log_verified_idx on verification_log(ver
 -- Stamp on the deal so the dashboard can show "last reviewed" at a glance.
 alter table deals add column if not exists last_verified_at timestamptz;
 
--- Row Level Security: enabled but permissive for the publishable key.
--- This is appropriate for a single-user personal tracker.
--- If you ever expose this app publicly, swap these for auth.uid()-scoped policies.
+-- Row Level Security: locked down to authenticated users only.
+-- The dashboard signs the user in via Supabase Auth (email/password); each
+-- request then carries a JWT with the `authenticated` role, which the policies
+-- below allow. The anonymous (`anon`) role — anyone holding just the public
+-- publishable key with no login — gets nothing.
+--
+-- Server-side automation (the queue-verifications GitHub Action) uses the
+-- SERVICE-ROLE key, which bypasses RLS entirely, so it needs no policy here.
+--
+-- This is a single-tenant tool, so `using (true)` (any logged-in user sees all
+-- rows) is intentional. If you ever invite additional users who should only see
+-- their own data, add a user_id column and scope these policies to auth.uid().
 alter table deals                  enable row level security;
 alter table settings               enable row level security;
 alter table pending_verifications  enable row level security;
 alter table verification_log       enable row level security;
 
+-- Drop the legacy permissive anon policies from earlier versions (these are
+-- what made every row readable/writable by anyone with the publishable key).
 drop policy if exists "deals all anon"                  on deals;
 drop policy if exists "settings all anon"               on settings;
 drop policy if exists "pending_verifications all anon"  on pending_verifications;
 drop policy if exists "verification_log all anon"       on verification_log;
 
-create policy "deals all anon"                  on deals                  for all to anon using (true) with check (true);
-create policy "settings all anon"               on settings               for all to anon using (true) with check (true);
-create policy "pending_verifications all anon"  on pending_verifications  for all to anon using (true) with check (true);
-create policy "verification_log all anon"       on verification_log       for all to anon using (true) with check (true);
+drop policy if exists "deals authenticated"                  on deals;
+drop policy if exists "settings authenticated"               on settings;
+drop policy if exists "pending_verifications authenticated"  on pending_verifications;
+drop policy if exists "verification_log authenticated"       on verification_log;
+
+create policy "deals authenticated"                  on deals                  for all to authenticated using (true) with check (true);
+create policy "settings authenticated"               on settings               for all to authenticated using (true) with check (true);
+create policy "pending_verifications authenticated"  on pending_verifications  for all to authenticated using (true) with check (true);
+create policy "verification_log authenticated"       on verification_log       for all to authenticated using (true) with check (true);

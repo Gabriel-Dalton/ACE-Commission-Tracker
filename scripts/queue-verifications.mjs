@@ -8,14 +8,18 @@
 //
 // Triggered by .github/workflows/queue-verifications.yml on the 1st of each
 // month (UTC). Reads two env vars set as GitHub Actions secrets:
-//   SUPABASE_URL                 — same value the dashboard uses
-//   SUPABASE_PUBLISHABLE_KEY     — anon key; RLS policies allow all-anon
+//   SUPABASE_URL                — same value the dashboard uses
+//   SUPABASE_SERVICE_ROLE_KEY   — service-role key. RLS is locked to the
+//                                 `authenticated` role, so this server-side
+//                                 job authenticates with the service-role key,
+//                                 which bypasses RLS. Keep it secret: it must
+//                                 NEVER be shipped to the browser / committed.
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY;
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!SUPABASE_URL || !SUPABASE_KEY) {
-  console.error('Missing SUPABASE_URL or SUPABASE_PUBLISHABLE_KEY env var.');
+  console.error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY env var.');
   process.exit(1);
 }
 
