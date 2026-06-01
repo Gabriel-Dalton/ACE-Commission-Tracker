@@ -5532,12 +5532,12 @@
       // Eligible MRR
       if (c.platformDeals.length > 0) {
         c.platformDeals.forEach(d => {
-          html += `<div class="breakdown-row"><span>${escapeHtml(d.name)} <span style="color:var(--text-4)">— ${planLabel(d.plan)}</span></span><span>$${fmt(Number(d.mrr))}/mo</span></div>`;
+          html += `<div class="breakdown-row"><span>${escapeHtml(d.name)} <span style="color:var(--text-4)">— ${escapeHtml(planLabel(d.plan))}</span></span><span>$${fmt(Number(d.mrr))}/mo</span></div>`;
         });
       }
       if (c.managedDeals.length > 0 && managedCountsTowardTarget === 'yes') {
         c.managedDeals.forEach(d => {
-          html += `<div class="breakdown-row"><span>${escapeHtml(d.name)} <span style="color:var(--text-4)">— ${planShortLabel(d.plan)} (counts toward target)</span></span><span>$${fmt(Number(d.mrr))}/mo</span></div>`;
+          html += `<div class="breakdown-row"><span>${escapeHtml(d.name)} <span style="color:var(--text-4)">— ${escapeHtml(planShortLabel(d.plan))} (counts toward target)</span></span><span>$${fmt(Number(d.mrr))}/mo</span></div>`;
         });
       }
       html += `<div class="breakdown-row subtotal"><span>Eligible MRR (this close-month)</span><span>$${fmt(c.eligibleMRR)}</span></div>`;
@@ -5556,7 +5556,7 @@
       }
       if (c.excludedDeals.length > 0) {
         c.excludedDeals.forEach(d => {
-          html += `<div class="breakdown-row" style="color:var(--text-4)"><span>${escapeHtml(d.name)} <span>— ${planLabel(d.plan)} (self-serve tier, excluded)</span></span><span>$0</span></div>`;
+          html += `<div class="breakdown-row" style="color:var(--text-4)"><span>${escapeHtml(d.name)} <span>— ${escapeHtml(planLabel(d.plan))} (self-serve tier, excluded)</span></span><span>$0</span></div>`;
         });
       }
       html += `<div class="breakdown-row subtotal"><span>Total 12-month potential</span><span>$${fmtExact(c.totalPotential)}</span></div>`;
