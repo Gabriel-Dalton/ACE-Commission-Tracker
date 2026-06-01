@@ -36,6 +36,10 @@ async function supa(path, init = {}) {
   return text ? JSON.parse(text) : null;
 }
 
+// Plans with zero commission units → no monthly "still with us?" verification.
+// Growth is a "goal contributor" in the dashboard (its MRR counts toward the
+// $1,000 target) but it still earns no commission, so there's nothing to verify
+// or collect month-to-month — it stays in this set alongside lite/starter.
 const EXCLUDED_PLANS = new Set(['lite', 'starter', 'growth']);
 
 function isManaged(plan) {
