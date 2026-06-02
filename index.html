@@ -5783,6 +5783,19 @@
     showToast(`Cleared ${monthName}`);
   }
 
+  // Serialize one CSV cell. Two layers of safety:
+  //  1) Formula-injection guard — a value starting with = + - @ tab or CR is
+  //     evaluated as a formula by Excel/Sheets (=HYPERLINK/WEBSERVICE exfil,
+  //     DDE, etc.). Prefix those with a single quote so the cell is treated as
+  //     text. Plain numbers (incl. negatives like -5.00) are exempted so
+  //     numeric columns stay numeric.
+  //  2) RFC-4180 quoting for any cell containing a comma, quote, or newline.
+  function csvCell(value) {
+    let s = String(value ?? '');
+    if (/^[=+\-@\t\r]/.test(s) && !/^-?\d+(\.\d+)?$/.test(s)) s = "'" + s;
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  }
+
   function exportCSV() {
     const c = calculateMonth();
 
@@ -5832,12 +5845,7 @@
 
     const out = [noteRow, [], ...summary, [], header, ...rows];
 
-    const csv = out.map(row =>
-      row.map(cell => {
-        const s = String(cell ?? '');
-        return s.includes(',') || s.includes('"') || s.includes('\n') ? `"${s.replace(/"/g, '""')}"` : s;
-      }).join(',')
-    ).join('\n');
+    const csv = out.map(row => row.map(csvCell).join(',')).join('\n');
 
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
