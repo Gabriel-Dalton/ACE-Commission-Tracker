@@ -3102,6 +3102,66 @@
     .footer-actions { flex-wrap: wrap; }
     .footer-actions .btn { flex: 1 1 calc(50% - 4px); }
   }
+
+  /* ─── NORMAL-WEIGHT LABELS ─────────────────────────────────────────────
+     The eyebrow / section / field micro-labels were originally set in slim,
+     wide-tracked, uppercase JetBrains Mono — the "terminal" treatment that
+     reads as noisy and low-contrast next to the Inter headings. This brings
+     them into line with the deal-card cleanup noted earlier: normal-weight
+     Inter, sentence case (the markup is already cased correctly, so "MRR"
+     stays "MRR"), with no forced uppercase or letter-spacing.
+
+     Money figures keep mono + tabular-nums for column alignment, keyboard
+     keys (.kbd) stay monospace, and the PDF export (.pdf-*) is untouched. */
+  .popover-title,
+  .popover-row .key,
+  .hero-label,
+  .progress-header .title,
+  .stat-label,
+  .section-title,
+  .field-label,
+  .dd-group-label,
+  th,
+  .forecast-label,
+  .forecast-pill,
+  .hero-pill,
+  .activity-banner-since,
+  .sub-revenue-strip .label,
+  .breakdown-toggle,
+  .breakdown-section-title,
+  .breakdown-total .label,
+  .modal-title,
+  .verify-banner-title,
+  .verify-modal .deal-snapshot dt,
+  .verify-modal .verify-counter,
+  .verify-history-when,
+  .plan-section-title,
+  .custom-plan-label,
+  .sub-banner .sub-banner-cancel {
+    font-family: var(--font-sans);
+    text-transform: none;
+    letter-spacing: normal;
+    font-weight: 600;
+  }
+
+  /* Mono prose / captions that aren't aligned number columns — same switch
+     to Inter, but keep each element's existing size/weight/colour (and the
+     tabular-nums on .breakdown-row, so the dollar amounts still line up). */
+  .month-stepper .month-display,
+  .hero-summary,
+  .hero-secondary,
+  .progress-header .target-status,
+  .progress-numbers .of,
+  .progress-meta,
+  .stat-meta,
+  .stat-flag,
+  .stat-value .of-small,
+  .breakdown-row,
+  .form-hint,
+  .form-error,
+  .activity-banner-dismiss {
+    font-family: var(--font-sans);
+  }
 </style>
 </head>
 <body class="auth-locked">
