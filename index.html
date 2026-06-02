@@ -1698,6 +1698,326 @@
     .sub-revenue-strip .secondary .label { text-align: left; }
   }
 
+  /* ─── COMMISSION OPTIMIZER ─────────────────────────────────────────────
+     Strategic panel: where you stand vs the $1,000 target, the fastest
+     concrete plays to cross it (pulled from the live plan catalog), marginal
+     coaching, and an income-goal back-solver. Un-numbered, like the hero and
+     sub-revenue strip — it sits above the numbered workflow. */
+  .optimizer {
+    background:
+      linear-gradient(180deg, rgba(60, 189, 119, 0.06), transparent 130px),
+      var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-xl);
+    padding: 22px 24px 20px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow);
+  }
+  .optimizer-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .optimizer-head-left { min-width: 0; flex: 1 1 320px; }
+  .optimizer-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--accent-strong);
+    background: var(--accent-soft);
+    border: 1px solid var(--accent-line);
+    padding: 3px 9px;
+    border-radius: 999px;
+  }
+  .optimizer-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 21px;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    margin-top: 12px;
+  }
+  .optimizer-sub {
+    font-size: 13px;
+    color: var(--text-3);
+    margin-top: 4px;
+    max-width: 56ch;
+    line-height: 1.5;
+  }
+  .optimizer-sub strong { color: var(--text-2); font-weight: 600; }
+  .optimizer-gauge {
+    text-align: right;
+    flex: 0 0 auto;
+    padding-left: 22px;
+    border-left: 1px solid var(--line);
+  }
+  .optimizer-gauge-value {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 34px;
+    letter-spacing: -0.03em;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+  .optimizer-gauge.hit .optimizer-gauge-value { color: var(--green); }
+  .optimizer-gauge-value .cur {
+    font-size: 18px;
+    color: var(--text-3);
+    font-weight: 500;
+    margin-right: 1px;
+    vertical-align: 0.08em;
+  }
+  .optimizer-gauge-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-3);
+    margin-top: 6px;
+  }
+
+  .optimizer-plays-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 20px 0 10px;
+    flex-wrap: wrap;
+  }
+  .optimizer-section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--text-2);
+    font-weight: 600;
+  }
+  .optimizer-section-hint { font-size: 11px; color: var(--text-4); }
+
+  .optimizer-plays {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(248px, 1fr));
+    gap: 10px;
+  }
+  .opt-play {
+    display: flex;
+    align-items: stretch;
+    gap: 12px;
+    text-align: left;
+    width: 100%;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 13px 14px;
+    cursor: pointer;
+    transition: border-color 0.14s, box-shadow 0.14s, transform 0.14s, background 0.14s;
+  }
+  .opt-play:hover {
+    border-color: var(--accent-line);
+    background: var(--surface);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+  }
+  .opt-play:focus-visible {
+    outline: none;
+    border-color: var(--accent-strong);
+    box-shadow: 0 0 0 3px rgba(60, 189, 119, 0.18);
+  }
+  .opt-play.top {
+    border-color: var(--accent-line);
+    background: linear-gradient(180deg, var(--accent-soft), var(--surface-2));
+  }
+  .opt-play-rank {
+    flex: 0 0 auto;
+    width: 22px; height: 22px;
+    border-radius: 6px;
+    background: var(--surface-3);
+    color: var(--text-3);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .opt-play.top .opt-play-rank { background: var(--accent); color: var(--accent-fg); }
+  .opt-play-body { flex: 1 1 auto; min-width: 0; }
+  .opt-play-title {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex-wrap: wrap;
+    letter-spacing: -0.01em;
+  }
+  .opt-play-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  .opt-play-badge.managed  { background: var(--accent-soft); color: var(--accent-strong); }
+  .opt-play-badge.platform { background: var(--blue-soft);   color: var(--blue); }
+  .opt-play-meta { font-size: 11.5px; color: var(--text-3); margin-top: 3px; }
+  .opt-play-payoff {
+    font-size: 12px;
+    color: var(--green);
+    font-weight: 600;
+    margin-top: 5px;
+    font-variant-numeric: tabular-nums;
+  }
+  .opt-play-payoff .flat { color: var(--accent-strong); }
+  .opt-play-cta {
+    flex: 0 0 auto;
+    align-self: center;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-4);
+    transition: color 0.14s;
+  }
+  .opt-play:hover .opt-play-cta { color: var(--accent-strong); }
+  .opt-play-cta svg { width: 12px; height: 12px; }
+
+  .optimizer-insight {
+    display: flex;
+    gap: 9px;
+    align-items: flex-start;
+    margin-top: 16px;
+    padding: 12px 14px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    font-size: 12.5px;
+    color: var(--text-2);
+    line-height: 1.5;
+  }
+  .optimizer-insight .ico { flex: 0 0 auto; color: var(--accent-strong); margin-top: 1px; }
+  .optimizer-insight strong { color: var(--text); font-weight: 600; }
+  .optimizer-insight em { font-style: normal; color: var(--accent-strong); font-weight: 600; }
+
+  .optimizer-goal {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--line-2);
+  }
+  .optimizer-goal-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .optimizer-goal-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-2);
+    font-weight: 600;
+  }
+  .optimizer-goal-input-wrap {
+    display: inline-flex;
+    align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--line-2);
+    border-radius: var(--radius);
+    padding: 0 10px;
+    transition: border-color 0.14s, box-shadow 0.14s;
+  }
+  .optimizer-goal-input-wrap:focus-within {
+    border-color: var(--accent-strong);
+    box-shadow: 0 0 0 3px rgba(60, 189, 119, 0.18);
+  }
+  .optimizer-goal-input-wrap .cur,
+  .optimizer-goal-input-wrap .suffix {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-3);
+  }
+  #commissionGoalInput {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--text);
+    width: 74px;
+    padding: 7px 4px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+  #commissionGoalInput::-webkit-outer-spin-button,
+  #commissionGoalInput::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .optimizer-goal-presets { display: inline-flex; gap: 6px; }
+  .optimizer-goal-preset {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-3);
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 5px 9px;
+    cursor: pointer;
+    transition: border-color 0.12s, color 0.12s, background 0.12s;
+  }
+  .optimizer-goal-preset:hover { border-color: var(--line-3); color: var(--text); }
+  .optimizer-goal-preset.active {
+    background: var(--accent-soft);
+    border-color: var(--accent-line);
+    color: var(--accent-strong);
+    font-weight: 600;
+  }
+  .optimizer-goal-result {
+    font-size: 12.5px;
+    color: var(--text-2);
+    margin-top: 10px;
+    line-height: 1.5;
+  }
+  .optimizer-goal-result strong { color: var(--text); font-weight: 600; }
+  .optimizer-goal-result .hit { color: var(--green); font-weight: 600; }
+  .optimizer-goal-track {
+    height: 6px;
+    background: var(--surface-3);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+  .optimizer-goal-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), #2aa362);
+    border-radius: 999px;
+    box-shadow: 0 0 12px rgba(60, 189, 119, 0.5);
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  @media (max-width: 720px) {
+    .optimizer-gauge {
+      border-left: none;
+      padding-left: 0;
+      text-align: left;
+      margin-top: 4px;
+    }
+  }
+
   .empty-state { padding: 72px 24px; text-align: center; }
 
   .empty-state-icon {
@@ -3383,6 +3703,46 @@
     </div>
   </div>
 
+  <div class="optimizer" id="optimizer">
+    <div class="optimizer-head">
+      <div class="optimizer-head-left">
+        <span class="optimizer-pill">✦ Optimizer</span>
+        <h2 class="optimizer-title" id="optimizerTitle">Commission Optimizer</h2>
+        <p class="optimizer-sub" id="optimizerSub">—</p>
+      </div>
+      <div class="optimizer-gauge" id="optimizerGauge">
+        <div class="optimizer-gauge-value"><span class="cur">$</span><span id="optGaugeValue">0</span></div>
+        <div class="optimizer-gauge-label" id="optGaugeLabel">to unlock commission</div>
+      </div>
+    </div>
+
+    <div class="optimizer-plays-head">
+      <span class="optimizer-section-label" id="optPlaysLabel">Fastest ways to get there</span>
+      <span class="optimizer-section-hint">Pulled from your live plan catalog · tap a play to pre-fill the deal form</span>
+    </div>
+    <div class="optimizer-plays" id="optimizerPlays"></div>
+
+    <div class="optimizer-insight" id="optimizerInsight"></div>
+
+    <div class="optimizer-goal">
+      <div class="optimizer-goal-row">
+        <span class="optimizer-goal-label">Monthly income goal</span>
+        <div class="optimizer-goal-input-wrap">
+          <span class="cur">$</span>
+          <input type="number" id="commissionGoalInput" min="0" step="50" inputmode="numeric" placeholder="500" aria-label="Monthly commission goal">
+          <span class="suffix">/mo</span>
+        </div>
+        <div class="optimizer-goal-presets" id="optimizerGoalPresets">
+          <button type="button" class="optimizer-goal-preset" data-goal="250">$250</button>
+          <button type="button" class="optimizer-goal-preset" data-goal="500">$500</button>
+          <button type="button" class="optimizer-goal-preset" data-goal="1000">$1,000</button>
+        </div>
+      </div>
+      <div class="optimizer-goal-result" id="optimizerGoalResult">Set a monthly commission goal to back-solve exactly how much MRR you need to close in a month.</div>
+      <div class="optimizer-goal-track"><div class="optimizer-goal-fill" id="optimizerGoalFill" style="width: 0%"></div></div>
+    </div>
+  </div>
+
   <div class="section-head">
     <div class="section-title"><span class="num">01</span><span>Log a Deal</span></div>
   </div>
@@ -3644,6 +4004,10 @@
   // Cleared on submit or via the cancel button in the sub-banner.
   let addingSubFor = null;
 
+  // Commission Optimizer: Gabriel's desired monthly commission ($/mo). 0 = unset.
+  // Drives the income-goal back-solver. Persisted alongside the other settings.
+  let commissionGoal = 0;
+
   // Verification queue + audit log — populated from Supabase on load.
   // pendingVerifications: queued by the monthly GitHub Action; the dashboard
   // prompts a "Is this client still with us?" modal per row, then deletes
@@ -3856,7 +4220,7 @@
 
   async function cacheLocal() {
     await cache.set('ct-deals-v3', JSON.stringify(deals));
-    await cache.set('ct-settings-v3', JSON.stringify({ managedCountsTowardTarget, breakdownOpen }));
+    await cache.set('ct-settings-v3', JSON.stringify({ managedCountsTowardTarget, breakdownOpen, commissionGoal }));
   }
 
   // One-time data migration: if v2 cache exists but v3 doesn't, seed v3 from v2
@@ -3899,6 +4263,7 @@
       try {
         const s = JSON.parse(cs);
         if (typeof s.breakdownOpen === 'boolean') breakdownOpen = s.breakdownOpen;
+        if (typeof s.commissionGoal === 'number') commissionGoal = s.commissionGoal;
       } catch(e) {}
     }
   }
@@ -3970,6 +4335,7 @@
       if (settingsRes.data?.value) {
         const s = settingsRes.data.value;
         if (typeof s.breakdownOpen === 'boolean') breakdownOpen = s.breakdownOpen;
+        if (typeof s.commissionGoal === 'number') commissionGoal = s.commissionGoal;
       }
 
       online = true;
@@ -4232,7 +4598,7 @@
     await withSyncStatus('Saving…', async () => {
       const { error } = await supa.from('settings').upsert({
         key: SETTINGS_ROW_KEY,
-        value: { managedCountsTowardTarget, breakdownOpen },
+        value: { managedCountsTowardTarget, breakdownOpen, commissionGoal },
         updated_at: new Date().toISOString()
       });
       if (error) throw error;
@@ -4885,6 +5251,7 @@
     }
 
     renderStats(c);
+    renderOptimizer();
     renderBreakdown(c);
     renderVerificationBanner();
     renderVerificationHistory();
@@ -5470,6 +5837,233 @@
       const excluded = all.length - eligibleCount;
       noteEl.textContent = `${excluded} excluded (self-serve)`;
     }
+  }
+
+  // ─── COMMISSION OPTIMIZER ────────────────────────────────────────────
+  // Pure economics for a hypothetical month composition. Mirrors the exact
+  // target-fill / above-line logic in getCloseMonthContext() so simulated
+  // plays agree to the cent with the real dashboard math.
+  function commissionEconomics(platformMRR, managedMRR, managedCount) {
+    const countManaged = managedCountsTowardTarget === 'yes';
+    const eligible = platformMRR + (countManaged ? managedMRR : 0);
+    const targetFillByPlatform = countManaged ? Math.max(0, TARGET - managedMRR) : TARGET;
+    const platformAboveLine = eligible > TARGET ? Math.max(0, platformMRR - targetFillByPlatform) : 0;
+    const monthlyPlatformCommission = platformAboveLine * COMMISSION_RATE;
+    const managedFlat = managedCount * MANAGED_FLAT;
+    return { eligible, platformAboveLine, monthlyPlatformCommission, managedFlat };
+  }
+
+  // Simulate adding `count` deals of `mrr` each (of a kind) to the viewed
+  // month, returning the marginal payoff vs the current composition.
+  function simulatePlay(ctx, { mrr, kind, count = 1 }) {
+    const before = commissionEconomics(ctx.platformMRR, ctx.managedMRR, ctx.managedDeals.length);
+    let pMRR = ctx.platformMRR, mMRR = ctx.managedMRR, mCount = ctx.managedDeals.length;
+    const added = mrr * count;
+    if (kind === 'managed') { mMRR += added; mCount += count; }
+    else { pMRR += added; }
+    const after = commissionEconomics(pMRR, mMRR, mCount);
+    const flatNow = after.managedFlat - before.managedFlat;
+    const monthlyDelta = Math.max(0, after.monthlyPlatformCommission - before.monthlyPlatformCommission);
+    const crosses = before.eligible < TARGET && after.eligible >= TARGET;
+    // 12-month value: managed flat is one-shot; platform monthly commission pays up to 12×.
+    const annualValue = flatNow + monthlyDelta * 12;
+    return { kind, count, addedMRR: added, before, after, flatNow, monthlyDelta, crosses, annualValue };
+  }
+
+  // Single-domain platform plans + the full managed catalog drive the
+  // recommendations — the concrete, common deal shapes Gabriel actually sells.
+  const _platformCatalog = () => PLAN_CATALOG.platformSingle;
+  const _managedCatalog  = () => [...PLAN_CATALOG.managedStandard, ...PLAN_CATALOG.managedEnterprise];
+
+  // Generate and rank concrete "plays" — specific catalog plans (or multiples)
+  // that move Gabriel toward / past the $1,000 line, each scored by payoff.
+  function buildOptimizerPlays(ctx) {
+    const eco = commissionEconomics(ctx.platformMRR, ctx.managedMRR, ctx.managedDeals.length);
+    const gap = Math.max(0, TARGET - eco.eligible);
+    const platform = _platformCatalog();
+    const managed  = _managedCatalog();
+    const candidates = [];
+    const add = (plan, kind, count) =>
+      candidates.push({ plan, kind, count, sim: simulatePlay(ctx, { mrr: plan.price, kind, count }) });
+
+    if (gap > 0) {
+      // Smallest managed plan that crosses: fills the target AND pays a flat $300.
+      const mgdCross = managed.find(p => p.price >= gap);
+      if (mgdCross) add(mgdCross, 'managed', 1);
+      // Cheapest managed as a pure-cash play (always +$300, even if it doesn't cross).
+      if (managed[0] && (!mgdCross || managed[0].key !== mgdCross.key)) add(managed[0], 'managed', 1);
+      // Smallest single platform plan that crosses on its own.
+      const platCross = platform.find(p => p.price >= gap);
+      if (platCross) add(platCross, 'platform', 1);
+      // Multiples of the cheapest platform plan to cross — the "2 × Scale" idea.
+      const cheapest = platform[0];
+      const need = Math.max(1, Math.ceil(gap / cheapest.price));
+      if (need >= 2) add(cheapest, 'platform', need);
+    } else {
+      // Already over the line — "grow further" plays.
+      add(managed[0], 'managed', 1);                                  // +$300 flat + 10% on full MRR
+      add(platform.find(p => p.key === 'pro5000') || platform[4], 'platform', 1);
+      add(platform[platform.length - 1], 'platform', 1);              // biggest single platform
+    }
+
+    // Score: reward crossing the line and immediate cash, then 12-mo value;
+    // penalize the MRR / number of deals required to get there.
+    candidates.forEach(c => {
+      const s = c.sim;
+      c.score = (s.crosses ? 5000 : 0) + s.flatNow * 3 + s.annualValue
+                - s.addedMRR * 0.04 - (c.count - 1) * 40;
+    });
+    candidates.sort((a, b) => b.score - a.score);
+
+    const seen = new Set();
+    const plays = candidates.filter(c => {
+      const k = `${c.kind}:${c.plan.key}:${c.count}`;
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    }).slice(0, 4);
+    return { gap, eco, plays };
+  }
+
+  function renderOptimizerPlayCard(c, idx) {
+    const { plan, kind, count, sim } = c;
+    const title = `${count > 1 ? count + ' × ' : ''}${plan.name}`;
+    const badge = kind === 'managed' ? 'Managed' : 'Platform';
+
+    const metaBits = [`+$${fmt(sim.addedMRR)} MRR`];
+    if (sim.crosses) metaBits.push('crosses the $1,000 line');
+    else if (kind === 'managed') metaBits.push('counts toward target');
+    else metaBits.push('builds toward the line');
+
+    const payoffBits = [];
+    if (sim.flatNow > 0)      payoffBits.push(`<span class="flat">+$${fmt(sim.flatNow)} cash now</span>`);
+    if (sim.monthlyDelta > 0) payoffBits.push(`unlocks ≈ $${fmtExact(sim.monthlyDelta)}/mo`);
+    if (sim.monthlyDelta > 0) payoffBits.push(`$${fmt(sim.annualValue)} over 12 mo`);
+    if (payoffBits.length === 0) payoffBits.push('keeps you on track');
+
+    return `<button type="button" class="opt-play${idx === 0 ? ' top' : ''}"
+              onclick="optimizerUsePlay('${plan.key}', ${plan.price}, ${count})">
+        <span class="opt-play-rank">${idx + 1}</span>
+        <span class="opt-play-body">
+          <span class="opt-play-title">${escapeHtml(title)}<span class="opt-play-badge ${kind}">${badge}</span></span>
+          <span class="opt-play-meta">${metaBits.join(' · ')}</span>
+          <span class="opt-play-payoff">${payoffBits.join(' · ')}</span>
+        </span>
+        <span class="opt-play-cta">Use<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3l5 5-5 5"/></svg></span>
+      </button>`;
+  }
+
+  function renderOptimizer() {
+    const ctx = getCloseMonthContext(currentMonth);
+    const { gap, eco, plays } = buildOptimizerPlays(ctx);
+    const hit = eco.eligible >= TARGET;
+    const monthLabel = formatMonthLabelShort(currentMonth);
+    const ratePct = Math.round(COMMISSION_RATE * 100);
+
+    const gauge = document.getElementById('optimizerGauge');
+    const gv = document.getElementById('optGaugeValue');
+    const gl = document.getElementById('optGaugeLabel');
+    const title = document.getElementById('optimizerTitle');
+    const sub = document.getElementById('optimizerSub');
+    const playsLabel = document.getElementById('optPlaysLabel');
+
+    gauge.classList.toggle('hit', hit);
+
+    if (!hit) {
+      gv.textContent = fmt(gap);
+      gl.textContent = 'to unlock commission';
+      title.textContent = ctx.monthDeals.length === 0
+        ? `Let’s open ${monthLabel}`
+        : `You’re ${Math.round((eco.eligible / TARGET) * 100)}% to the line`;
+      sub.innerHTML = `You’ve closed <strong>$${fmt(eco.eligible)}</strong> of eligible MRR for ${monthLabel}. `
+        + `Commission stays locked until you cross <strong>$${fmt(TARGET)}</strong> — that’s `
+        + `<strong>$${fmt(gap)}</strong> to go. Here are the fastest ways to get there.`;
+      playsLabel.textContent = 'Fastest ways to get there';
+    } else {
+      const hasAboveLine = eco.monthlyPlatformCommission > 0;
+      if (hasAboveLine) {
+        gv.textContent = fmtExact(eco.monthlyPlatformCommission);
+        gl.textContent = 'commission / month';
+      } else {
+        gv.textContent = fmt(eco.managedFlat);
+        gl.textContent = 'managed flat this month';
+      }
+      title.textContent = 'You’re earning above the line';
+      sub.innerHTML = `<strong>$${fmt(eco.platformAboveLine)}</strong> of platform MRR is above the $1,000 line, `
+        + `paying <strong>$${fmtExact(eco.monthlyPlatformCommission)}/mo</strong> at ${ratePct}% as clients pay`
+        + (eco.managedFlat > 0 ? ` — plus $${fmt(eco.managedFlat)} in managed flats this month` : '')
+        + `. Here’s how to push it higher.`;
+      playsLabel.textContent = 'Grow your commission further';
+    }
+
+    document.getElementById('optimizerPlays').innerHTML =
+      plays.map((p, i) => renderOptimizerPlayCard(p, i)).join('');
+
+    const bulb = `<svg class="ico" width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 16h5M8 18h4M10 2a5 5 0 0 0-3 9c.6.5 1 1.2 1 2h4c0-.8.4-1.5 1-2a5 5 0 0 0-3-9z"/></svg>`;
+    document.getElementById('optimizerInsight').innerHTML = bulb + '<span>' + (hit
+      ? `<strong>Above the line, every dollar counts.</strong> Each extra $100/mo of platform MRR ≈ <em>$${fmt(100 * COMMISSION_RATE)}/mo</em> (~$${fmt(100 * COMMISSION_RATE * 12)} over a year). A <strong>Managed</strong> deal is your best quick win — a flat <strong>$${fmt(MANAGED_FLAT)}</strong> the day it’s collected, on top of the ${ratePct}% its MRR earns.`
+      : `<strong>It’s all-or-nothing under $1,000.</strong> The moment you cross, you earn ${ratePct}% on every dollar above it. <strong>Managed</strong> deals are the cheat code near the line: their MRR fills the target <em>and</em> each pays a flat <strong>$${fmt(MANAGED_FLAT)}</strong> regardless.`)
+      + '</span>';
+
+    renderOptimizerGoal(eco);
+  }
+
+  function renderOptimizerGoal(eco) {
+    const input = document.getElementById('commissionGoalInput');
+    const result = document.getElementById('optimizerGoalResult');
+    const fill = document.getElementById('optimizerGoalFill');
+    // Don't clobber an in-progress edit.
+    if (document.activeElement !== input) input.value = commissionGoal > 0 ? commissionGoal : '';
+    document.querySelectorAll('.optimizer-goal-preset').forEach(b =>
+      b.classList.toggle('active', Number(b.dataset.goal) === commissionGoal));
+
+    if (!commissionGoal || commissionGoal <= 0) {
+      result.innerHTML = 'Set a monthly commission goal to back-solve exactly how much MRR you need to close in a month.';
+      fill.style.width = '0%';
+      return;
+    }
+
+    const requiredAboveLine = commissionGoal / COMMISSION_RATE;
+    const requiredEligible = TARGET + requiredAboveLine;
+    const remaining = Math.max(0, requiredEligible - eco.eligible);
+    const cheapest = _platformCatalog()[0];
+    const nPlat = Math.ceil(remaining / cheapest.price);
+    fill.style.width = Math.min(100, (eco.eligible / requiredEligible) * 100) + '%';
+
+    if (remaining <= 0) {
+      result.innerHTML = `<span class="hit">Goal cleared.</span> At <strong>$${fmt(eco.eligible)}</strong> eligible MRR you’re generating `
+        + `<strong>$${fmtExact(eco.monthlyPlatformCommission)}/mo</strong> — past your $${fmt(commissionGoal)}/mo target.`;
+    } else {
+      result.innerHTML = `To earn <strong>$${fmt(commissionGoal)}/mo</strong> in platform commission you need `
+        + `<strong>$${fmt(requiredEligible)}</strong> eligible MRR in a month ($${fmt(requiredAboveLine)} above the line). `
+        + `You’re at <strong>$${fmt(eco.eligible)}</strong> — <strong>$${fmt(remaining)}</strong> to go, `
+        + `≈ <strong>${nPlat} × ${cheapest.name}</strong>. Managed flats ($${fmt(MANAGED_FLAT)} each) stack on top.`;
+    }
+  }
+
+  // Pre-fill the Log-a-Deal form from an optimizer play (one unit at a time —
+  // the form logs a single deal, and the optimizer re-ranks after each one).
+  window.optimizerUsePlay = function(planKey, price, count) {
+    exitSubMode();
+    const nameInput = document.getElementById('dealName');
+    if (nameInput) nameInput.value = '';
+    setSelectedPlan(planKey, { mrrOverride: price });
+    const today = new Date().toISOString().slice(0, 10);
+    document.getElementById('dealDate').value = today.startsWith(currentMonth) ? today : `${currentMonth}-01`;
+    clearFormError();
+    document.querySelector('.add-deal')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setTimeout(() => nameInput?.focus(), 250);
+    const more = count > 1 ? ` — log ${count} to cross the line` : '';
+    showToast(`Pre-filled ${planLabel(planKey)}${more}. Add a client name to log it.`, 'success');
+  };
+
+  // Update the income goal, persist, and re-render the back-solver.
+  function setCommissionGoal(value) {
+    const v = Math.max(0, Math.round(Number(value) || 0));
+    if (v === commissionGoal) return;
+    commissionGoal = v;
+    persistSettings();
+    render();
   }
 
   function renderBreakdown(c) {
@@ -7439,6 +8033,17 @@
       breakdownOpen = !breakdownOpen;
       applyBreakdownState();
       persistSettings();
+    });
+
+    // Commission Optimizer — income-goal input + quick presets.
+    const goalInput = document.getElementById('commissionGoalInput');
+    goalInput.addEventListener('input', () => setCommissionGoal(goalInput.value));
+    goalInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') goalInput.blur(); });
+    document.getElementById('optimizerGoalPresets').addEventListener('click', (e) => {
+      const btn = e.target.closest('.optimizer-goal-preset');
+      if (!btn) return;
+      // Tapping an active preset clears it back to "unset".
+      setCommissionGoal(Number(btn.dataset.goal) === commissionGoal ? 0 : btn.dataset.goal);
     });
 
     document.getElementById('verifyBannerBtn').addEventListener('click', startVerificationFlow);
