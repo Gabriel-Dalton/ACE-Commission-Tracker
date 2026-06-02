@@ -45,6 +45,8 @@
     --red: #b3261d;           /* destructive only (delete) */
     --blue: #5f6b62;          /* neutralised — the palette has no separate blue hue */
     --blue-soft: #eef1ee;
+    --violet: #6b4fa1;        /* muted violet — the "counts toward goal" category */
+    --violet-soft: #ece9f5;
     --shadow-sm: 0 1px 2px rgba(20, 20, 20, 0.04);
     --shadow: 0 1px 3px rgba(20, 20, 20, 0.05), 0 1px 2px rgba(20, 20, 20, 0.03);
     --shadow-md: 0 4px 12px rgba(20, 20, 20, 0.06), 0 1px 3px rgba(20, 20, 20, 0.04);
@@ -1270,6 +1272,7 @@
   .dc-plan::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; opacity: 0.6; }
   .dc-plan.platform { background: var(--blue-soft); color: var(--blue); }
   .dc-plan.managed  { background: var(--accent-soft); color: var(--accent-strong); }
+  .dc-plan.goal     { background: var(--violet-soft); color: var(--violet); }
   .dc-plan.excluded { background: var(--surface-3); color: var(--text-3); }
   .dc-renew { color: var(--text-3); }
   .dc-renew.due { color: var(--amber); font-weight: 600; }
@@ -1286,6 +1289,7 @@
   .dc-status.complete     { background: var(--accent-soft); color: var(--accent-strong); }
   .dc-status.cancelled    { background: var(--amber-soft);  color: var(--amber); }
   .dc-status.pending      { background: var(--blue-soft);   color: var(--blue); }
+  .dc-status.goal         { background: var(--violet-soft); color: var(--violet); }
   .dc-status.excluded     { background: var(--surface-3);   color: var(--text-3); }
   .dc-status.below-target { background: var(--amber-soft);  color: var(--amber); }
 
@@ -2723,6 +2727,7 @@
   }
   .pdf-status-cell.eligible { color: #157d46; }
   .pdf-status-cell.managed { color: #0f6b3b; }
+  .pdf-status-cell.goal { color: #6b4fa1; }
   .pdf-status-cell.excluded { color: #b0b0b6; }
 
   /* Calculation */
@@ -3656,7 +3661,14 @@
   const TARGET = 1000;
   const COMMISSION_RATE = 0.10;
   const MANAGED_FLAT = 300;
-  const EXCLUDED_PLANS = ['lite', 'starter', 'growth'];
+  // Fully excluded self-serve tiers: no commission AND no contribution to the
+  // $1,000 target.
+  const EXCLUDED_PLANS = ['lite', 'starter'];
+  // "Goal contributor" tiers: earn NO commission, but their MRR DOES count toward
+  // the $1,000 target — so they help push platform deals above the line, exactly
+  // like Managed MRR does (minus the flat $300). Currently just Growth ($299);
+  // add a key here to promote another self-serve tier into the same behavior.
+  const GOAL_CONTRIBUTOR_PLANS = ['growth'];
   const MANAGED_PLAN = 'managed';
   // Custom plan keys — chosen at the plan picker's "Custom" tab, where the
   // MRR/billing are entered directly rather than picked from the catalog.
@@ -4245,9 +4257,16 @@
   const fmt = (n) => Math.round(n).toLocaleString('en-US');
   const fmtExact = (n) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const isExcluded = (p) => EXCLUDED_PLANS.includes(p);
+  // Counts toward the $1,000 target but earns no commission (e.g. Growth).
+  const isGoalContributor = (p) => GOAL_CONTRIBUTOR_PLANS.includes(p);
   const isManaged  = (p) => p === MANAGED_PLAN || p === CUSTOM_MANAGED ||
                             (typeof p === 'string' && p.startsWith('managed_'));
-  const isPlatform = (p) => !isExcluded(p) && !isManaged(p);
+  const isPlatform = (p) => !isExcluded(p) && !isGoalContributor(p) && !isManaged(p);
+  // Earns commission: platform (above-line %) or managed (flat $300). Goal
+  // contributors and excluded tiers earn $0 and have zero payment units. Use
+  // this wherever the question is "does this deal produce commission/payments?"
+  // (as opposed to "does it count toward the target?", which goal contributors do).
+  const isCommissionable = (p) => isPlatform(p) || isManaged(p);
   const isCustomPlan = (p) => p === CUSTOM_PLATFORM || p === CUSTOM_MANAGED;
   const planLabel       = (p) => PLAN_LABELS[p] || p;
   const planShortLabel  = (p) => PLAN_SHORT_LABELS[p] || planLabel(p);
@@ -4256,10 +4275,10 @@
   //  - Managed: $300 flat on first invoice collection → 1 unit
   //  - Annual upfront: lump sum on collection → 1 unit
   //  - Monthly platform: paid as the client pays, up to 12 months → 12 units
-  //  - Excluded plans: 0 units (no commission)
+  //  - Excluded + goal-contributor (Growth) plans: 0 units (no commission)
   function dealMaxUnits(d) {
     if (!d || !d.plan) return 0;
-    if (isExcluded(d.plan)) return 0;
+    if (!isCommissionable(d.plan)) return 0;   // excluded & goal contributors
     if (isManaged(d.plan))  return 1;
     if (d.billing === 'annual') return 1;
     return 12;
@@ -4293,18 +4312,25 @@
     const monthDeals = deals.filter(d => d.date && d.date.startsWith(ym));
     const platformDeals = monthDeals.filter(d => isPlatform(d.plan));
     const managedDeals  = monthDeals.filter(d => isManaged(d.plan));
+    // Goal contributors (e.g. Growth): count toward the target, earn no commission.
+    const goalDeals     = monthDeals.filter(d => isGoalContributor(d.plan));
     const platformMRR = platformDeals.reduce((s, d) => s + Number(d.mrr), 0);
     const managedMRR  = managedDeals.reduce((s, d) => s + Number(d.mrr), 0);
+    const goalMRR     = goalDeals.reduce((s, d) => s + Number(d.mrr), 0);
 
+    // Managed + goal-contributor MRR both count toward the $1,000 target.
     let eligibleMRR = platformMRR;
     if (managedCountsTowardTarget === 'yes') eligibleMRR += managedMRR;
+    eligibleMRR += goalMRR;
 
     const overage = Math.max(0, eligibleMRR - TARGET);
     const aboveLineByDealId = {};
 
     if (overage > 0 && platformMRR > 0) {
-      const targetToFill = managedCountsTowardTarget === 'yes'
-        ? Math.max(0, TARGET - managedMRR) : TARGET;
+      // Managed + goal-contributor MRR fill the target first, so platform deals
+      // reach the commissionable "above the line" zone sooner.
+      const filledByOthers = (managedCountsTowardTarget === 'yes' ? managedMRR : 0) + goalMRR;
+      const targetToFill = Math.max(0, TARGET - filledByOthers);
       const platformAboveLine = Math.max(0, platformMRR - targetToFill);
 
       if (platformAboveLine > 0) {
@@ -4324,8 +4350,8 @@
       }
     }
 
-    const ctx = { monthDeals, platformDeals, managedDeals,
-                  platformMRR, managedMRR, eligibleMRR, overage,
+    const ctx = { monthDeals, platformDeals, managedDeals, goalDeals,
+                  platformMRR, managedMRR, goalMRR, eligibleMRR, overage,
                   aboveLineByDealId };
     _monthContextCache.set(ym, ctx);
     return ctx;
@@ -4333,7 +4359,7 @@
 
   // Commission amount payable PER UNIT (per month for monthly, single total for managed/annual)
   function dealMonthlyShare(d) {
-    if (!d || isExcluded(d.plan)) return 0;
+    if (!d || !isCommissionable(d.plan)) return 0;   // excluded & goal contributors earn $0
     if (isManaged(d.plan)) return MANAGED_FLAT;
     // Platform deal: above-line × 10% per month
     const ym = d.date ? d.date.slice(0, 7) : null;
@@ -4427,7 +4453,7 @@
     let total = 0;
     const payments = [];
     for (const d of deals) {
-      if (isExcluded(d.plan)) continue;
+      if (!isCommissionable(d.plan)) continue;   // excluded & goal contributors: no collectable units
       const max = dealMaxUnits(d);
       const collected = Math.min(d.paymentsCollected || 0, max);
       if (collected === 0) continue;
@@ -4447,7 +4473,7 @@
   function totalSubscriptionRevenueAllTime() {
     let total = 0;
     for (const d of deals) {
-      if (isExcluded(d.plan)) continue;
+      if (!isCommissionable(d.plan)) continue;   // excluded & goal contributors: no collectable units
       const max = dealMaxUnits(d);
       const collected = Math.min(d.paymentsCollected || 0, max);
       const perUnit = Number(d.mrr) || 0;
@@ -4522,7 +4548,7 @@
     const haveBaseline = prev.snapshot && Object.keys(prev.snapshot).length > 0;
 
     for (const d of deals) {
-      if (isExcluded(d.plan)) continue;
+      if (!isCommissionable(d.plan)) continue;   // excluded & goal contributors: no collectable units
       const max = dealMaxUnits(d);
       const prevCollected = prev.snapshot[d.id] || 0;
       const currCollected = Math.min(d.paymentsCollected || 0, max);
@@ -4621,7 +4647,7 @@
   // For annual upfront: start day in (start + paymentsCollected × 12) months.
   function dealNextRenewalDate(d) {
     if (!d || d.cancelled) return null;
-    if (isExcluded(d.plan)) return null;
+    if (!isCommissionable(d.plan)) return null;   // no payment units to renew
     const max = dealMaxUnits(d);
     if (max <= 1) return null;
     const collected = Math.min(d.paymentsCollected || 0, max);
@@ -4659,6 +4685,7 @@
 
   function dealStatus(d) {
     if (!d) return 'none';
+    if (isGoalContributor(d.plan)) return 'goal';   // counts toward target, no commission
     if (isExcluded(d.plan)) return 'excluded';
     if (d.cancelled) return 'cancelled';
     const max = dealMaxUnits(d);
@@ -4705,8 +4732,8 @@
     // Reuse the centralized close-month context so the deals-table view and the
     // payment-month earned tally agree on per-deal "above-line" amounts.
     const ctx = getCloseMonthContext(currentMonth);
-    const { monthDeals, platformDeals, managedDeals,
-            platformMRR, managedMRR, eligibleMRR, overage } = ctx;
+    const { monthDeals, platformDeals, managedDeals, goalDeals,
+            platformMRR, managedMRR, goalMRR, eligibleMRR, overage } = ctx;
     const excludedDeals = monthDeals.filter(d => isExcluded(d.plan));
 
     // 12-month potential per platform deal closed this month (forecast only)
@@ -4730,8 +4757,8 @@
     const subRevenueAllTime = totalSubscriptionRevenueAllTime();
 
     return {
-      monthDeals, platformDeals, managedDeals, excludedDeals,
-      platformMRR, managedMRR, eligibleMRR, overage,
+      monthDeals, platformDeals, managedDeals, goalDeals, excludedDeals,
+      platformMRR, managedMRR, goalMRR, eligibleMRR, overage,
       platformCommission, managedCommission,
       totalPotential: platformCommission + managedCommission,
       earnedThisPeriod: earnedHere.total,
@@ -4861,7 +4888,7 @@
       const dealYM = d.date.slice(0, 7);
       if (dealYM >= currentMonth) return false;                 // current/future close-month
       if (dealMaxUnits(d) <= 1) return false;                   // managed/annual one-shot
-      if (isExcluded(d.plan)) return false;
+      if (!isCommissionable(d.plan)) return false;              // excluded & goal contributors: nothing to carry
       if (d.cancelled) return false;
       if ((d.paymentsCollected || 0) >= dealMaxUnits(d)) return false; // fully paid out
       return true;
@@ -5135,9 +5162,10 @@
 
     // Plan kind drives the tag colour.
     let planKind;
-    if (isManaged(d.plan))       planKind = 'managed';
-    else if (isExcluded(d.plan)) planKind = 'excluded';
-    else                         planKind = 'platform';
+    if (isManaged(d.plan))              planKind = 'managed';
+    else if (isGoalContributor(d.plan)) planKind = 'goal';
+    else if (isExcluded(d.plan))        planKind = 'excluded';
+    else                                planKind = 'platform';
 
     // "Below target" is its own visual state so a $0-earned active deal doesn't
     // look broken — it gets an explainer instead.
@@ -5145,7 +5173,7 @@
     const displayStatus = belowTarget ? 'below-target' : status;
     const STATUS_TEXT = {
       active: 'Active', complete: 'Fully paid', cancelled: 'Cancelled',
-      pending: 'Awaiting payment', excluded: 'No commission',
+      pending: 'Awaiting payment', goal: 'Counts toward goal', excluded: 'No commission',
       'below-target': 'Below target'
     };
     if (status === 'complete' && earned === 0) STATUS_TEXT.complete = 'Resolved';
@@ -5200,7 +5228,9 @@
             <span class="dc-fig-value">$${fmt(mrr)}<span class="dc-unit">/mo</span></span>
           </div>
         </div>`;
-      hint = `<div class="dc-hint">Self-serve plan — it doesn't earn commission. Logged here just for the record.</div>`;
+      hint = isGoalContributor(d.plan)
+        ? `<div class="dc-hint">Counts toward the <b>$1,000</b> monthly target — it helps unlock commission on platform deals, but earns no commission itself.</div>`
+        : `<div class="dc-hint">Self-serve plan — it doesn't earn commission. Logged here just for the record.</div>`;
     } else {
       const forecastLabel = d.cancelled ? 'Capped at' : (max === 1 ? 'Commission' : 'Forecast · 12 mo');
       const forecastVal = d.cancelled ? earned : potential;
@@ -5440,7 +5470,8 @@
 
   function renderStats(c) {
     const all = c.monthDeals;
-    const eligibleCount = c.platformDeals.length + c.managedDeals.length;
+    // Platform, managed, and goal contributors (Growth) all count toward the target.
+    const eligibleCount = c.platformDeals.length + c.managedDeals.length + c.goalDeals.length;
     const totalMRR = all.reduce((s, d) => s + Number(d.mrr), 0);
     const avgMRR = all.length > 0 ? totalMRR / all.length : 0;
 
@@ -5600,12 +5631,18 @@
           html += `<div class="breakdown-row"><span>${escapeHtml(d.name)} <span style="color:var(--text-4)">— ${planShortLabel(d.plan)} (counts toward target)</span></span><span>$${fmt(Number(d.mrr))}/mo</span></div>`;
         });
       }
+      if (c.goalDeals.length > 0) {
+        c.goalDeals.forEach(d => {
+          html += `<div class="breakdown-row"><span>${escapeHtml(d.name)} <span style="color:var(--text-4)">— ${planShortLabel(d.plan)} (counts toward target · no commission)</span></span><span>$${fmt(Number(d.mrr))}/mo</span></div>`;
+        });
+      }
       html += `<div class="breakdown-row subtotal"><span>Eligible MRR (this close-month)</span><span>$${fmt(c.eligibleMRR)}</span></div>`;
       html += `<div class="breakdown-row"><span>− Target threshold</span><span>($${fmt(TARGET)})</span></div>`;
       html += `<div class="breakdown-row subtotal"><span>Above target</span><span class="${c.overage > 0 ? 'value-positive' : ''}">$${fmt(c.overage)}</span></div>`;
 
       if (c.platformCommission > 0) {
-        const targetToFill = managedCountsTowardTarget === 'yes' ? Math.max(0, TARGET - c.managedMRR) : TARGET;
+        const filledByOthers = (managedCountsTowardTarget === 'yes' ? c.managedMRR : 0) + c.goalMRR;
+        const targetToFill = Math.max(0, TARGET - filledByOthers);
         const platformAboveLine = Math.max(0, c.platformMRR - targetToFill);
         html += `<div class="breakdown-row calculation"><span>Platform MRR above line</span><span>$${fmt(platformAboveLine)}</span></div>`;
         html += `<div class="breakdown-row calculation"><span>× 12 months (first-year value, if client stays)</span><span>$${fmt(platformAboveLine * 12)}</span></div>`;
@@ -5988,6 +6025,7 @@
       if (s === 'cancelled') return { text: 'Cancelled', color: COL.amber };
       if (s === 'complete')  return { text: 'Paid out',  color: COL.limeDeep };
       if (s === 'pending')   return { text: 'Pending',   color: COL.text3 };
+      if (s === 'goal')      return { text: 'Toward goal', color: COL.text3 };
       if (s === 'excluded')  return { text: 'Excluded',  color: COL.text4 };
       return { text: 'Active', color: COL.green };
     };
@@ -6031,7 +6069,7 @@
 
     // Calculation rows
     const calcRows = [];
-    if (c.platformDeals.length > 0 || c.managedDeals.length > 0) {
+    if (c.platformDeals.length > 0 || c.managedDeals.length > 0 || c.goalDeals.length > 0) {
       if (c.platformMRR > 0) {
         calcRows.push([
           { text: `Platform MRR (${c.platformDeals.length} deal${c.platformDeals.length !== 1 ? 's' : ''})`, color: COL.text2 },
@@ -6042,6 +6080,12 @@
         calcRows.push([
           { text: `Managed MRR (${c.managedDeals.length} deal${c.managedDeals.length !== 1 ? 's' : ''}, counts toward target)`, color: COL.text2 },
           { text: '$' + fmt(c.managedMRR), color: COL.text2, alignment: 'right' }
+        ]);
+      }
+      if (c.goalMRR > 0) {
+        calcRows.push([
+          { text: `Goal-contributor MRR (${c.goalDeals.length} deal${c.goalDeals.length !== 1 ? 's' : ''}, counts toward target · no commission)`, color: COL.text2 },
+          { text: '$' + fmt(c.goalMRR), color: COL.text2, alignment: 'right' }
         ]);
       }
       calcRows.push([
@@ -6058,7 +6102,7 @@
       ]);
     }
     if (c.platformCommission > 0) {
-      const targetToFill = Math.max(0, TARGET - c.managedMRR);
+      const targetToFill = Math.max(0, TARGET - c.managedMRR - c.goalMRR);
       const platAbove = Math.max(0, c.platformMRR - targetToFill);
       calcRows.push([
         { text: 'Platform MRR above line', italics: true, color: COL.text3 },
@@ -6777,11 +6821,12 @@
         <div class="popover-row"><div class="key">Above target</div><div class="val">10% commission on MRR above $1,000, on first-year value (×12), paid as the client pays.</div></div>
         <div class="popover-row"><div class="key">Below target</div><div class="val">Hourly rate only. No platform commission.</div></div>
         <div class="popover-row"><div class="key">Eligible</div><div class="val"><strong>Scale, Pro tiers, Unlimited Domain</strong> count toward target.</div></div>
-        <div class="popover-row"><div class="key">Excluded</div><div class="val">Lite, Starter, Growth — self-serve tiers earn no commission.</div></div>
+        <div class="popover-row"><div class="key">Counts toward goal</div><div class="val"><strong>Growth ($299)</strong> earns <strong>no commission</strong>, but its MRR counts toward the $1,000 target — so it helps push platform deals above the line.</div></div>
+        <div class="popover-row"><div class="key">Excluded</div><div class="val">Lite, Starter — self-serve tiers that earn no commission and don't count toward the target.</div></div>
         <div class="popover-row"><div class="key">Managed</div><div class="val"><strong>Flat $300/deal</strong> regardless of size, <strong>plus</strong> Managed MRR counts toward the $1,000 target. Covers dev, audit, and referral baked into pricing.</div></div>
         <div class="popover-row"><div class="key">12-month cap</div><div class="val">Commission stops after 12 months per client, or earlier on cancel.</div></div>
         <p style="margin-top: 18px; padding-top: 14px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--text-3); font-style: italic; line-height: 1.55;">
-          Note: a $599 Managed deal contributes $599 toward the $1,000 target <em>and</em> pays the flat $300 — confirmed policy, not configurable.
+          Note: a $599 Managed deal contributes $599 toward the $1,000 target <em>and</em> pays the flat $300 — confirmed policy, not configurable. A $299 Growth plan contributes its $299 toward the target but pays $0 itself.
         </p>
       `,
       buttons: [{ label: 'Close', variant: 'btn-ghost' }]
@@ -6881,12 +6926,22 @@
         <div class="plan-list">${PLAN_CATALOG.managedEnterprise.map(t => planCardHTML(t)).join('')}</div>
       `;
     } else if (tab === 'selfserve') {
+      // Split self-serve tiers by behavior: goal contributors (Growth) count
+      // toward the $1,000 target; the rest are fully excluded.
+      const goalTiers = PLAN_CATALOG.selfServe.filter(t => isGoalContributor(t.key));
+      const excludedTiers = PLAN_CATALOG.selfServe.filter(t => !isGoalContributor(t.key));
       html += `
-        <div class="plan-info-banner warn">
-          Self-serve tiers don't earn commission — log them only if you want them in the deal history.
-        </div>
-        <div class="plan-list">${PLAN_CATALOG.selfServe.map(t => planCardHTML(t, { metaOverride: 'Self-serve · no commission' })).join('')}</div>
-      `;
+        <div class="plan-info-banner">
+          Self-serve tiers earn no commission. <strong>Growth</strong> still counts toward the $1,000 target (it helps unlock commission on platform deals); the rest are fully excluded.
+        </div>`;
+      if (goalTiers.length > 0) {
+        html += `<div class="plan-section-title">Counts toward goal · no commission</div>
+          <div class="plan-list">${goalTiers.map(t => planCardHTML(t, { metaOverride: 'Counts toward $1,000 target · no commission' })).join('')}</div>`;
+      }
+      if (excludedTiers.length > 0) {
+        html += `<div class="plan-section-title">Excluded · no commission</div>
+          <div class="plan-list">${excludedTiers.map(t => planCardHTML(t, { metaOverride: 'Self-serve · excluded' })).join('')}</div>`;
+      }
     } else {
       // Custom tab: ask billing / MRR / category, then write into the form
       // on apply (so the deal uses the same logic as a catalog plan).
@@ -7045,7 +7100,7 @@
         const mrrInput = document.getElementById('dealMRR');
         if (mrrInput && mrrInput.value) planPickerState.customDraft.mrr = mrrInput.value;
       } else if (isManaged(ddState.dealPlan)) planPickerState.tab = 'managed';
-      else if (isExcluded(ddState.dealPlan)) planPickerState.tab = 'selfserve';
+      else if (isExcluded(ddState.dealPlan) || isGoalContributor(ddState.dealPlan)) planPickerState.tab = 'selfserve';
       else {
         planPickerState.tab = 'platform';
         planPickerState.coverage = ddState.dealPlan.startsWith('unlimited_') ? 'unlimited' : 'single';
