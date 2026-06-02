@@ -11,9 +11,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.10/pdfmake.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.10/vfs_fonts.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.106.2/dist/umd/supabase.js" integrity="sha384-m/8UHFJHeU6nrCKP2hBnAseuvAKUmLF+8e5bWos5CJL023vuxX7kiVL5t8yjsJhV" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfmake@0.2.10/build/pdfmake.min.js" integrity="sha384-vseuUuO/VRMn00lXYd5m/Pk4l/7RjMqhXGf6G0RALy+On0txYb39dQsUQDAd7q5L" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfmake@0.2.10/build/vfs_fonts.js" integrity="sha384-zmD5tDN2awbMigS/yVcxHObSsdXXKh/27Y/bSII38WfNl+D7O/aVCIteAXsLY3p3" crossorigin="anonymous"></script>
 <script src="config.local.js" onerror="void 0"></script>
 <style>
   :root {
@@ -3742,6 +3742,20 @@
       return;
     }
 
+    // Defence-in-depth: only ever hand createClient an HTTPS Supabase host, so
+    // a tampered /api/config or window.APP_CONFIG can't redirect auth + data to
+    // an attacker-controlled endpoint. (CSP connect-src already restricts this;
+    // this fails fast and obviously rather than relying on CSP alone.)
+    let validHost = false;
+    try {
+      const u = new URL(url);
+      validHost = u.protocol === 'https:' && /(^|\.)supabase\.(co|in)$/.test(u.hostname);
+    } catch(e) {}
+    if (!validHost) {
+      console.warn('Ignoring non-Supabase or insecure config URL — running in local-only mode.');
+      return;
+    }
+
     try {
       if (window.supabase) supa = window.supabase.createClient(url, key);
     } catch(e) { console.error('Supabase init failed:', e); }
@@ -5002,7 +5016,7 @@
 
       return `
         <li class="verify-history-item">
-          <span class="verify-history-decision ${entry.decision}" title="${escapeHtml(decisionLabel)}">${icon}</span>
+          <span class="verify-history-decision ${escapeHtml(entry.decision)}" title="${escapeHtml(decisionLabel)}">${icon}</span>
           <div>
             <div class="verify-history-name">${escapeHtml(entry.deal_name)}</div>
             <div class="verify-history-meta">${escapeHtml(decisionLabel)} · ${escapeHtml(formatMonthLabel(entry.period_month))}</div>
@@ -5172,14 +5186,14 @@
 
     // ── Footer: cancel · add subscription · delete ──
     const cancelLink = (max === 0) ? ''
-      : `<button type="button" class="dc-link${d.cancelled ? ' is-on' : ''}" onclick="toggleCancel('${d.id}')">`
+      : `<button type="button" class="dc-link${d.cancelled ? ' is-on' : ''}" onclick="toggleCancel(this.closest('[data-id]').dataset.id)">`
         + `${d.cancelled ? 'Un-cancel deal' : 'Mark cancelled'}</button>`;
     const footer = `
       <div class="dc-foot">
         ${cancelLink}
         <span class="dc-foot-spacer"></span>
-        <button type="button" class="dc-link" onclick="addSubscription('${d.id}')" title="Add another subscription for this client">+ Add subscription</button>
-        <button type="button" class="dc-icon-btn" onclick="deleteDeal('${d.id}')" title="Delete deal" aria-label="Delete deal">
+        <button type="button" class="dc-link" onclick="addSubscription(this.closest('[data-id]').dataset.id)" title="Add another subscription for this client">+ Add subscription</button>
+        <button type="button" class="dc-icon-btn" onclick="deleteDeal(this.closest('[data-id]').dataset.id)" title="Delete deal" aria-label="Delete deal">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
             <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
@@ -5189,7 +5203,7 @@
       </div>`;
 
     return `
-      <div class="deal-card${isGroupedRow ? ' grouped' : ''}${d.cancelled ? ' is-cancelled' : ''}" data-id="${d.id}">
+      <div class="deal-card${isGroupedRow ? ' grouped' : ''}${d.cancelled ? ' is-cancelled' : ''}" data-id="${escapeHtml(d.id)}">
         ${header}
         ${figures}
         ${hint}
@@ -5212,7 +5226,7 @@
       const label = isManaged(d.plan) ? 'First invoice' : 'Annual payment';
       collectedUI = `
         <div class="dc-pay-row"><span class="dc-pay-label">${label}</span></div>
-        <button type="button" class="dc-toggle${isOn ? ' on' : ''}" onclick="toggleOneshot('${d.id}')" ${d.cancelled ? 'disabled' : ''}>
+        <button type="button" class="dc-toggle${isOn ? ' on' : ''}" onclick="toggleOneshot(this.closest('[data-id]').dataset.id)" ${d.cancelled ? 'disabled' : ''}>
           <span class="dc-check"></span>
           <span>${isOn ? 'Payment collected' : 'Mark payment collected'}</span>
         </button>`;
@@ -5220,7 +5234,7 @@
       const segs = Array.from({ length: max }, (_, i) => {
         const cls = i < collected ? 'dc-seg filled' : (d.cancelled ? 'dc-seg capped' : 'dc-seg');
         return `<button type="button" class="${cls}" title="Set to ${i + 1} of ${max}" `
-          + `onclick="setPaid('${d.id}', ${i + 1})" ${d.cancelled ? 'disabled' : ''} aria-label="Month ${i + 1}"></button>`;
+          + `onclick="setPaid(this.closest('[data-id]').dataset.id, ${i + 1})" ${d.cancelled ? 'disabled' : ''} aria-label="Month ${i + 1}"></button>`;
       }).join('');
       collectedUI = `
         <div class="dc-pay-row">
@@ -5229,9 +5243,9 @@
         </div>
         <div class="dc-segs" role="group" aria-label="Payments collected — tap a month to set the count">${segs}</div>
         <div class="dc-stepper">
-          <button type="button" class="dc-step" onclick="unmarkPaid('${d.id}')" ${collected === 0 || d.cancelled ? 'disabled' : ''} aria-label="Remove last payment">−</button>
-          <button type="button" class="dc-mark" onclick="markPaid('${d.id}')" ${collected >= max || d.cancelled ? 'disabled' : ''}>Mark a payment</button>
-          <button type="button" class="dc-step dc-step-all" onclick="setPaid('${d.id}', ${max})" ${collected >= max || d.cancelled ? 'disabled' : ''} title="Mark all ${max} months collected">All paid</button>
+          <button type="button" class="dc-step" onclick="unmarkPaid(this.closest('[data-id]').dataset.id)" ${collected === 0 || d.cancelled ? 'disabled' : ''} aria-label="Remove last payment">−</button>
+          <button type="button" class="dc-mark" onclick="markPaid(this.closest('[data-id]').dataset.id)" ${collected >= max || d.cancelled ? 'disabled' : ''}>Mark a payment</button>
+          <button type="button" class="dc-step dc-step-all" onclick="setPaid(this.closest('[data-id]').dataset.id, ${max})" ${collected >= max || d.cancelled ? 'disabled' : ''} title="Mark all ${max} months collected">All paid</button>
         </div>`;
     }
 
@@ -5242,7 +5256,7 @@
         receivedUI = `
           <div class="dc-received">
             <span class="dc-received-label">Your commission</span>
-            <button type="button" class="dc-rec-toggle${isReceived ? ' on' : ''}" onclick="togglePayoutReceived('${d.id}')" ${collected === 0 ? 'disabled' : ''}>
+            <button type="button" class="dc-rec-toggle${isReceived ? ' on' : ''}" onclick="togglePayoutReceived(this.closest('[data-id]').dataset.id)" ${collected === 0 ? 'disabled' : ''}>
               <span class="dc-check sm"></span><span>${isReceived ? 'Received in pocket' : 'Mark received'}</span>
             </button>
           </div>`;
@@ -5253,8 +5267,8 @@
             <span class="dc-received-label">Your commission</span>
             <span class="dc-rec-state${allReceived ? ' done' : ''}"><b>${paidOut}</b> of ${collected} received</span>
             <div class="dc-rec-stepper">
-              <button type="button" class="dc-step sm" onclick="unmarkPayout('${d.id}')" ${paidOut === 0 ? 'disabled' : ''} aria-label="Undo received">−</button>
-              <button type="button" class="dc-step sm" onclick="markPayout('${d.id}')" ${paidOut >= collected ? 'disabled' : ''} aria-label="Mark received">+</button>
+              <button type="button" class="dc-step sm" onclick="unmarkPayout(this.closest('[data-id]').dataset.id)" ${paidOut === 0 ? 'disabled' : ''} aria-label="Undo received">−</button>
+              <button type="button" class="dc-step sm" onclick="markPayout(this.closest('[data-id]').dataset.id)" ${paidOut >= collected ? 'disabled' : ''} aria-label="Mark received">+</button>
             </div>
           </div>`;
       }
@@ -7235,8 +7249,15 @@
   async function clearLocalData() {
     deals = [];
     try {
+      // Wipe every app key so no private client data — names, MRR, or the
+      // per-deal payment-activity snapshots — lingers on a shared machine
+      // after sign-out. (The cache layer has no delete; empty values read back
+      // as "nothing", which every reader already handles.)
       await cache.set('ct-deals-v3', '[]');
       await cache.set('ct-deals-v2', '[]');
+      await cache.set('ct-settings-v3', '');
+      await cache.set(VISIT_CACHE_KEY, '');
+      await cache.set(DISMISS_CACHE_KEY, '');
     } catch(e) {}
     try { render(); } catch(e) {}
   }
