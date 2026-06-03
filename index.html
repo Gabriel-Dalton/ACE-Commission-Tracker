@@ -1931,6 +1931,33 @@
 
   .modal-message strong { color: var(--text); font-weight: 600; }
 
+  /* EDIT-DEAL MODAL FORM — reuses .field / .field-label / .input from the add form,
+     laid out two-up so the whole subscription fits without scrolling on desktop. */
+  .edit-deal-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px 16px;
+  }
+  .edit-deal-grid .ef-span { grid-column: 1 / -1; }
+  select.input {
+    -webkit-appearance: none; -moz-appearance: none; appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none' stroke='%23828884' stroke-width='1.5'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+    cursor: pointer;
+  }
+  .ef-hint {
+    font-size: 11.5px;
+    color: var(--text-3);
+    line-height: 1.5;
+  }
+  .ef-hint .renew { color: var(--accent-strong); font-weight: 600; }
+  .edit-deal-grid .form-error { margin-top: 2px; }
+  @media (max-width: 540px) {
+    .edit-deal-grid { grid-template-columns: 1fr; gap: 13px; }
+  }
+
   .modal-footer {
     display: flex;
     justify-content: flex-end;
@@ -5252,6 +5279,7 @@
       <div class="dc-foot">
         ${cancelLink}
         <span class="dc-foot-spacer"></span>
+        <button type="button" class="dc-link" onclick="editDeal(this.closest('[data-id]').dataset.id)" title="Edit this subscription — MRR, plan, close date, renewal day">Edit</button>
         <button type="button" class="dc-link" onclick="addSubscription(this.closest('[data-id]').dataset.id)" title="Add another subscription for this client">+ Add subscription</button>
         <button type="button" class="dc-icon-btn" onclick="deleteDeal(this.closest('[data-id]').dataset.id)" title="Delete deal" aria-label="Delete deal">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -5835,6 +5863,205 @@
     removeDealRemote(id);
     showToast(`Removed ${target.name}`);
   };
+
+  // ─── Edit an existing subscription ────────────────────────────────────
+  // Lets Gabriel correct any of a deal's facts after the fact: client name,
+  // MRR, plan tier, billing cycle, close date, the reference, and — the part
+  // that prompted this — the "first payment / renewal" anchor date. Two
+  // subscriptions for one client can close on the same day yet bill on
+  // different days of the month (e.g. TrueNorth Custom: one renews the 7th,
+  // the other the 13th); the anchor date is what drives "Renews on the Nth".
+
+  // 1st, 2nd, 3rd, 13th … for the live renewal-day hint.
+  function ordinalDay(n) {
+    const v = n % 100;
+    if (v >= 11 && v <= 13) return n + 'th';
+    return n + (['th', 'st', 'nd', 'rd'][n % 10] || 'th');
+  }
+
+  // <select> options for the plan tier, grouped to mirror the plan picker.
+  // The current plan is pre-selected; an unknown/legacy key is preserved as
+  // its own option so editing an old deal never silently rewrites its tier.
+  function buildPlanSelectOptions(currentPlan) {
+    const opt = (k, label) =>
+      `<option value="${escapeHtml(k)}"${k === currentPlan ? ' selected' : ''}>${escapeHtml(label)}</option>`;
+    const group = (label, items) =>
+      `<optgroup label="${escapeHtml(label)}">${items.map(i => opt(i.key, planLabel(i.key))).join('')}</optgroup>`;
+
+    let html = '';
+    const known = new Set([
+      ...Object.values(PLAN_CATALOG).flat().map(i => i.key),
+      CUSTOM_PLATFORM, CUSTOM_MANAGED
+    ]);
+    if (currentPlan && !known.has(currentPlan)) {
+      html += `<optgroup label="Current plan">${opt(currentPlan, planLabel(currentPlan))}</optgroup>`;
+    }
+    html += group('Platform · Single Domain',    PLAN_CATALOG.platformSingle);
+    html += group('Platform · Unlimited Domains', PLAN_CATALOG.platformUnlimited);
+    html += group('Managed · Standard',           PLAN_CATALOG.managedStandard);
+    html += group('Managed · Enterprise',         PLAN_CATALOG.managedEnterprise);
+    html += group('Self-serve · no commission',   PLAN_CATALOG.selfServe);
+    html += `<optgroup label="Custom">${opt(CUSTOM_PLATFORM, planLabel(CUSTOM_PLATFORM))}${opt(CUSTOM_MANAGED, planLabel(CUSTOM_MANAGED))}</optgroup>`;
+    return html;
+  }
+
+  window.editDeal = function(id) {
+    const d = deals.find(x => x.id === id);
+    if (!d) return;
+
+    const wrap = document.createElement('div');
+    wrap.className = 'edit-deal-grid';
+    wrap.innerHTML = `
+      <div class="field ef-span">
+        <label class="field-label" for="editName">Client name</label>
+        <input type="text" id="editName" class="input" value="${escapeHtml(d.name || '')}" autocomplete="off" autocapitalize="words" spellcheck="false">
+      </div>
+      <div class="field">
+        <label class="field-label" for="editMRR">MRR</label>
+        <div class="input-currency">
+          <input type="number" id="editMRR" class="input" value="${escapeHtml(String(d.mrr ?? ''))}" step="1" min="0" inputmode="numeric" pattern="[0-9]*">
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label" for="editBilling">Billing</label>
+        <select id="editBilling" class="input">
+          <option value="monthly"${d.billing !== 'annual' ? ' selected' : ''}>Monthly</option>
+          <option value="annual"${d.billing === 'annual' ? ' selected' : ''}>Annual upfront</option>
+        </select>
+      </div>
+      <div class="field ef-span">
+        <label class="field-label" for="editPlan">Plan tier</label>
+        <select id="editPlan" class="input">${buildPlanSelectOptions(d.plan)}</select>
+      </div>
+      <div class="field">
+        <label class="field-label" for="editDate">Close date</label>
+        <input type="date" id="editDate" class="input" value="${escapeHtml(d.date || '')}">
+      </div>
+      <div class="field">
+        <label class="field-label" for="editFirstPayment">First payment / renewal date</label>
+        <input type="date" id="editFirstPayment" class="input" value="${escapeHtml(d.firstPaymentDate || '')}">
+      </div>
+      <div class="field ef-span">
+        <span class="ef-hint" id="editRenewHint"></span>
+      </div>
+      <div class="field ef-span">
+        <label class="field-label" for="editRef">Reference</label>
+        <input type="text" id="editRef" class="input" value="${escapeHtml(d.ref || '')}" autocomplete="off" autocapitalize="characters" spellcheck="false">
+      </div>
+      <div class="field ef-span">
+        <span class="form-error" id="editError"></span>
+      </div>
+    `;
+
+    // Live "Renews on the Nth" hint, recomputed from the form's current values
+    // so Gabriel sees the billing day land before he saves.
+    function refreshRenewHint() {
+      const hintEl = wrap.querySelector('#editRenewHint');
+      if (!hintEl) return;
+      const plan    = wrap.querySelector('#editPlan').value;
+      const billing = wrap.querySelector('#editBilling').value;
+      const anchor  = wrap.querySelector('#editFirstPayment').value || wrap.querySelector('#editDate').value;
+      const usingClose = !wrap.querySelector('#editFirstPayment').value;
+      const tail = usingClose
+        ? ' Leave blank to bill on the close-date day; set a date to override it.'
+        : '';
+
+      if (isExcluded(plan)) {
+        hintEl.innerHTML = 'Self-serve tier — no commission and no renewals are tracked.';
+        return;
+      }
+      if (isManaged(plan)) {
+        hintEl.innerHTML = `One-time managed bonus — collected once, no monthly renewal.${tail}`;
+        return;
+      }
+      if (billing === 'annual') {
+        hintEl.innerHTML = `Annual upfront — renews once a year.${tail}`;
+        return;
+      }
+      const day = anchor ? parseInt(anchor.split('-')[2], 10) : NaN;
+      if (!day || isNaN(day)) {
+        hintEl.innerHTML = `Sets which day each month this subscription renews.${tail}`;
+        return;
+      }
+      hintEl.innerHTML = `Renews on the <span class="renew">${ordinalDay(day)}</span> of each month.${tail}`;
+    }
+
+    ['#editFirstPayment', '#editDate', '#editPlan', '#editBilling'].forEach(sel => {
+      const el = wrap.querySelector(sel);
+      if (el) { el.addEventListener('change', refreshRenewHint); el.addEventListener('input', refreshRenewHint); }
+    });
+
+    // Enter saves (except inside the plan <select>, where Enter just opens it).
+    wrap.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && e.target.tagName !== 'SELECT') {
+        e.preventDefault();
+        saveEditDeal(id);
+      }
+    });
+
+    openModal({
+      title: 'Edit subscription',
+      size: 'wide',
+      content: wrap,
+      buttons: [
+        { label: 'Cancel', variant: 'btn-ghost' },
+        { label: 'Save changes', variant: 'btn-primary', closeOnClick: false, onClick: () => saveEditDeal(id) }
+      ]
+    });
+
+    refreshRenewHint();
+    setTimeout(() => document.getElementById('editName')?.focus(), 40);
+  };
+
+  function saveEditDeal(id) {
+    const d = deals.find(x => x.id === id);
+    if (!d) { closeModal(); return; }
+
+    const name         = document.getElementById('editName').value.trim();
+    const mrr          = parseFloat(document.getElementById('editMRR').value);
+    const plan         = document.getElementById('editPlan').value;
+    const billing      = document.getElementById('editBilling').value;
+    const date         = document.getElementById('editDate').value;
+    const firstPayment = document.getElementById('editFirstPayment').value;
+    const ref          = document.getElementById('editRef').value.trim();
+
+    const errEl = document.getElementById('editError');
+    const fail = (msg, focusId) => {
+      if (errEl) { errEl.textContent = msg; errEl.classList.add('visible'); }
+      document.getElementById(focusId)?.focus();
+    };
+
+    if (!name)                          return fail('Client name is required', 'editName');
+    if (!mrr || isNaN(mrr) || mrr <= 0) return fail('Enter a valid MRR', 'editMRR');
+    if (!plan)                          return fail('Select a plan tier', 'editPlan');
+    if (!date)                          return fail('Close date is required', 'editDate');
+    // The first-payment date is intentionally unconstrained relative to the
+    // close date: a deal logged a few days late can still bill on an earlier
+    // day of the month, which is exactly the per-subscription renewal-day case
+    // this field exists for. The live hint shows the resulting renewal day.
+
+    d.name = name;
+    d.mrr = mrr;
+    d.plan = plan;
+    d.billing = billing;
+    d.date = date;
+    d.firstPaymentDate = firstPayment || null;
+    d.ref = ref;
+    // Re-clamp payment counters to the (possibly changed) max-units for the new
+    // plan/billing so e.g. switching 12-month → annual can't leave 5/1 collected.
+    normalizeDeal(d);
+
+    const newMonth = date.slice(0, 7);
+    _invalidateMonthContext();
+    closeModal();
+    // Follow the deal to its close-month so the edit stays visible even if the
+    // date moved it out of the month currently on screen.
+    const moved = newMonth !== currentMonth;
+    if (moved) currentMonth = newMonth;
+    render();
+    persistDeal(d);
+    showToast(moved ? `Updated ${name} · moved to ${formatMonthLabel(newMonth)}` : `Updated ${name}`);
+  }
 
   async function clearMonth() {
     const monthName = formatMonthLabel(currentMonth);
