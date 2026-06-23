@@ -14,7 +14,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.106.2/dist/umd/supabase.js" integrity="sha384-m/8UHFJHeU6nrCKP2hBnAseuvAKUmLF+8e5bWos5CJL023vuxX7kiVL5t8yjsJhV" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/pdfmake@0.2.10/build/pdfmake.min.js" integrity="sha384-vseuUuO/VRMn00lXYd5m/Pk4l/7RjMqhXGf6G0RALy+On0txYb39dQsUQDAd7q5L" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/pdfmake@0.2.10/build/vfs_fonts.js" integrity="sha384-zmD5tDN2awbMigS/yVcxHObSsdXXKh/27Y/bSII38WfNl+D7O/aVCIteAXsLY3p3" crossorigin="anonymous"></script>
-<script src="config.local.js" onerror="void 0"></script>
 <style>
   :root {
     --bg: #f7f8f7;
@@ -3813,6 +3812,20 @@
   let supa = null;
   let online = false;
 
+  // Local-dev fallback: config.local.js is gitignored and only exists when a
+  // developer created it. Loaded dynamically *only* when /api/config fails to
+  // supply creds, so production — where /api/config always works — never
+  // requests a missing file (which would log a noisy 404 + MIME-type error).
+  function loadLocalConfig() {
+    return new Promise((resolve) => {
+      if (window.APP_CONFIG) return resolve();
+      const s = document.createElement('script');
+      s.src = 'config.local.js';
+      s.onload = s.onerror = () => resolve();
+      document.head.appendChild(s);
+    });
+  }
+
   // Fetch credentials from /api/config (Vercel env vars) with a window.APP_CONFIG fallback
   // for local dev (create config.local.js: `window.APP_CONFIG = { url, key }`).
   async function initSupabase() {
@@ -3822,7 +3835,10 @@
       if (res.ok) ({ url, key } = await res.json());
     } catch(e) { /* /api/config unavailable — try fallback */ }
 
-    if ((!url || !key) && window.APP_CONFIG) ({ url, key } = window.APP_CONFIG);
+    if (!url || !key) {
+      await loadLocalConfig();
+      if (window.APP_CONFIG) ({ url, key } = window.APP_CONFIG);
+    }
 
     if (!url || !key) {
       console.warn('Supabase config unavailable — running in local-only mode.');
@@ -4118,16 +4134,22 @@
     }
   }
 
+  // Returns true if the cloud write succeeded, false if there's no cloud
+  // (local-only) or the write failed — so callers can report an honest result
+  // instead of assuming success.
   async function withSyncStatus(label, fn) {
-    if (!supa || !online) { await fn(); return; }
+    if (!supa) return false;
     setStatus('syncing', label);
     try {
       await fn();
+      online = true;
       setStatus('online', 'Synced · Cloud');
+      return true;
     } catch (e) {
       console.error(e);
       online = false;
       setStatus('offline', 'Sync failed · Local only');
+      return false;
     }
   }
 
@@ -4233,7 +4255,7 @@
 
   async function persistDeal(deal) {
     await cacheLocal();
-    await withSyncStatus('Saving deal…', async () => {
+    return await withSyncStatus('Saving deal…', async () => {
       await upsertDealRemote(deal);
     });
   }
@@ -5748,7 +5770,7 @@
     document.getElementById('formError').classList.remove('visible');
   }
 
-  function addDeal() {
+  async function addDeal() {
     const name = document.getElementById('dealName').value.trim();
     const mrr = parseFloat(document.getElementById('dealMRR').value);
     const plan = ddState.dealPlan;
@@ -5788,9 +5810,18 @@
     clearForm();
     _invalidateMonthContext();
     render();
-    persistDeal(newDeal);
-    showToast(toastMsg);
     document.getElementById('dealName').focus();
+
+    // Wait for the actual cloud write before reporting success, so the toast
+    // reflects reality. A silent sync failure no longer looks like it worked.
+    const synced = await persistDeal(newDeal);
+    if (synced) {
+      showToast(toastMsg);
+    } else if (supa) {
+      showToast(`${toastMsg} — saved locally, but cloud sync failed`, 'error');
+    } else {
+      showToast(`${toastMsg} (saved locally — no cloud connection)`);
+    }
   }
 
   function clearForm() {
@@ -6013,7 +6044,7 @@
     setTimeout(() => document.getElementById('editName')?.focus(), 40);
   };
 
-  function saveEditDeal(id) {
+  async function saveEditDeal(id) {
     const d = deals.find(x => x.id === id);
     if (!d) { closeModal(); return; }
 
@@ -6059,8 +6090,15 @@
     const moved = newMonth !== currentMonth;
     if (moved) currentMonth = newMonth;
     render();
-    persistDeal(d);
-    showToast(moved ? `Updated ${name} · moved to ${formatMonthLabel(newMonth)}` : `Updated ${name}`);
+    const label = moved ? `Updated ${name} · moved to ${formatMonthLabel(newMonth)}` : `Updated ${name}`;
+    const synced = await persistDeal(d);
+    if (synced) {
+      showToast(label);
+    } else if (supa) {
+      showToast(`${label} — saved locally, but cloud sync failed`, 'error');
+    } else {
+      showToast(`${label} (saved locally — no cloud connection)`);
+    }
   }
 
   async function clearMonth() {
