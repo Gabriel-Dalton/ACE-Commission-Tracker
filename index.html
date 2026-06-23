@@ -3336,7 +3336,7 @@
           <span class="cents" id="totalCents">.00</span>
         </div>
         <div class="hero-summary">
-          <span class="chip"><strong id="paymentsThisPeriodChip">0</strong> payment(s) this period</span>
+          <span class="chip"><strong id="paymentsThisPeriodChip">0</strong> commission payment(s)</span>
           <span class="chip"><strong id="totalEarnedChip">$0</strong> earned all-time</span>
           <span class="chip"><strong id="totalReceivedChip">$0</strong> received in pocket</span>
           <span class="chip"><strong id="dealCountChip">0</strong> deals closed</span>
@@ -4877,10 +4877,10 @@
     document.getElementById('earnedThisPeriod').textContent = fmt(earned);
     const epNote = document.getElementById('earnedThisPeriodNote');
     if (c.earnedThisPeriodDeals.length === 0) {
-      epNote.textContent = 'No client payments collected this period';
+      epNote.textContent = 'No commission earned this period yet';
       epNote.className = 'stat-meta';
     } else {
-      epNote.textContent = `${c.earnedThisPeriodDeals.length} payment${c.earnedThisPeriodDeals.length !== 1 ? 's' : ''} collected · ${formatMonthLabelShort(currentMonth)}`;
+      epNote.textContent = `${c.earnedThisPeriodDeals.length} commission payment${c.earnedThisPeriodDeals.length !== 1 ? 's' : ''} · ${formatMonthLabelShort(currentMonth)}`;
       epNote.className = 'stat-meta good';
     }
 
@@ -5240,8 +5240,14 @@
     if (nextRenewal) {
       const nowYM = new Date().toISOString().slice(0, 7);
       const isDue = nextRenewal.slice(0, 7) <= nowYM && collected < max;
+      // Payment #1 is the client's first payment, not a renewal — only frame it
+      // as a "renewal" once at least one payment is in, so a brand-new deal
+      // doesn't read as if a renewal is already overdue.
+      const label = collected === 0
+        ? (isDue ? 'First payment due' : 'First payment')
+        : (isDue ? 'Renewal due' : 'Renews');
       renewalTag = `<span class="dc-sep"></span><span class="dc-renew${isDue ? ' due' : ''}">`
-        + `${isDue ? 'Renewal due' : 'Renews'} ${formatDate(nextRenewal)}</span>`;
+        + `${label} ${formatDate(nextRenewal)}</span>`;
     }
 
     const header = `
