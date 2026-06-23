@@ -3336,7 +3336,7 @@
           <span class="cents" id="totalCents">.00</span>
         </div>
         <div class="hero-summary">
-          <span class="chip"><strong id="paymentsThisPeriodChip">0</strong> payment(s) this period</span>
+          <span class="chip"><strong id="paymentsThisPeriodChip">0</strong> commission payment(s)</span>
           <span class="chip"><strong id="totalEarnedChip">$0</strong> earned all-time</span>
           <span class="chip"><strong id="totalReceivedChip">$0</strong> received in pocket</span>
           <span class="chip"><strong id="dealCountChip">0</strong> deals closed</span>
@@ -3523,14 +3523,14 @@
   <div id="carryoverSection" class="section-head" hidden>
     <div class="section-title">
       <span class="num">02b</span>
-      <span>Carry-over · still earning from prior months</span>
+      <span>Carry-over · still collecting from prior months</span>
     </div>
   </div>
   <div id="carryoverWrap" hidden style="margin-bottom: 8px;">
     <div id="carryoverBody" class="deals-list"></div>
   </div>
   <div id="carryoverNote" class="forecast-note" hidden style="margin-bottom: 24px; padding: 0 4px;">
-    These monthly platform deals closed in earlier months but are still receiving payments. Mark each month as the client pays — that's what flows into "Earned This Pay Period" above.
+    These deals closed in earlier months but still have a payment to collect — monthly platform subscriptions billing again, plus Managed and annual deals whose one-time payment hasn't been marked yet. Mark each as the client pays — that's what flows into "Earned This Pay Period" above.
   </div>
 
   <div class="section-head">
@@ -4877,10 +4877,10 @@
     document.getElementById('earnedThisPeriod').textContent = fmt(earned);
     const epNote = document.getElementById('earnedThisPeriodNote');
     if (c.earnedThisPeriodDeals.length === 0) {
-      epNote.textContent = 'No client payments collected this period';
+      epNote.textContent = 'No commission earned this period yet';
       epNote.className = 'stat-meta';
     } else {
-      epNote.textContent = `${c.earnedThisPeriodDeals.length} payment${c.earnedThisPeriodDeals.length !== 1 ? 's' : ''} collected · ${formatMonthLabelShort(currentMonth)}`;
+      epNote.textContent = `${c.earnedThisPeriodDeals.length} commission payment${c.earnedThisPeriodDeals.length !== 1 ? 's' : ''} · ${formatMonthLabelShort(currentMonth)}`;
       epNote.className = 'stat-meta good';
     }
 
@@ -4938,10 +4938,14 @@
       if (!d.date) return false;
       const dealYM = d.date.slice(0, 7);
       if (dealYM >= currentMonth) return false;                 // current/future close-month
-      if (dealMaxUnits(d) <= 1) return false;                   // managed/annual one-shot
+      if (dealMaxUnits(d) === 0) return false;                  // self-serve / no commission
       if (isExcluded(d.plan)) return false;
       if (d.cancelled) return false;
-      if ((d.paymentsCollected || 0) >= dealMaxUnits(d)) return false; // fully paid out
+      // Includes uncollected one-shots (Managed/annual, max 1): they're skipped
+      // by the monthly verification queue, so without this a prior-month deal
+      // whose single payment was never marked would vanish from every view but
+      // its close month. Monthly deals carry over until each month is collected.
+      if ((d.paymentsCollected || 0) >= dealMaxUnits(d)) return false; // fully collected
       return true;
     });
 
@@ -5240,8 +5244,14 @@
     if (nextRenewal) {
       const nowYM = new Date().toISOString().slice(0, 7);
       const isDue = nextRenewal.slice(0, 7) <= nowYM && collected < max;
+      // Payment #1 is the client's first payment, not a renewal — only frame it
+      // as a "renewal" once at least one payment is in, so a brand-new deal
+      // doesn't read as if a renewal is already overdue.
+      const label = collected === 0
+        ? (isDue ? 'First payment due' : 'First payment')
+        : (isDue ? 'Renewal due' : 'Renews');
       renewalTag = `<span class="dc-sep"></span><span class="dc-renew${isDue ? ' due' : ''}">`
-        + `${isDue ? 'Renewal due' : 'Renews'} ${formatDate(nextRenewal)}</span>`;
+        + `${label} ${formatDate(nextRenewal)}</span>`;
     }
 
     const header = `
@@ -6835,17 +6845,40 @@
     reader.onload = async (e) => {
       const text = e.target.result;
       const lines = text.split('\n').filter(l => l.trim());
+      if (!lines.length) { showToast('Nothing to import — the file is empty', 'error'); return; }
+
+      // The exported CSV wraps the deal table in a note + summary block, so the
+      // "Client,Reference,…" header is not line 0. Locate that header and map
+      // every column BY NAME, so a file produced by Export CSV re-imports
+      // correctly — and the mapping survives any future column reordering. The
+      // previous code read fixed positions that no longer matched the export
+      // (Plan fell on the "Next Renewal" column and MRR on the "Plan" label),
+      // so every row was dropped as NaN and "Import" silently brought in nothing.
+      const headerIdx = lines.findIndex(l => (parseCSVLine(l)[0] || '').trim().toLowerCase() === 'client');
+      let col;
+      if (headerIdx !== -1) {
+        const cols = parseCSVLine(lines[headerIdx]).map(h => h.trim().toLowerCase());
+        const find = (...names) => { for (const n of names) { const i = cols.indexOf(n); if (i !== -1) return i; } return -1; };
+        col = { name: find('client', 'name'), ref: find('reference', 'ref'),
+                date: find('close date', 'date'), plan: find('plan'),
+                mrr: find('mrr'), billing: find('billing') };
+      } else {
+        // Header-less CSV (e.g. hand-made): fall back to the documented order.
+        col = { name: 0, ref: 1, date: 2, plan: 3, mrr: 4, billing: 5 };
+      }
+      const at = (cells, key) => (col[key] != null && col[key] >= 0) ? (cells[col[key]] ?? '') : '';
+
       const newDeals = [];
-      for (let i = 1; i < lines.length; i++) {
+      for (let i = (headerIdx === -1 ? 0 : headerIdx + 1); i < lines.length; i++) {
         const cells = parseCSVLine(lines[i]);
         if (cells.length < 5) continue;
-        const name = cells[0];
-        const ref = cells[1];
-        const date = cells[2];
-        const planText = (cells[3] || '').toLowerCase();
-        const mrr = parseFloat(cells[4]);
+        const name = at(cells, 'name');
+        const ref = at(cells, 'ref');
+        const date = at(cells, 'date');
+        const planText = (at(cells, 'plan') || '').toLowerCase();
+        const mrr = parseFloat(at(cells, 'mrr'));
         if (!name || !mrr || !date || isNaN(mrr)) continue;
-        if (/total|eligible|above/i.test(name)) continue;
+        if (/^(total|eligible|above|outstanding|subscription revenue|note:)/i.test(name)) continue;
 
         // Order matters: enterprise tiers first (else "Enterprise S" would match "scale" never,
         // but "managed_scale" must be matched before bare "scale").
@@ -6900,7 +6933,7 @@
         else if (t.includes('managed'))   plan = 'managed';
         else if (t.includes('unlimited')) plan = 'unlimited';
 
-        const billing = (cells[5] || cells[6] || 'monthly').toString().toLowerCase().includes('annual') ? 'annual' : 'monthly';
+        const billing = String(at(cells, 'billing') || 'monthly').toLowerCase().includes('annual') ? 'annual' : 'monthly';
         newDeals.push(normalizeDeal({
           id: 'd_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7) + '_' + i,
           name, mrr, plan, date,
