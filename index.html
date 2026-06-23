@@ -3523,14 +3523,14 @@
   <div id="carryoverSection" class="section-head" hidden>
     <div class="section-title">
       <span class="num">02b</span>
-      <span>Carry-over · still earning from prior months</span>
+      <span>Carry-over · still collecting from prior months</span>
     </div>
   </div>
   <div id="carryoverWrap" hidden style="margin-bottom: 8px;">
     <div id="carryoverBody" class="deals-list"></div>
   </div>
   <div id="carryoverNote" class="forecast-note" hidden style="margin-bottom: 24px; padding: 0 4px;">
-    These monthly platform deals closed in earlier months but are still receiving payments. Mark each month as the client pays — that's what flows into "Earned This Pay Period" above.
+    These deals closed in earlier months but still have a payment to collect — monthly platform subscriptions billing again, plus Managed and annual deals whose one-time payment hasn't been marked yet. Mark each as the client pays — that's what flows into "Earned This Pay Period" above.
   </div>
 
   <div class="section-head">
@@ -4938,10 +4938,14 @@
       if (!d.date) return false;
       const dealYM = d.date.slice(0, 7);
       if (dealYM >= currentMonth) return false;                 // current/future close-month
-      if (dealMaxUnits(d) <= 1) return false;                   // managed/annual one-shot
+      if (dealMaxUnits(d) === 0) return false;                  // self-serve / no commission
       if (isExcluded(d.plan)) return false;
       if (d.cancelled) return false;
-      if ((d.paymentsCollected || 0) >= dealMaxUnits(d)) return false; // fully paid out
+      // Includes uncollected one-shots (Managed/annual, max 1): they're skipped
+      // by the monthly verification queue, so without this a prior-month deal
+      // whose single payment was never marked would vanish from every view but
+      // its close month. Monthly deals carry over until each month is collected.
+      if ((d.paymentsCollected || 0) >= dealMaxUnits(d)) return false; // fully collected
       return true;
     });
 
