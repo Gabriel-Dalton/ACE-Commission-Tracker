@@ -6835,17 +6835,40 @@
     reader.onload = async (e) => {
       const text = e.target.result;
       const lines = text.split('\n').filter(l => l.trim());
+      if (!lines.length) { showToast('Nothing to import — the file is empty', 'error'); return; }
+
+      // The exported CSV wraps the deal table in a note + summary block, so the
+      // "Client,Reference,…" header is not line 0. Locate that header and map
+      // every column BY NAME, so a file produced by Export CSV re-imports
+      // correctly — and the mapping survives any future column reordering. The
+      // previous code read fixed positions that no longer matched the export
+      // (Plan fell on the "Next Renewal" column and MRR on the "Plan" label),
+      // so every row was dropped as NaN and "Import" silently brought in nothing.
+      const headerIdx = lines.findIndex(l => (parseCSVLine(l)[0] || '').trim().toLowerCase() === 'client');
+      let col;
+      if (headerIdx !== -1) {
+        const cols = parseCSVLine(lines[headerIdx]).map(h => h.trim().toLowerCase());
+        const find = (...names) => { for (const n of names) { const i = cols.indexOf(n); if (i !== -1) return i; } return -1; };
+        col = { name: find('client', 'name'), ref: find('reference', 'ref'),
+                date: find('close date', 'date'), plan: find('plan'),
+                mrr: find('mrr'), billing: find('billing') };
+      } else {
+        // Header-less CSV (e.g. hand-made): fall back to the documented order.
+        col = { name: 0, ref: 1, date: 2, plan: 3, mrr: 4, billing: 5 };
+      }
+      const at = (cells, key) => (col[key] != null && col[key] >= 0) ? (cells[col[key]] ?? '') : '';
+
       const newDeals = [];
-      for (let i = 1; i < lines.length; i++) {
+      for (let i = (headerIdx === -1 ? 0 : headerIdx + 1); i < lines.length; i++) {
         const cells = parseCSVLine(lines[i]);
         if (cells.length < 5) continue;
-        const name = cells[0];
-        const ref = cells[1];
-        const date = cells[2];
-        const planText = (cells[3] || '').toLowerCase();
-        const mrr = parseFloat(cells[4]);
+        const name = at(cells, 'name');
+        const ref = at(cells, 'ref');
+        const date = at(cells, 'date');
+        const planText = (at(cells, 'plan') || '').toLowerCase();
+        const mrr = parseFloat(at(cells, 'mrr'));
         if (!name || !mrr || !date || isNaN(mrr)) continue;
-        if (/total|eligible|above/i.test(name)) continue;
+        if (/^(total|eligible|above|outstanding|subscription revenue|note:)/i.test(name)) continue;
 
         // Order matters: enterprise tiers first (else "Enterprise S" would match "scale" never,
         // but "managed_scale" must be matched before bare "scale").
@@ -6900,7 +6923,7 @@
         else if (t.includes('managed'))   plan = 'managed';
         else if (t.includes('unlimited')) plan = 'unlimited';
 
-        const billing = (cells[5] || cells[6] || 'monthly').toString().toLowerCase().includes('annual') ? 'annual' : 'monthly';
+        const billing = String(at(cells, 'billing') || 'monthly').toLowerCase().includes('annual') ? 'annual' : 'monthly';
         newDeals.push(normalizeDeal({
           id: 'd_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7) + '_' + i,
           name, mrr, plan, date,
