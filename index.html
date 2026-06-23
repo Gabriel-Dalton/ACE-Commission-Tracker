@@ -3435,7 +3435,7 @@
         </div>
       </div>
       <div class="field">
-        <label class="field-label" for="dealMRR">MRR</label>
+        <label class="field-label" for="dealMRR" id="dealMrrLabel">MRR</label>
         <div class="input-currency input-with-voice">
           <input type="number" id="dealMRR" class="input" placeholder="599" step="1" min="0" inputmode="numeric" pattern="[0-9]*">
           <button type="button" class="voice-btn" data-voice-target="dealMRR" data-voice-mode="number" hidden aria-label="Dictate MRR" title="Dictate MRR">
@@ -4290,6 +4290,21 @@
                             (typeof p === 'string' && p.startsWith('managed_'));
   const isPlatform = (p) => !isExcluded(p) && !isManaged(p);
   const isCustomPlan = (p) => p === CUSTOM_PLATFORM || p === CUSTOM_MANAGED;
+
+  // ── Billing-period amounts ────────────────────────────────────────────
+  // MRR is always *stored* monthly so every downstream calc (target fill,
+  // forecast, ×12 lump sums) stays consistent. But annual-upfront platform
+  // deals are entered and shown as the yearly contract value — nobody thinks
+  // of an annual deal in monthly terms. Managed deals stay monthly regardless
+  // of billing: their MRR counts toward the monthly target and the flat bonus
+  // is independent of the cycle. These helpers convert at the UI boundary.
+  const isAnnualValue   = (billing, plan) => billing === 'annual' && !isManaged(plan);
+  const toDisplayAmount = (monthly, billing, plan) => isAnnualValue(billing, plan) ? monthly * 12 : monthly;
+  const toMonthlyAmount = (shown,   billing, plan) => isAnnualValue(billing, plan) ? shown / 12  : shown;
+  const periodSuffix    = (billing, plan) => isAnnualValue(billing, plan) ? '/yr' : '/mo';
+  // Round-trip dust (50000/12*12) → clean string for number inputs.
+  const trimAmount = (n) => String(Math.round(n * 100) / 100);
+
   const planLabel       = (p) => PLAN_LABELS[p] || p;
   const planShortLabel  = (p) => PLAN_SHORT_LABELS[p] || planLabel(p);
 
@@ -4991,7 +5006,7 @@
       <p class="verify-prompt">Is <strong>${nameEsc}</strong> still with us for <strong>${escapeHtml(periodLabel)}</strong>?</p>
       <dl class="deal-snapshot">
         <dt>Plan</dt><dd>${planEsc}${deal.billing === 'annual' ? ' · annual' : ''}</dd>
-        <dt>MRR</dt><dd>$${fmt(Number(deal.mrr) || 0)}</dd>
+        <dt>${isAnnualValue(deal.billing, deal.plan) ? 'Annual value' : 'MRR'}</dt><dd>$${fmt(toDisplayAmount(Number(deal.mrr) || 0, deal.billing, deal.plan))}${periodSuffix(deal.billing, deal.plan)}</dd>
         <dt>Collected</dt><dd>${deal.paymentsCollected || 0} / ${dealMaxUnits(deal)} months</dd>
         <dt>Started</dt><dd>${escapeHtml(formatDate(deal.firstPaymentDate || deal.date))}</dd>
       </dl>
@@ -5252,8 +5267,8 @@
             <span class="dc-fig-value ${earned > 0 ? 'pos' : 'muted'}">$${fmtExact(earned)}</span>
           </div>
           <div class="dc-fig">
-            <span class="dc-fig-label">MRR</span>
-            <span class="dc-fig-value">$${fmt(mrr)}<span class="dc-unit">${d.billing === 'annual' ? '/yr' : '/mo'}</span></span>
+            <span class="dc-fig-label">${isAnnualValue(d.billing, d.plan) ? 'Annual value' : 'MRR'}</span>
+            <span class="dc-fig-value">$${fmt(unitValue)}<span class="dc-unit">${periodSuffix(d.billing, d.plan)}</span></span>
           </div>
           <div class="dc-fig">
             <span class="dc-fig-label">${forecastLabel}</span>
@@ -5677,7 +5692,7 @@
     el.innerHTML = html;
   }
 
-  function setupDropdown(name) {
+  function setupDropdown(name, opts = {}) {
     const dd = document.querySelector(`[data-dd="${name}"]`);
     if (!dd) return;
 
@@ -5685,7 +5700,10 @@
     const menu = dd.querySelector('.dd-menu');
     const label = trigger.querySelector('.selected-label');
 
-    function setValue(v) {
+    // setValue is silent by default so programmatic callers (init, the custom
+    // plan apply) don't trigger side effects; user clicks pass silent:false.
+    function setValue(v, { silent = true } = {}) {
+      const prev = ddState[name];
       ddState[name] = v;
       const labelText = ddLabels[name][v] || 'Select…';
       label.textContent = labelText;
@@ -5695,6 +5713,9 @@
         o.classList.toggle('selected', o.dataset.value === v);
       });
 
+      if (!silent && v !== prev && typeof opts.onUserChange === 'function') {
+        opts.onUserChange(v, prev);
+      }
     }
 
     trigger.addEventListener('click', (e) => {
@@ -5711,7 +5732,7 @@
     menu.querySelectorAll('.dd-option').forEach(opt => {
       opt.addEventListener('click', (e) => {
         e.stopPropagation();
-        setValue(opt.dataset.value);
+        setValue(opt.dataset.value, { silent: false });
         trigger.classList.remove('open');
         menu.classList.remove('open');
       });
@@ -5750,14 +5771,17 @@
 
   function addDeal() {
     const name = document.getElementById('dealName').value.trim();
-    const mrr = parseFloat(document.getElementById('dealMRR').value);
     const plan = ddState.dealPlan;
     const date = document.getElementById('dealDate').value;
     const billing = ddState.dealBilling;
     const ref = document.getElementById('dealRef').value.trim();
+    // The field holds the amount in its billing period (yearly for annual
+    // platform deals); store it back as canonical monthly MRR.
+    const enteredAmount = parseFloat(document.getElementById('dealMRR').value);
+    const mrr = toMonthlyAmount(enteredAmount, billing, plan);
 
     if (!name) { showFormError('Client name is required'); document.getElementById('dealName').focus(); return; }
-    if (!mrr || isNaN(mrr)) { showFormError('MRR is required'); document.getElementById('dealMRR').focus(); return; }
+    if (!enteredAmount || isNaN(enteredAmount)) { showFormError('Enter the deal amount'); document.getElementById('dealMRR').focus(); return; }
     if (!plan) { showFormError('Select a plan tier'); return; }
     if (!date) { showFormError('Close date is required'); document.getElementById('dealDate').focus(); return; }
 
@@ -5909,6 +5933,13 @@
     const d = deals.find(x => x.id === id);
     if (!d) return;
 
+    // Annual platform deals are shown/edited as the yearly amount; convert the
+    // stored monthly MRR for display and remember the period for live edits.
+    let prevEditBilling = d.billing === 'annual' ? 'annual' : 'monthly';
+    let prevEditPlan = d.plan;
+    const editShownMrr = (d.mrr == null || d.mrr === '')
+      ? '' : trimAmount(toDisplayAmount(Number(d.mrr), d.billing, d.plan));
+
     const wrap = document.createElement('div');
     wrap.className = 'edit-deal-grid';
     wrap.innerHTML = `
@@ -5917,9 +5948,9 @@
         <input type="text" id="editName" class="input" value="${escapeHtml(d.name || '')}" autocomplete="off" autocapitalize="words" spellcheck="false">
       </div>
       <div class="field">
-        <label class="field-label" for="editMRR">MRR</label>
+        <label class="field-label" for="editMRR" id="editMrrLabel">${isAnnualValue(d.billing, d.plan) ? 'Annual value' : 'MRR'}</label>
         <div class="input-currency">
-          <input type="number" id="editMRR" class="input" value="${escapeHtml(String(d.mrr ?? ''))}" step="1" min="0" inputmode="numeric" pattern="[0-9]*">
+          <input type="number" id="editMRR" class="input" value="${escapeHtml(editShownMrr)}" step="1" min="0" inputmode="numeric" pattern="[0-9]*">
         </div>
       </div>
       <div class="field">
@@ -5986,9 +6017,31 @@
       hintEl.innerHTML = `Renews on the <span class="renew">${ordinalDay(day)}</span> of each month.${tail}`;
     }
 
+    // Keep the amount field in the billing period of the current plan/cycle:
+    // annual platform → yearly value, otherwise monthly MRR.
+    function syncEditMrrPeriod() {
+      const input = wrap.querySelector('#editMRR');
+      const label = wrap.querySelector('#editMrrLabel');
+      const billing = wrap.querySelector('#editBilling').value;
+      const plan = wrap.querySelector('#editPlan').value;
+      const isAnnual = isAnnualValue(billing, plan);
+      if (input && input.value !== '' && isAnnualValue(prevEditBilling, prevEditPlan) !== isAnnual) {
+        const n = parseFloat(input.value);
+        if (!isNaN(n)) input.value = isAnnual ? trimAmount(n * 12) : trimAmount(n / 12);
+      }
+      if (label) label.textContent = isAnnual ? 'Annual value' : 'MRR';
+      if (input) input.placeholder = isAnnual ? '50,000' : '599';
+      prevEditBilling = billing;
+      prevEditPlan = plan;
+    }
+
     ['#editFirstPayment', '#editDate', '#editPlan', '#editBilling'].forEach(sel => {
       const el = wrap.querySelector(sel);
       if (el) { el.addEventListener('change', refreshRenewHint); el.addEventListener('input', refreshRenewHint); }
+    });
+    ['#editPlan', '#editBilling'].forEach(sel => {
+      const el = wrap.querySelector(sel);
+      if (el) el.addEventListener('change', syncEditMrrPeriod);
     });
 
     // Enter saves (except inside the plan <select>, where Enter just opens it).
@@ -6018,9 +6071,11 @@
     if (!d) { closeModal(); return; }
 
     const name         = document.getElementById('editName').value.trim();
-    const mrr          = parseFloat(document.getElementById('editMRR').value);
     const plan         = document.getElementById('editPlan').value;
     const billing      = document.getElementById('editBilling').value;
+    // The field holds the amount in its billing period; store canonical monthly.
+    const enteredAmount = parseFloat(document.getElementById('editMRR').value);
+    const mrr          = toMonthlyAmount(enteredAmount, billing, plan);
     const date         = document.getElementById('editDate').value;
     const firstPayment = document.getElementById('editFirstPayment').value;
     const ref          = document.getElementById('editRef').value.trim();
@@ -6032,7 +6087,7 @@
     };
 
     if (!name)                          return fail('Client name is required', 'editName');
-    if (!mrr || isNaN(mrr) || mrr <= 0) return fail('Enter a valid MRR', 'editMRR');
+    if (!enteredAmount || isNaN(enteredAmount) || enteredAmount <= 0) return fail('Enter a valid amount', 'editMRR');
     if (!plan)                          return fail('Select a plan tier', 'editPlan');
     if (!date)                          return fail('Close date is required', 'editDate');
     // The first-payment date is intentionally unconstrained relative to the
@@ -7049,7 +7104,28 @@
   // in sync with the user's choice.
   let dealBillingDropdown = null;
 
+  // Keep the Add-Deal amount field labelled for its billing period: annual
+  // platform deals read "Annual value … /yr", everything else "MRR … /mo".
+  function refreshDealMrrLabel() {
+    const annual = isAnnualValue(ddState.dealBilling, ddState.dealPlan);
+    const label = document.getElementById('dealMrrLabel');
+    const input = document.getElementById('dealMRR');
+    if (label) label.textContent = annual ? 'Annual value' : 'MRR';
+    if (input) input.placeholder = annual ? '50,000' : '599';
+  }
+
+  // Convert the amount already typed in the field when the period flips
+  // (monthly ⇄ annual), so the displayed figure keeps its real-world meaning.
+  function convertDealMrrField(wasAnnual, isAnnual) {
+    const input = document.getElementById('dealMRR');
+    if (!input || input.value === '' || wasAnnual === isAnnual) return;
+    const n = parseFloat(input.value);
+    if (isNaN(n)) return;
+    input.value = isAnnual ? trimAmount(n * 12) : trimAmount(n / 12);
+  }
+
   function setSelectedPlan(key, opts = {}) {
+    const prevPlan = ddState.dealPlan;
     ddState.dealPlan = key;
     const label = document.getElementById('planPickLabel');
     if (label) {
@@ -7063,13 +7139,22 @@
     }
     const mrrInput = document.getElementById('dealMRR');
     if (mrrInput) {
+      const billing = ddState.dealBilling;
       if (opts.mrrOverride != null) {
-        // Custom plan: force the entered MRR into the form input
-        mrrInput.value = opts.mrrOverride;
+        // Custom plan: mrrOverride is the canonical monthly value — show it in
+        // the field's billing period (annual platform → yearly amount).
+        mrrInput.value = trimAmount(toDisplayAmount(opts.mrrOverride, billing, key));
       } else if (key && PLAN_PRICES[key]) {
-        if (!mrrInput.value) mrrInput.value = PLAN_PRICES[key];
+        // Catalog price is monthly; only auto-fill an empty field.
+        if (!mrrInput.value) mrrInput.value = trimAmount(toDisplayAmount(PLAN_PRICES[key], billing, key));
+        else convertDealMrrField(isAnnualValue(billing, prevPlan), isAnnualValue(billing, key));
+      } else {
+        // Plan changed (e.g. platform ⇄ managed) — reconvert any existing entry
+        // if that flips whether the amount is shown yearly or monthly.
+        convertDealMrrField(isAnnualValue(billing, prevPlan), isAnnualValue(billing, key));
       }
     }
+    refreshDealMrrLabel();
   }
 
   function planCardHTML(item, opts = {}) {
@@ -7140,9 +7225,13 @@
       // Custom tab: ask billing / MRR / category, then write into the form
       // on apply (so the deal uses the same logic as a catalog plan).
       const c = planPickerState.customDraft;
+      // Annual platform deals are entered as the yearly amount; the draft still
+      // stores canonical monthly MRR, so convert for display here.
+      const customAnnual = c.billing === 'annual' && c.category === 'platform';
+      const shownMrr = (c.mrr === '' || c.mrr == null) ? '' : trimAmount(customAnnual ? c.mrr * 12 : c.mrr);
       html += `
         <div class="plan-info-banner">
-          Off-catalog deal? Set the billing, MRR, and category below. Managed plans pay flat $${MANAGED_FLAT}; platform plans earn 10% above the $${TARGET} target.
+          Off-catalog deal? Set the billing, amount, and category below. Managed plans pay flat $${MANAGED_FLAT}; platform plans earn 10% above the $${TARGET} target.
         </div>
         <div class="custom-plan-form">
           <div class="custom-plan-field">
@@ -7159,15 +7248,17 @@
             </div>
           </div>
           <div class="custom-plan-field">
-            <label class="custom-plan-label" for="customPlanMrr">MRR</label>
+            <label class="custom-plan-label" for="customPlanMrr">${customAnnual ? 'Annual contract value' : 'MRR'}</label>
             <div class="custom-plan-mrr">
               <span class="currency">$</span>
-              <input type="number" id="customPlanMrr" class="input" placeholder="e.g. 599"
+              <input type="number" id="customPlanMrr" class="input" placeholder="${customAnnual ? 'e.g. 50,000' : 'e.g. 599'}"
                      step="1" min="0" inputmode="numeric" pattern="[0-9]*"
-                     value="${c.mrr !== '' && c.mrr != null ? escapeHtml(String(c.mrr)) : ''}">
-              <span class="suffix">/mo</span>
+                     value="${shownMrr !== '' ? escapeHtml(shownMrr) : ''}">
+              <span class="suffix">${customAnnual ? '/yr' : '/mo'}</span>
             </div>
-            <div class="custom-plan-hint">For yearly upfront, enter the monthly equivalent — the annual lump sum is MRR × 12.</div>
+            <div class="custom-plan-hint">${customAnnual
+              ? 'Enter the full amount the client pays up front for the year.'
+              : 'Monthly recurring revenue for this deal.'}</div>
           </div>
           <div class="custom-plan-field">
             <label class="custom-plan-label">Category</label>
@@ -7231,8 +7322,10 @@
     body.querySelectorAll('[data-custom-group] .custom-plan-choice').forEach(btn => {
       btn.addEventListener('click', () => {
         const group = btn.closest('[data-custom-group]').dataset.customGroup;
+        // Capture the amount in the *current* period before switching billing/
+        // category, so the canonical monthly draft survives the re-render.
+        captureCustomDraftFromDom();
         planPickerState.customDraft[group] = btn.dataset.value;
-        captureCustomDraftFromDom(); // also persist the MRR input
         refreshPlanPickerBody();
         // Keep focus where it makes sense after re-render
         if (group === 'billing' || group === 'category') {
@@ -7244,9 +7337,7 @@
 
     const mrrInput = body.querySelector('#customPlanMrr');
     if (mrrInput) {
-      mrrInput.addEventListener('input', () => {
-        planPickerState.customDraft.mrr = mrrInput.value;
-      });
+      mrrInput.addEventListener('input', captureCustomDraftFromDom);
       mrrInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') { e.preventDefault(); applyCustomPlan(); }
       });
@@ -7256,30 +7347,38 @@
     if (applyBtn) applyBtn.addEventListener('click', applyCustomPlan);
   }
 
+  // Read the amount field and store it back as canonical monthly MRR, undoing
+  // the ×12 used to display annual platform deals.
   function captureCustomDraftFromDom() {
     const mrrInput = document.getElementById('customPlanMrr');
-    if (mrrInput) planPickerState.customDraft.mrr = mrrInput.value;
+    if (!mrrInput) return;
+    const raw = mrrInput.value;
+    if (raw === '') { planPickerState.customDraft.mrr = ''; return; }
+    const num = parseFloat(raw);
+    if (isNaN(num)) { planPickerState.customDraft.mrr = ''; return; }
+    const c = planPickerState.customDraft;
+    const annual = c.billing === 'annual' && c.category === 'platform';
+    planPickerState.customDraft.mrr = annual ? num / 12 : num;
   }
 
   function applyCustomPlan() {
     captureCustomDraftFromDom();
     const { billing, mrr, category } = planPickerState.customDraft;
     const errEl = document.getElementById('customPlanError');
-    const mrrNum = parseFloat(mrr);
+    const mrrNum = parseFloat(mrr); // canonical monthly
     if (!mrrNum || isNaN(mrrNum) || mrrNum <= 0) {
-      if (errEl) errEl.textContent = 'Enter a valid MRR.';
+      if (errEl) errEl.textContent = 'Enter a valid amount.';
       document.getElementById('customPlanMrr')?.focus();
       return;
     }
     if (errEl) errEl.textContent = '';
 
-    // Persist the picked billing into the form's billing dropdown and write
-    // the MRR into the form input.
+    // Set billing first (silently) so setSelectedPlan writes the amount into the
+    // form field in the right period, then push the canonical monthly MRR.
     const planKey = category === 'managed' ? CUSTOM_MANAGED : CUSTOM_PLATFORM;
-    setSelectedPlan(planKey, { mrrOverride: mrrNum });
-
     if (dealBillingDropdown) dealBillingDropdown.setValue(billing);
     else ddState.dealBilling = billing;
+    setSelectedPlan(planKey, { mrrOverride: mrrNum });
 
     closeModal();
   }
@@ -7292,7 +7391,11 @@
         planPickerState.customDraft.category = ddState.dealPlan === CUSTOM_MANAGED ? 'managed' : 'platform';
         planPickerState.customDraft.billing = ddState.dealBilling || 'monthly';
         const mrrInput = document.getElementById('dealMRR');
-        if (mrrInput && mrrInput.value) planPickerState.customDraft.mrr = mrrInput.value;
+        if (mrrInput && mrrInput.value !== '') {
+          const shown = parseFloat(mrrInput.value);
+          planPickerState.customDraft.mrr = isNaN(shown)
+            ? '' : toMonthlyAmount(shown, ddState.dealBilling, ddState.dealPlan);
+        }
       } else if (isManaged(ddState.dealPlan)) planPickerState.tab = 'managed';
       else if (isExcluded(ddState.dealPlan)) planPickerState.tab = 'selfserve';
       else {
@@ -7652,7 +7755,12 @@
       applyAuthState(session);
     }
 
-    dealBillingDropdown = setupDropdown('dealBilling');
+    dealBillingDropdown = setupDropdown('dealBilling', {
+      onUserChange(newB, oldB) {
+        convertDealMrrField(isAnnualValue(oldB, ddState.dealPlan), isAnnualValue(newB, ddState.dealPlan));
+        refreshDealMrrLabel();
+      }
+    });
     VoiceInput.init();
     document.getElementById('rulesBtn').addEventListener('click', openRulesModal);
     document.getElementById('planPickBtn').addEventListener('click', openPlanPickerModal);
