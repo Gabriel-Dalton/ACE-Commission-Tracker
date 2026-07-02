@@ -3347,7 +3347,7 @@
       </div>
       <div class="hero-progress">
         <div class="progress-header">
-          <span class="title">Eligible MRR</span>
+          <span class="title">Eligible revenue</span>
           <span class="target-status" id="targetStatus">Below target</span>
         </div>
         <div class="progress-numbers">
@@ -3364,7 +3364,7 @@
 
   <div class="stats-row four">
     <div class="stat">
-      <div class="stat-label"><span>Eligible MRR This Month</span></div>
+      <div class="stat-label"><span>Eligible Revenue This Month</span></div>
       <div class="stat-value"><span class="currency">$</span><span id="eligibleMrrCard">0</span></div>
       <div class="stat-meta" id="eligibleMrrNote">Below target</div>
     </div>
@@ -4371,28 +4371,45 @@
     const monthDeals = deals.filter(d => d.date && d.date.startsWith(ym));
     const platformDeals = monthDeals.filter(d => isPlatform(d.plan));
     const managedDeals  = monthDeals.filter(d => isManaged(d.plan));
-    // Annual-upfront platform deals earn a lump sum independent of the monthly
-    // target (see dealMonthlyShare), so they sit OUTSIDE the above-line
-    // apportionment. Their monthly-equivalent MRR still counts toward filling
-    // the target — like managed MRR — so they help monthly deals unlock.
+    // Annual-upfront platform deals count toward the $1,000 target at their
+    // FULL contract value — the whole year's revenue is booked in this
+    // close-month — and earn 10% of whatever lands above the line, paid as
+    // one lump sum on collection. Fill order for the target: managed MRR
+    // (when it counts) → annual contract value → monthly MRR, so the cheap
+    // dollars fill the line first and each deal's payout is order-stable.
     const monthlyPlatformDeals = platformDeals.filter(d => d.billing !== 'annual');
     const annualPlatformDeals  = platformDeals.filter(d => d.billing === 'annual');
+    const annualValueOf = (d) => (Number(d.mrr) || 0) * 12;
     const platformMRR = platformDeals.reduce((s, d) => s + Number(d.mrr), 0);
-    const annualPlatformMRR  = annualPlatformDeals.reduce((s, d) => s + Number(d.mrr), 0);
-    const monthlyPlatformMRR = platformMRR - annualPlatformMRR;
+    const monthlyPlatformMRR  = monthlyPlatformDeals.reduce((s, d) => s + Number(d.mrr), 0);
+    const annualPlatformValue = annualPlatformDeals.reduce((s, d) => s + annualValueOf(d), 0);
     const managedMRR  = managedDeals.reduce((s, d) => s + Number(d.mrr), 0);
 
-    let eligibleMRR = platformMRR;
+    // Revenue eligible against this close-month's target: monthly MRR plus
+    // annual contracts at full value (plus managed MRR when it counts).
+    let eligibleMRR = monthlyPlatformMRR + annualPlatformValue;
     if (managedCountsTowardTarget === 'yes') eligibleMRR += managedMRR;
 
     const overage = Math.max(0, eligibleMRR - TARGET);
     const aboveLineByDealId = {};
 
-    // How much of the $1,000 target monthly platform deals must fill
-    // themselves, after annual (and optionally managed) MRR fills it first.
-    let targetToFill = TARGET - annualPlatformMRR;
-    if (managedCountsTowardTarget === 'yes') targetToFill -= managedMRR;
-    targetToFill = Math.max(0, targetToFill);
+    let remainingTarget = TARGET;
+    if (managedCountsTowardTarget === 'yes') remainingTarget = Math.max(0, remainingTarget - managedMRR);
+
+    // Annual deals fill the target next, at full value, in close-date order.
+    // Their above-line is stored in FULL-YEAR dollars — dealMonthlyShare pays
+    // 10% of it once, when the annual payment is collected.
+    const sortedAnnual = [...annualPlatformDeals].sort((a, b) => a.date.localeCompare(b.date));
+    for (const d of sortedAnnual) {
+      const val = annualValueOf(d);
+      const fill = Math.min(remainingTarget, val);
+      aboveLineByDealId[d.id] = val - fill;
+      remainingTarget -= fill;
+    }
+
+    // Whatever target is left, monthly platform deals fill in close-date
+    // order; their above-line is MONTHLY dollars (10% per month collected).
+    const targetToFill = remainingTarget;
     const monthlyAboveLine = Math.max(0, monthlyPlatformMRR - targetToFill);
 
     if (monthlyAboveLine > 0) {
@@ -4411,9 +4428,13 @@
       }
     }
 
+    // First-year pipeline: recurring MRR annualized + annual contracts once.
+    let firstYearPipeline = monthlyPlatformMRR * 12 + annualPlatformValue;
+    if (managedCountsTowardTarget === 'yes') firstYearPipeline += managedMRR * 12;
+
     const ctx = { monthDeals, platformDeals, monthlyPlatformDeals, annualPlatformDeals, managedDeals,
-                  platformMRR, monthlyPlatformMRR, annualPlatformMRR, managedMRR,
-                  eligibleMRR, overage, targetToFill, monthlyAboveLine,
+                  platformMRR, monthlyPlatformMRR, annualPlatformValue, managedMRR,
+                  eligibleMRR, overage, targetToFill, monthlyAboveLine, firstYearPipeline,
                   aboveLineByDealId };
     _monthContextCache.set(ym, ctx);
     return ctx;
@@ -4423,12 +4444,10 @@
   function dealMonthlyShare(d) {
     if (!d || isExcluded(d.plan)) return 0;
     if (isManaged(d.plan)) return MANAGED_FLAT;
-    // Annual upfront platform: lump sum = 10% of the full annual contract
-    // value, paid when the annual payment is collected. Like the Managed
-    // flat fee, this is NOT gated by the $1,000 monthly MRR target — that
-    // target apportions monthly deals' above-line (see getCloseMonthContext).
-    if (d.billing === 'annual') return (Number(d.mrr) || 0) * 12 * COMMISSION_RATE;
-    // Monthly platform deal: above-line × 10% per month
+    // Platform deal: 10% of its above-line dollars. Monthly deals' above-line
+    // is monthly MRR (earned each month collected, up to 12); annual-upfront
+    // deals' is full-year contract dollars above the target (earned once, as
+    // a lump sum when the annual payment is collected).
     const ym = d.date ? d.date.slice(0, 7) : null;
     if (!ym) return 0;
     const ctx = getCloseMonthContext(ym);
@@ -4795,8 +4814,8 @@
     // payment-month earned tally agree on per-deal "above-line" amounts.
     const ctx = getCloseMonthContext(currentMonth);
     const { monthDeals, platformDeals, monthlyPlatformDeals, annualPlatformDeals, managedDeals,
-            platformMRR, monthlyPlatformMRR, annualPlatformMRR, managedMRR,
-            eligibleMRR, overage, targetToFill, monthlyAboveLine } = ctx;
+            platformMRR, monthlyPlatformMRR, annualPlatformValue, managedMRR,
+            eligibleMRR, overage, targetToFill, monthlyAboveLine, firstYearPipeline } = ctx;
     const excludedDeals = monthDeals.filter(d => isExcluded(d.plan));
 
     // 12-month potential per platform deal closed this month (forecast only)
@@ -4824,8 +4843,8 @@
 
     return {
       monthDeals, platformDeals, monthlyPlatformDeals, annualPlatformDeals, managedDeals, excludedDeals,
-      platformMRR, monthlyPlatformMRR, annualPlatformMRR, managedMRR,
-      eligibleMRR, overage, targetToFill, monthlyAboveLine,
+      platformMRR, monthlyPlatformMRR, annualPlatformValue, managedMRR,
+      eligibleMRR, overage, targetToFill, monthlyAboveLine, firstYearPipeline,
       platformCommission, monthlyPlatformCommission, annualCommission, managedCommission,
       totalPotential: platformCommission + managedCommission,
       earnedThisPeriod: earnedHere.total,
@@ -4876,9 +4895,7 @@
     document.getElementById('overage').textContent = fmt(c.overage);
     document.getElementById('overageNote').textContent = c.overage > 0
       ? `Earns commission as clients pay`
-      : (c.annualCommission > 0
-          ? 'Monthly deals locked — annual upfronts still pay 10% of contract value'
-          : 'Locked — below target');
+      : 'Locked — below target';
 
     // Hero amount = earned this pay period (the actual amount Yotam owes right now)
     const earned = c.earnedThisPeriod;
@@ -5327,7 +5344,7 @@
         </div>`;
       if (belowTarget) {
         hint = collectedRevenue > 0
-          ? `<div class="dc-hint">Below the <b>$1,000</b> monthly target, so commission is still $0 — but you've collected <b>$${fmtExact(collectedRevenue)}</b> in subscription revenue. Commission unlocks once this month's eligible MRR clears $1,000.</div>`
+          ? `<div class="dc-hint">Below the <b>$1,000</b> monthly target, so commission is still $0 — but you've collected <b>$${fmtExact(collectedRevenue)}</b> in subscription revenue. Commission unlocks once this month's eligible revenue clears $1,000.</div>`
           : `<div class="dc-hint">Below the <b>$1,000</b> monthly target — no commission accrues yet. Marking payments still records the revenue.</div>`;
       } else if (pending > 0 && !d.cancelled) {
         hint = `<div class="dc-hint"><b>$${fmtExact(pending)}</b> is pending — mark the latest payment below once the client pays.</div>`;
@@ -5700,7 +5717,7 @@
       if (c.platformDeals.length > 0) {
         c.platformDeals.forEach(d => {
           const annual = isAnnualValue(d.billing, d.plan);
-          html += `<div class="breakdown-row"><span>${escapeHtml(d.name)} <span style="color:var(--text-4)">— ${escapeHtml(planLabel(d.plan))}${annual ? ' (annual upfront — counts toward target at $' + fmt(Number(d.mrr)) + '/mo)' : ''}</span></span><span>$${fmt(toDisplayAmount(Number(d.mrr), d.billing, d.plan))}${periodSuffix(d.billing, d.plan)}</span></div>`;
+          html += `<div class="breakdown-row"><span>${escapeHtml(d.name)} <span style="color:var(--text-4)">— ${escapeHtml(planLabel(d.plan))}${annual ? ' (annual upfront — full value counts toward target)' : ''}</span></span><span>$${fmt(toDisplayAmount(Number(d.mrr), d.billing, d.plan))}${periodSuffix(d.billing, d.plan)}</span></div>`;
         });
       }
       if (c.managedDeals.length > 0 && managedCountsTowardTarget === 'yes') {
@@ -5708,7 +5725,7 @@
           html += `<div class="breakdown-row"><span>${escapeHtml(d.name)} <span style="color:var(--text-4)">— ${escapeHtml(planShortLabel(d.plan))} (counts toward target)</span></span><span>$${fmt(Number(d.mrr))}/mo</span></div>`;
         });
       }
-      html += `<div class="breakdown-row subtotal"><span>Eligible MRR (this close-month)</span><span>$${fmt(c.eligibleMRR)}</span></div>`;
+      html += `<div class="breakdown-row subtotal"><span>Eligible revenue (this close-month)</span><span>$${fmt(c.eligibleMRR)}</span></div>`;
       html += `<div class="breakdown-row"><span>− Target threshold</span><span>($${fmt(TARGET)})</span></div>`;
       html += `<div class="breakdown-row subtotal"><span>Above target</span><span class="${c.overage > 0 ? 'value-positive' : ''}">$${fmt(c.overage)}</span></div>`;
 
@@ -5718,7 +5735,7 @@
         html += `<div class="breakdown-row calculation"><span>× 10% commission</span><span class="value-positive">$${fmtExact(c.monthlyPlatformCommission)}</span></div>`;
       }
       if (c.annualPlatformDeals.length > 0) {
-        html += `<div class="breakdown-row"><span>${c.annualPlatformDeals.length} annual upfront deal${c.annualPlatformDeals.length !== 1 ? 's' : ''} × 10% of contract value (lump sum on collection, not target-gated)</span><span class="value-positive">$${fmtExact(c.annualCommission)}</span></div>`;
+        html += `<div class="breakdown-row"><span>${c.annualPlatformDeals.length} annual upfront deal${c.annualPlatformDeals.length !== 1 ? 's' : ''} — 10% of contract value above target (lump sum on collection)</span><span class="value-positive">$${fmtExact(c.annualCommission)}</span></div>`;
       }
       if (c.managedDeals.length > 0) {
         html += `<div class="breakdown-row"><span>${c.managedDeals.length} Managed deal${c.managedDeals.length !== 1 ? 's' : ''} × $300 flat</span><span class="value-positive">$${fmtExact(c.managedCommission)}</span></div>`;
@@ -6233,7 +6250,7 @@
       [`Commission Earned This Pay Period (${formatMonthLabelShort(currentMonth)})`, c.earnedThisPeriod.toFixed(2)],
       [`Subscription Revenue Collected This Period (${formatMonthLabelShort(currentMonth)})`, c.subRevenueThisPeriod.toFixed(2)],
       ['Subscription Revenue Collected (all-time)', c.subRevenueAllTime.toFixed(2)],
-      ['Eligible MRR (this close-month)', c.eligibleMRR.toFixed(2)],
+      ['Eligible Revenue (this close-month)', c.eligibleMRR.toFixed(2)],
       ['Above Target', c.overage.toFixed(2)],
       ['12-Month Potential (forecast, this close-month)', c.totalPotential.toFixed(2)]
     ];
@@ -6404,10 +6421,16 @@
     // Calculation rows
     const calcRows = [];
     if (c.platformDeals.length > 0 || c.managedDeals.length > 0) {
-      if (c.platformMRR > 0) {
+      if (c.monthlyPlatformMRR > 0) {
         calcRows.push([
-          { text: `Platform MRR (${c.platformDeals.length} deal${c.platformDeals.length !== 1 ? 's' : ''})`, color: COL.text2 },
-          { text: '$' + fmt(c.platformMRR), color: COL.text2, alignment: 'right' }
+          { text: `Monthly platform MRR (${c.monthlyPlatformDeals.length} deal${c.monthlyPlatformDeals.length !== 1 ? 's' : ''})`, color: COL.text2 },
+          { text: '$' + fmt(c.monthlyPlatformMRR), color: COL.text2, alignment: 'right' }
+        ]);
+      }
+      if (c.annualPlatformValue > 0) {
+        calcRows.push([
+          { text: `Annual upfront contracts (${c.annualPlatformDeals.length} deal${c.annualPlatformDeals.length !== 1 ? 's' : ''}, full value)`, color: COL.text2 },
+          { text: '$' + fmt(c.annualPlatformValue), color: COL.text2, alignment: 'right' }
         ]);
       }
       if (c.managedMRR > 0) {
@@ -6417,7 +6440,7 @@
         ]);
       }
       calcRows.push([
-        { text: 'Eligible MRR', bold: true, color: COL.text },
+        { text: 'Eligible revenue', bold: true, color: COL.text },
         { text: '$' + fmt(c.eligibleMRR), bold: true, color: COL.text, alignment: 'right' }
       ]);
       calcRows.push([
@@ -6445,7 +6468,7 @@
     }
     if (c.annualPlatformDeals.length > 0) {
       calcRows.push([
-        { text: `${c.annualPlatformDeals.length} annual upfront deal${c.annualPlatformDeals.length !== 1 ? 's' : ''} × 10% of contract value (lump sum)`, bold: true, color: COL.green },
+        { text: `${c.annualPlatformDeals.length} annual upfront deal${c.annualPlatformDeals.length !== 1 ? 's' : ''} — 10% of value above target (lump sum)`, bold: true, color: COL.green },
         { text: '$' + fmtExact(c.annualCommission), bold: true, color: COL.green, alignment: 'right' }
       ]);
     }
@@ -6550,7 +6573,7 @@
                 stack: [
                   {
                     columns: [
-                      { width: '*', text: 'ELIGIBLE MRR', fontSize: 8, bold: true,
+                      { width: '*', text: 'ELIGIBLE REVENUE', fontSize: 8, bold: true,
                         color: COL.text3, characterSpacing: 1.5 },
                       { width: 'auto', ...statusPill() }
                     ]
@@ -6586,7 +6609,7 @@
                     columns: [
                       { width: '*', text: 'FIRST-YEAR PIPELINE', fontSize: 7.5, bold: true,
                         color: COL.text3, characterSpacing: 1.4 },
-                      { width: 'auto', text: '$' + fmt(c.eligibleMRR * 12),
+                      { width: 'auto', text: '$' + fmt(c.firstYearPipeline),
                         fontSize: 11, bold: true, color: COL.text, alignment: 'right' }
                     ]
                   }
@@ -7326,7 +7349,7 @@
       const shownMrr = (c.mrr === '' || c.mrr == null) ? '' : trimAmount(customAnnual ? c.mrr * 12 : c.mrr);
       html += `
         <div class="plan-info-banner">
-          Off-catalog deal? Set the billing, amount, and category below. Managed plans pay flat $${MANAGED_FLAT}; monthly platform plans earn 10% above the $${TARGET} target; annual upfront platform plans earn 10% of the contract value on collection.
+          Off-catalog deal? Set the billing, amount, and category below. Managed plans pay flat $${MANAGED_FLAT}; platform plans earn 10% above the $${TARGET} target — annual upfronts count their full contract value toward it and pay out on collection.
         </div>
         <div class="custom-plan-form">
           <div class="custom-plan-field">
