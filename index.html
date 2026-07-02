@@ -4375,8 +4375,9 @@
     // FULL contract value — the whole year's revenue is booked in this
     // close-month — and earn 10% of whatever lands above the line, paid as
     // one lump sum on collection. Fill order for the target: managed MRR
-    // (when it counts) → annual contract value → monthly MRR, so the cheap
-    // dollars fill the line first and each deal's payout is order-stable.
+    // (when it counts) → monthly MRR (close-date order, exactly as before)
+    // → annual contract value on top. So whatever's already in the month
+    // fills the limit first, and the annual is over by the rest.
     const monthlyPlatformDeals = platformDeals.filter(d => d.billing !== 'annual');
     const annualPlatformDeals  = platformDeals.filter(d => d.billing === 'annual');
     const annualValueOf = (d) => (Number(d.mrr) || 0) * 12;
@@ -4396,19 +4397,9 @@
     let remainingTarget = TARGET;
     if (managedCountsTowardTarget === 'yes') remainingTarget = Math.max(0, remainingTarget - managedMRR);
 
-    // Annual deals fill the target next, at full value, in close-date order.
-    // Their above-line is stored in FULL-YEAR dollars — dealMonthlyShare pays
-    // 10% of it once, when the annual payment is collected.
-    const sortedAnnual = [...annualPlatformDeals].sort((a, b) => a.date.localeCompare(b.date));
-    for (const d of sortedAnnual) {
-      const val = annualValueOf(d);
-      const fill = Math.min(remainingTarget, val);
-      aboveLineByDealId[d.id] = val - fill;
-      remainingTarget -= fill;
-    }
-
-    // Whatever target is left, monthly platform deals fill in close-date
-    // order; their above-line is MONTHLY dollars (10% per month collected).
+    // Monthly platform deals fill the remaining target in close-date order —
+    // identical to how they always have, with or without annual deals in the
+    // month. Their above-line is MONTHLY dollars (10% per month collected).
     const targetToFill = remainingTarget;
     const monthlyAboveLine = Math.max(0, monthlyPlatformMRR - targetToFill);
 
@@ -4426,6 +4417,20 @@
         aboveLineByDealId[d.id] = aboveLine;
         runningTotal = after;
       }
+    }
+    remainingTarget = Math.max(0, remainingTarget - monthlyPlatformMRR);
+
+    // Annual contracts stack ON TOP of whatever the month already holds: any
+    // target still unfilled comes out of the earliest annual deal(s), and
+    // everything above the line earns 10% once, on collection. Above-line is
+    // stored in FULL-YEAR dollars — dealMonthlyShare pays 10% of it as the
+    // lump sum.
+    const sortedAnnual = [...annualPlatformDeals].sort((a, b) => a.date.localeCompare(b.date));
+    for (const d of sortedAnnual) {
+      const val = annualValueOf(d);
+      const fill = Math.min(remainingTarget, val);
+      aboveLineByDealId[d.id] = val - fill;
+      remainingTarget -= fill;
     }
 
     // First-year pipeline: recurring MRR annualized + annual contracts once.
